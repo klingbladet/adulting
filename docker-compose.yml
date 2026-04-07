@@ -3,6 +3,7 @@ services:
     build: ./frontend
     ports:
       - 3000:3000
+
   backend:
     build: ./backend
     ports:
@@ -11,6 +12,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+    depends_on:
+      - db
+
   db:
     image: postgres:18-alpine
     environment:
