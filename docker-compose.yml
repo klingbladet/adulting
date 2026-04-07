@@ -3,6 +3,8 @@ services:
     build: ./frontend
     ports:
       - 3000:3000
+  backend:
+    build: ./backend
   db:
     image: postgres:18-alpine
     environment:
