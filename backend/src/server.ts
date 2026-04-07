@@ -1,6 +1,7 @@
 import "dotenv";
 import express from "express";
 import cors from "cors";
+import { db } from "./db";
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -12,7 +13,8 @@ app.use(express.json());
 
 app.get("/health", async (req, res) => {
   try {
-    // ex. testa databas här
+    await db.execute("SELECT 1");
+
     res.status(200).json({
       ok: true,
       server: "up",
@@ -23,6 +25,7 @@ app.get("/health", async (req, res) => {
       ok: false,
       server: "up",
       db: "down",
+      error: error.message,
     });
   }
 });

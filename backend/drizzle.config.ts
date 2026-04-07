@@ -5,6 +5,6 @@ export default defineConfig({
   out: "./drizzle",             // Här hamnar era SQL-migrationsfiler
   dialect: "postgresql",
   dbCredentials: {
-    url: //process.env.DATABASE_URL!, // Hämtas från Supabase Settings -> Database
+    url: process.env.DATABASE_URL, // Hämtas från Supabase Settings -> Database
   },
 });
