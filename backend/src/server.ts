@@ -9,19 +9,24 @@ import { auth } from "./utils/auth";
 const app = express();
 const port = Number(process.env.PORT) || 3001;
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3002",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
 
-// Better Auth routes
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
-// Health route
 app.get("/health", async (_req, res) => {
   try {
     await db.execute(sql`SELECT 1`);
@@ -45,5 +50,5 @@ app.get("/health", async (_req, res) => {
 });
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Backend running on http://0.0.0.0:${port}`);
+  console.log(`Backend running on http://localhost:${port}`);
 });
