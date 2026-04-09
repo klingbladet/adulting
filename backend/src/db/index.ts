@@ -1,26 +1,17 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from "pg";
-import dotenv from "dotenv";
-import { sql } from 'drizzle-orm';
-import * as schema from './schema';
+import "dotenv/config";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 
-dotenv.config({ path: '.env' });
+const { Pool } = pg;
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is missing in .env");
+}
+
+console.log("Connecting to database with URL:", process.env.DATABASE_URL);
+
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
 });
 
-console.log("Ansluter till databas:", process.env.DB_NAME);
-
-export const db = drizzle(pool, { schema });
-
-const testconnection = async () => { 
-    try {
-        const result = await db.execute(sql`SELECT NOW()`);
-        console.log("Databas ansluten!", result);
-    } catch (error) {
-        console.error("Kunde ej ansluta till databasen", error);
-    }
-};
-
-testconnection();
+export const db = drizzle(pool);
