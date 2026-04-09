@@ -56,3 +56,5 @@ app.post("sign-in", (req, res) => {
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
 });
+
+app.use("/api/auth", toNodeHandler(auth));
