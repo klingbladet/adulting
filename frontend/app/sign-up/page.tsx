@@ -25,7 +25,7 @@ export default function SignUpPage() {
       },
       {
         onSuccess: () => {
-          router.push("/dashboard");
+          router.push("/sign-in");
         },
         onError: (ctx) => {
           setErrorMsg(ctx.error.message || "Could not sign up");

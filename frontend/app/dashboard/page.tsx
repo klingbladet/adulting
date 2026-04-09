@@ -1,10 +1,33 @@
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <h1 className="mb-4 text-2xl font-bold">Dashboard</h1>
-        <p>Welcome to your dashboard!</p>
+"use client";
+
+import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
+import { LogoutButton } from "@/components/logout-button";
+
+export default function DashboardPage() {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return <p className="p-6">Loading...</p>;
+  }
+
+  if (!session) {
+    return (
+      <main className="p-6">
+        <p>You are not signed in.</p>
+        <Link href="/sign-in" className="underline">
+          Go to sign in
+        </Link>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="p-6 space-y-3">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <p>Hej {session.user.name}</p>
+      <p>{session.user.email}</p>
+      <LogoutButton />
+    </main>
   );
 }
