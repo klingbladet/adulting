@@ -10,8 +10,6 @@ RUN pnpm install
 
 COPY . .
 
-RUN chmod 0755 ./generate_and_migrate.sh
-
 EXPOSE 3001
 
 CMD ["pnpm", "run", "dev"]
