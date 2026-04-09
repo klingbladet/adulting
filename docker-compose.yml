@@ -33,7 +33,7 @@ services:
       - backend
     ports:
       - 4983:4983
-    entrypoint: [pnpm, drizzle-kit, studio]
+    entrypoint: ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
 
   db:
     image: postgres:18-alpine
