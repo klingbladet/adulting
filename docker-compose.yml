@@ -25,6 +25,15 @@ services:
       - ./generate_and_migrate.sh
     volumes:
       - db-migrations:/app/drizzle
+  drizzle:
+    build: ./backend
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - backend
+    ports:
+      - 4983:4983
+    entrypoint: [pnpm, drizzle-kit, studio]
 
   db:
     image: postgres:18-alpine
