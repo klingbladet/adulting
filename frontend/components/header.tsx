@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function Header() {
-  const isLoggedIn = false; // ändra senare när ni har riktig auth
+const { data: session, isPending } = useSession();
+
 
   return (
     <header className="w-full border-b bg-white">
@@ -18,15 +23,19 @@ export default function Header() {
             Meny
           </Link>
 
-          {isLoggedIn ? (
-            <button className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600">
-              Sign out
-            </button>
-          ) : (
-            <button className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-              Sign in
-            </button>
-          )}
+          <div className="flex items-center gap-4">
+        {isPending ? null : session ? (
+          <>
+            <Link href="/dashboard">Dashboard</Link>
+            <LogoutButton />
+          </>
+        ) : (
+          <>
+            <Link href="/sign-in">Sign in</Link>
+            <Link href="/sign-up">Sign up</Link>
+          </>
+        )}
+      </div>
         </nav>
       </div>
     </header>
