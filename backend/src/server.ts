@@ -25,9 +25,6 @@ app.use(
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true}))
-
-app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/health", async (_req, res) => {
   try {
@@ -51,10 +48,10 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.post("/sign-in", (req, res) => {
-  console.log(req.body)
-  res.send("ok")
-})
+app.post("sign-in", (req, res) => {
+  console.log(req.body);
+  res.json({ ok: true });
+});
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
