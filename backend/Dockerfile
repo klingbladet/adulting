@@ -4,11 +4,9 @@ WORKDIR /app
 
 RUN npm install --global pnpm@latest
 
-COPY ./package.json ./package.json
+COPY ./package.json ./pnpm-lock.yaml* ./
 
-RUN pnpm install
-
-COPY . .
+RUN pnpm install --frozen-lockfile
 
 EXPOSE 3001
 
