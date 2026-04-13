@@ -22,7 +22,9 @@ services:
       - migrate-db
 
   migrate-db:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: ./drizzle.Dockerfile
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
@@ -31,7 +33,9 @@ services:
     volumes:
       - db-migrations:/app/drizzle
   drizzle:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: ./drizzle.Dockerfile
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
