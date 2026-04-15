@@ -29,7 +29,6 @@ const { data: session, isPending } = useSession();
           <>
             <Link href="/dashboard">Dashboard</Link>
             <LogoutButton />
-            <ThemeToggle />
           </>
         ) : (
           <>
@@ -38,6 +37,7 @@ const { data: session, isPending } = useSession();
           </>
         )}
       </div>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

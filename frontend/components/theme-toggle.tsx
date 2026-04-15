@@ -24,7 +24,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       className="rounded-md border bg-card px-4 py-2 text-card-foreground"
     >
-      {isDark ? "Byt till light mode" : "Byt till dark mode"}
+      {isDark ? "Light" : "Dark"}
     </button>
   );
 }
