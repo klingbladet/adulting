@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { LogoutButton } from "@/components/logout-button";
+import ThemeToggle from "@/components/theme-toggle";
 
 export default function Header() {
 const { data: session, isPending } = useSession();
@@ -28,6 +29,7 @@ const { data: session, isPending } = useSession();
           <>
             <Link href="/dashboard">Dashboard</Link>
             <LogoutButton />
+            <ThemeToggle />
           </>
         ) : (
           <>
