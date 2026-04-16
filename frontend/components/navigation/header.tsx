@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import { LogoutButton } from "@/components/logout-button";
-import ThemeToggle from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/ui/logout-button";
+import ThemeToggle from "@/components/ui/theme-toggle";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);

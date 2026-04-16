@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
-import { LogoutButton } from "@/components/logout-button";
+import { LogoutButton } from "@/components/ui/logout-button";
 
 export default function DashboardPage() {
   const { data: session, isPending } = useSession();
