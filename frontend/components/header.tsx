@@ -2,61 +2,108 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { LogoutButton } from "@/components/logout-button";
+import ThemeToggle from "@/components/theme-toggle";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session, isPending } = useSession();
 
   return (
-    <header className="border-b bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        
-        {/* Logo */}
-        <Link href="/" className="text-blue-600 font-bold text-xl">
+    <header className="border-b bg-background text-foreground">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="text-xl font-bold text-primary">
           Adult
         </Link>
 
-        {/* Desktop menu */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/" className="text-gray-700 hover:text-black">
+        <nav className="hidden items-center gap-6 md:flex">
+          <Link href="/" className="text-foreground">
             Hem
           </Link>
-          <Link href="/menu" className="text-gray-700 hover:text-black">
+          <Link href="/menu" className="text-foreground">
             Meny
           </Link>
-          <Link href="/lessons" className="text-gray-700 hover:text-black">
+          <Link href="/lessons" className="text-foreground">
             Lessons
           </Link>
 
-          <button className="border px-4 py-2 rounded-lg text-sm">
-            Sign in
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
-            Sign up
-          </button>
+          {!isPending &&
+            (session ? (
+              <>
+                <Link href="/dashboard" className="text-foreground">
+                  Dashboard
+                </Link>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="rounded-lg border border-border px-4 py-2 text-sm"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
+                >
+                  Sign up
+                </Link>
+              </>
+            ))}
+
+          <ThemeToggle />
         </nav>
 
-        {/* Mobile button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden border px-3 py-2 rounded-lg text-sm"
+          className="rounded-lg border border-border px-3 py-2 text-sm md:hidden"
         >
           ☰
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden px-6 pb-4 flex flex-col gap-4">
-          <Link href="/">Hem</Link>
-          <Link href="/menu">Meny</Link>
-          <Link href="/lessons">Lessons</Link>
+        <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
+          <Link href="/" onClick={() => setMenuOpen(false)}>
+            Hem
+          </Link>
+          <Link href="/menu" onClick={() => setMenuOpen(false)}>
+            Meny
+          </Link>
+          <Link href="/lessons" onClick={() => setMenuOpen(false)}>
+            Lessons
+          </Link>
 
-          <button className="border px-4 py-2 rounded-lg text-sm">
-            Sign in
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
-            Sign up
-          </button>
+          {!isPending &&
+            (session ? (
+              <>
+                <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                  Dashboard
+                </Link>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
+                >
+                  Sign up
+                </Link>
+              </>
+            ))}
+
+          <ThemeToggle />
         </div>
       )}
     </header>
