@@ -3,23 +3,39 @@ services:
     build: ./frontend
     ports:
       - 3000:3000
-    volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          initial_sync: true
+          ignore: 
+            - node_modules
+            - .next
+        - action: rebuild
+          path: package.json
 
   backend:
     build: ./backend
     ports:
       - 3001:3001
-    volumes:
-      - ./backend:/app
-      - backend_node_modules:/app/node_modules
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3001
     depends_on:
       - migrate-db
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          initial_sync: true
+          ignore: 
+            - node_modules
+            - .next
+        - action: rebuild
+          path: package.json
 
   migrate-db:
     build:
@@ -57,5 +73,3 @@ services:
 volumes:
   db-migrations:
   db:
-  frontend_node_modules:
-  backend_node_modules:
