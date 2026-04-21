@@ -18,15 +18,6 @@ export default function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/" className="text-foreground">
-            Hem
-          </Link>
-          <Link href="/menu" className="text-foreground">
-            Meny
-          </Link>
-          <Link href="/lessons" className="text-foreground">
-            Lessons
-          </Link>
 
           {!isPending &&
             (session ? (
