@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
+import sessionRoutes from "./routes/session";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -25,6 +26,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/api", sessionRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
