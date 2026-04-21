@@ -10,21 +10,43 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, isPending } = useSession();
 
+  const role = session?.user?.role ?? "guest";
+  const roles = String(role)
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  const isSignedIn = !!session;
+  const isCreator = roles.includes("creator") || roles.includes("admin");
+  const isAdmin = roles.includes("admin");
+
   return (
     <header className="border-b bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold text-primary">
-          Adult
+          Adulting
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-
           {!isPending &&
-            (session ? (
+            (isSignedIn ? (
               <>
                 <Link href="/dashboard" className="text-foreground">
                   Dashboard
                 </Link>
+
+                {isCreator && (
+                  <Link href="/creator" className="text-foreground">
+                    Creator
+                  </Link>
+                )}
+
+                {isAdmin && (
+                  <Link href="/admin" className="text-foreground">
+                    Admin
+                  </Link>
+                )}
+
                 <LogoutButton />
               </>
             ) : (
@@ -57,22 +79,25 @@ export default function Header() {
 
       {menuOpen && (
         <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
-          {/* <Link href="/" onClick={() => setMenuOpen(false)}>
-            Hem
-          </Link>
-          <Link href="/menu" onClick={() => setMenuOpen(false)}>
-            Meny
-          </Link>
-          <Link href="/lessons" onClick={() => setMenuOpen(false)}>
-            Lessons
-          </Link> */}
-
           {!isPending &&
-            (session ? (
+            (isSignedIn ? (
               <>
                 <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
                   Dashboard
                 </Link>
+
+                {isCreator && (
+                  <Link href="/creator" onClick={() => setMenuOpen(false)}>
+                    Creator
+                  </Link>
+                )}
+
+                {isAdmin && (
+                  <Link href="/admin" onClick={() => setMenuOpen(false)}>
+                    Admin
+                  </Link>
+                )}
+
                 <LogoutButton />
               </>
             ) : (
