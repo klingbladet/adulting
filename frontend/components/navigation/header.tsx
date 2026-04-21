@@ -57,6 +57,15 @@ export default function Header() {
 
       {menuOpen && (
         <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
+          {/* <Link href="/" onClick={() => setMenuOpen(false)}>
+            Hem
+          </Link>
+          <Link href="/menu" onClick={() => setMenuOpen(false)}>
+            Meny
+          </Link>
+          <Link href="/lessons" onClick={() => setMenuOpen(false)}>
+            Lessons
+          </Link> */}
 
           {!isPending &&
             (session ? (
