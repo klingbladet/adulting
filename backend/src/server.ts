@@ -5,7 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
-import courseRoutes from "./routes/course-routes";
+import courseRoutes from "./api/routes/course-routes";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -14,8 +14,6 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3002",
 ];
-
-app.use("api/curses", courseRoutes);
 
 app.use(
   cors({
@@ -28,6 +26,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/api/courses", courseRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
@@ -56,10 +55,10 @@ app.post("sign-in", (req, res) => {
   res.json({ ok: true });
 });
 
+app.use("/api/auth", toNodeHandler(auth));
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
 });
-
-app.use("/api/auth", toNodeHandler(auth));
 
 

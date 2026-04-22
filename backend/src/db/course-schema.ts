@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
-import { pgTable, serial, text, integer, varchar } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, varchar, uuid } from "drizzle-orm/pg-core";
+import { user } from "./auth-schema";
 
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
