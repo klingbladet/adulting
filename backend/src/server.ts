@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
+import courseRoutes from "./routes/course-routes";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -13,6 +14,8 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3002",
 ];
+
+app.use("api/curses", courseRoutes);
 
 app.use(
   cors({
@@ -58,3 +61,5 @@ app.listen(port, "0.0.0.0", () => {
 });
 
 app.use("/api/auth", toNodeHandler(auth));
+
+
