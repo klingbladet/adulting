@@ -29,9 +29,11 @@ router.post("/", async (req, res) => {
     if(error instanceof ZodError) {
       res.status(400).json({
         error: "Validation failed",
-        details: error.errors.map(e => ({ path: e.path,
-          message: e.message }));
-      }) 
+        details: error.errors.map(e => ({
+          path: e.path,
+          message: e.message 
+        }))
+      }); 
       return;
     }
     console.log("Fel vid skapande av kurs", error);

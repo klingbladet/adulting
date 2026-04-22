@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
 import courseRoutes from "./api/routes/course-routes";
+import sessionRoutes from "./api/routes/session";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -27,6 +28,7 @@ app.use(
 app.use(express.json());
 
 app.use("/api/courses", courseRoutes);
+app.use("/api", sessionRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
