@@ -3,6 +3,7 @@ import { db } from "../../db";
 import { courses } from "../../db/course-schema";
 import { insertCourseSchema } from "../../db/validation";
 import { ZodError } from "zod";
+import { checkRole } from "./middlewares/role-middleware";
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", checkRole(["admin", "creator"]), async (req, res) => {
   try {
     const validatedData = insertCourseSchema.parse(req.body);
 
