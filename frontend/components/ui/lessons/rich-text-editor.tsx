@@ -1,8 +1,9 @@
+import { TextStyleKit } from '@tiptap/extension-text-style'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import MenuBar from './tiptap-menus/MenyBar'
 
-const extensions = [StarterKit]
+const extensions = [TextStyleKit, StarterKit]
 
 export default function RichTextEditor () {
     const editor = useEditor({
