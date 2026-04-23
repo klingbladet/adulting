@@ -5,6 +5,7 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
+import sessionRoutes from "./routes/session";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -25,7 +26,7 @@ app.use(
 
 app.use(express.json());
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api", sessionRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
@@ -49,6 +50,13 @@ app.get("/health", async (_req, res) => {
   }
 });
 
+app.post("sign-in", (req, res) => {
+  console.log(req.body);
+  res.json({ ok: true });
+});
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
 });
+
+app.use("/api/auth", toNodeHandler(auth));
