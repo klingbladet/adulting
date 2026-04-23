@@ -19,7 +19,7 @@ export const checkRole = (allowedRoles: string[]) => {
           });
           return;
         }
-
+        
         // ifall allt är okej, släpp förbi användaren till nästa funktion (routen)
         next();
       } catch (error) {
