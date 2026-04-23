@@ -20,7 +20,7 @@ build backend:
   extends:
     - .docker login
   script:
-    - docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push .
+    - docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push ./backend
 
 build frontend:
   stage: build
@@ -28,4 +28,4 @@ build frontend:
   extends:
     - .docker login
   script:
-    - docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push .
+    - docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push ./frontend
