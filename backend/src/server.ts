@@ -1,14 +1,15 @@
 import "dotenv/config";
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
+import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./routes/session";
 
 const app = express();
-const port = Number(process.env.PORT) || 3001;
+const port = Number(process.env.PORT || 3001);
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -19,16 +20,14 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
 
-app.use("/api", sessionRoutes);
-
-app.get("/health", async (_req, res) => {
+app.get("/health", async (_req: Request, res: Response) => {
   try {
     await db.execute(sql`SELECT 1`);
 
@@ -50,13 +49,9 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.post("sign-in", (req, res) => {
-  console.log(req.body);
-  res.json({ ok: true });
-});
+app.use("/api/auth", toNodeHandler(auth));
+app.use("/api/ai", aiRoutes);
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Backend running on http://localhost:${port}`);
+  console.log(`[backend running on http://localhost:${port}]`);
 });
-
-app.use("/api/auth", toNodeHandler(auth));
