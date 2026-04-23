@@ -32,8 +32,10 @@ build frontend test:
 lint frontend:
   stage: lint
   image: $CI_REGISTRY_IMAGE/frontend-test:$VERSION
-  before_script: cd frontend
+  before_script: cd /app
   script: pnpm dlx eslint .
+  variables:
+    GIT_STRATEGY: none
 
 build backend:
   stage: build
