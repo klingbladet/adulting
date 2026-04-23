@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
 import aiRoutes from "./api/ai/routes";
+import sessionRoutes from "./routes/session";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);

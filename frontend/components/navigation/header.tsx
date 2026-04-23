@@ -3,18 +3,31 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import { LogoutButton } from "@/components/logout-button";
-import ThemeToggle from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/ui/logout-button";
+import ThemeToggle from "@/components/ui/theme-toggle";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, isPending } = useSession();
 
+<<<<<<< HEAD:frontend/components/header.tsx
   const isLoggedIn = !!session;
+=======
+  const role = session?.user?.role ?? "guest";
+  const roles = String(role)
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  const isSignedIn = !!session;
+  const isCreator = roles.includes("creator") || roles.includes("admin");
+  const isAdmin = roles.includes("admin");
+>>>>>>> 10e97d6c4262427ed914a788ae941e75cb6d007a:frontend/components/navigation/header.tsx
 
   return (
     <header className="border-b bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+<<<<<<< HEAD:frontend/components/header.tsx
         <Link href="/" className="text-2xl font-bold text-primary">
           Adult
         </Link>
@@ -53,6 +66,34 @@ export default function Header() {
           {!isPending &&
             (isLoggedIn ? (
               <LogoutButton />
+=======
+        <Link href="/" className="text-xl font-bold text-primary">
+          Adulting
+        </Link>
+
+        <nav className="hidden items-center gap-6 md:flex">
+          {!isPending &&
+            (isSignedIn ? (
+              <>
+                <Link href="/dashboard" className="text-foreground">
+                  Dashboard
+                </Link>
+
+                {isCreator && (
+                  <Link href="/creator" className="text-foreground">
+                    Creator
+                  </Link>
+                )}
+
+                {isAdmin && (
+                  <Link href="/admin" className="text-foreground">
+                    Admin
+                  </Link>
+                )}
+
+                <LogoutButton />
+              </>
+>>>>>>> 10e97d6c4262427ed914a788ae941e75cb6d007a:frontend/components/navigation/header.tsx
             ) : (
               <>
                 <Link
@@ -82,6 +123,7 @@ export default function Header() {
       </div>
 
       {menuOpen && (
+<<<<<<< HEAD:frontend/components/header.tsx
         <div className="flex flex-col gap-4 border-t px-6 py-4 md:hidden">
           <Link href="/" onClick={() => setMenuOpen(false)}>
             Hem
@@ -110,6 +152,30 @@ export default function Header() {
           {!isPending &&
             (isLoggedIn ? (
               <LogoutButton />
+=======
+        <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
+          {!isPending &&
+            (isSignedIn ? (
+              <>
+                <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                  Dashboard
+                </Link>
+
+                {isCreator && (
+                  <Link href="/creator" onClick={() => setMenuOpen(false)}>
+                    Creator
+                  </Link>
+                )}
+
+                {isAdmin && (
+                  <Link href="/admin" onClick={() => setMenuOpen(false)}>
+                    Admin
+                  </Link>
+                )}
+
+                <LogoutButton />
+              </>
+>>>>>>> 10e97d6c4262427ed914a788ae941e75cb6d007a:frontend/components/navigation/header.tsx
             ) : (
               <>
                 <Link
