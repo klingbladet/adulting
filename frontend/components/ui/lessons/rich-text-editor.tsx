@@ -1,12 +1,16 @@
-import { TextStyleKit } from '@tiptap/extension-text-style'
+'use client'
+import { FontSize, TextStyleKit } from '@tiptap/extension-text-style'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import DragHandle from '@tiptap/extension-drag-handle-react'
+
 import MenuBar from './tiptap-menus/MenyBar'
 
-const extensions = [TextStyleKit, StarterKit]
+const extensions = [FontSize, TextStyleKit, StarterKit]
 
 export default function RichTextEditor () {
     const editor = useEditor({
+        immediatelyRender: false ,
         extensions,
         content: `
 <h2>
@@ -40,9 +44,19 @@ export default function RichTextEditor () {
 `,
     })
 
+    if(!editor) {
+        return null
+    }
+
     return (
         <>
             <MenuBar editor={editor}/>
+            <DragHandle editor={editor}
+       
+            >
+              <div className="flex items-center justify-center w-1 h-1.5 before:content-['⠿'] font-medium cursor-grab border rounded-9xl">
+              </div>
+            </DragHandle>
             <EditorContent editor={editor}/>
         </>
     )
