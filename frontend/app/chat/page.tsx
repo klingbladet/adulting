@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Bot, MessageCircle, Trash2, User, Users, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-
 type Thread = {
   id: string;
   userId: string;
@@ -23,6 +23,13 @@ type Message = {
   createdAt: string;
 };
 
+const quickQuestions = [
+  "Hur gör jag en enkel budget?",
+  "Hur skriver jag ett CV?",
+  "Vad ska jag tänka på när jag söker bostad?",
+  "Hur planerar jag min vecka bättre?",
+];
+
 export default function ChatPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -38,6 +45,7 @@ export default function ChatPage() {
   const [creatingThread, setCreatingThread] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"personer" | "ai">("ai");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -47,13 +55,26 @@ export default function ChatPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, sending]);
 
   async function safeJson(response: Response) {
     try {
       return await response.json();
     } catch {
       return null;
+    }
+  }
+
+  function formatDateTime(value: string) {
+    try {
+      return new Intl.DateTimeFormat("sv-SE", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(value));
+    } catch {
+      return "";
     }
   }
 
@@ -143,7 +164,9 @@ export default function ChatPage() {
       }
 
       await fetchThreads(true);
+      setActiveThreadId(data?.id);
       setMessages([]);
+      setSidebarOpen(false);
 
       return data?.id as string;
     } catch (err) {
@@ -156,8 +179,40 @@ export default function ChatPage() {
     }
   }
 
+  async function deleteThread(threadId: string) {
+    const confirmed = window.confirm("Vill du radera den här AI-chatten?");
+    if (!confirmed) return;
+
+    try {
+      setError("");
+
+      const response = await fetch(`${API_BASE}/api/ai/threads/${threadId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await safeJson(response);
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Kunde inte radera chatten.");
+      }
+
+      if (activeThreadId === threadId) {
+        setActiveThreadId(null);
+        setMessages([]);
+      }
+
+      await fetchThreads(true);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Kunde inte radera chatten.";
+      setError(message);
+    }
+  }
+
   async function handleSelectThread(threadId: string) {
     setActiveThreadId(threadId);
+    setSidebarOpen(false);
     await fetchMessages(threadId);
   }
 
@@ -205,7 +260,7 @@ export default function ChatPage() {
         }
       );
 
-      const data = await response.json().catch(() => null);
+      const data = await safeJson(response);
 
       if (!response.ok) {
         throw new Error(
@@ -267,12 +322,49 @@ export default function ChatPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
+      <div className="mb-4 flex items-center justify-between lg:hidden">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="rounded-2xl border border-border bg-card px-4 py-2 text-sm font-medium"
+        >
+          Chattar
+        </button>
+
+        <button
+          onClick={createThread}
+          disabled={creatingThread}
+          className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+        >
+          Ny AI-chatt
+        </button>
+      </div>
+
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+        />
+      )}
+
       <div className="grid min-h-[78vh] grid-cols-1 overflow-hidden rounded-[28px] border border-border bg-card shadow-sm lg:grid-cols-[340px_1fr]">
-        <aside className="border-r border-border bg-card p-8">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Chatt
-          </h1>
+        <aside
+          className={`fixed left-0 top-0 z-50 h-full w-[320px] border-r border-border bg-card p-6 transition lg:static lg:z-auto lg:h-auto lg:w-auto lg:p-8 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              Chatt
+            </h1>
+
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="rounded-xl border border-border p-2 text-sm lg:hidden"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
           <div className="mt-8 rounded-2xl border border-border bg-background p-1">
             <div className="grid grid-cols-2 gap-1">
@@ -309,7 +401,7 @@ export default function ChatPage() {
               <button
                 onClick={createThread}
                 disabled={creatingThread}
-                className="mt-6 w-full rounded-2xl bg-primary px-5 py-4 text-lg font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-60"
+                className="mt-6 hidden w-full rounded-2xl bg-primary px-5 py-4 text-lg font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-60 lg:block"
               >
                 {creatingThread ? "Skapar..." : "Ny AI-chatt"}
               </button>
@@ -333,19 +425,35 @@ export default function ChatPage() {
                       const isActive = activeThreadId === thread.id;
 
                       return (
-                        <button
+                        <div
                           key={thread.id}
-                          onClick={() => handleSelectThread(thread.id)}
-                          className={`block w-full rounded-2xl border p-4 text-left transition ${
+                          className={`group flex items-center gap-2 rounded-2xl border p-3 transition ${
                             isActive
                               ? "border-primary bg-secondary"
                               : "border-border bg-background hover:border-primary/40"
                           }`}
                         >
-                          <p className="line-clamp-2 text-base font-medium text-foreground">
-                            {thread.title}
-                          </p>
-                        </button>
+                          <button
+                            onClick={() => handleSelectThread(thread.id)}
+                            className="min-w-0 flex-1 text-left"
+                          >
+                            <p className="line-clamp-1 text-base font-semibold text-foreground">
+                              {thread.title}
+                            </p>
+
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {formatDateTime(thread.updatedAt)}
+                            </p>
+                          </button>
+
+                          <button
+                            onClick={() => deleteThread(thread.id)}
+                            className="rounded-xl p-2 text-muted-foreground opacity-70 transition hover:bg-background hover:text-red-600 group-hover:opacity-100"
+                            title="Radera chatt"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       );
                     })
                   )}
@@ -358,21 +466,35 @@ export default function ChatPage() {
         {tab === "personer" ? (
           <section className="flex min-h-[78vh] items-center justify-center bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
             <div className="w-full max-w-2xl rounded-[24px] border border-dashed border-border bg-background/70 px-8 py-16 text-center">
-              <h2 className="text-4xl font-bold text-foreground">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Users size={28} />
+              </div>
+
+              <h2 className="mt-6 text-4xl font-bold text-foreground">
                 Person-chatt
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Den här ytan är tom så Daniel kan bygga vidare här.
+
+              <p className="mt-4 text-lg leading-8 text-muted-foreground">
+                Här kommer användaren kunna kontakta en riktig person från
+                teamet och få svar direkt eller senare.
               </p>
+
+              <button
+                disabled
+                className="mt-8 rounded-2xl border border-border bg-card px-6 py-3 text-sm text-muted-foreground"
+              >
+                Kommer snart
+              </button>
             </div>
           </section>
         ) : (
-          <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
-            <div className="mb-6 flex items-center justify-between">
+          <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-5 md:p-8">
+            <div className="mb-6 flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-bold text-foreground">
+                <h2 className="text-3xl font-bold text-foreground md:text-4xl">
                   AI-assistent
                 </h2>
+
                 <p className="mt-2 text-sm text-muted-foreground">
                   Fråga om vad som helst i vardagen.
                 </p>
@@ -384,7 +506,7 @@ export default function ChatPage() {
             </div>
 
             {error && (
-              <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 {error}
               </div>
             )}
@@ -396,34 +518,51 @@ export default function ChatPage() {
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex h-full items-center justify-center">
-                  <div className="max-w-xl rounded-[24px] border border-border bg-card px-8 py-7 text-center shadow-sm">
-                    <p className="text-2xl font-semibold text-foreground">
+                  <div className="max-w-2xl rounded-[28px] border border-border bg-card px-8 py-8 text-center shadow-sm">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <Bot size={28} />
+                    </div>
+
+                    <p className="mt-5 text-2xl font-semibold text-foreground">
                       Ställ din första fråga
                     </p>
-                    <p className="mt-3 text-lg leading-8 text-muted-foreground">
-                      Till exempel:
-                      <br />
-                      “Hur gör jag en enkel budget?”
-                      <br />
-                      “Vad ska jag tänka på när jag söker bostad?”
-                      <br />
-                      “Hur skriver jag ett enkelt CV?”
+
+                    <p className="mt-3 text-base leading-7 text-muted-foreground">
+                      Välj en snabbfråga eller skriv själv.
                     </p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      {quickQuestions.map((question) => (
+                        <button
+                          key={question}
+                          onClick={() => setMessageInput(question)}
+                          className="rounded-2xl border border-border bg-background px-4 py-3 text-left text-sm text-foreground transition hover:border-primary hover:bg-secondary"
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${
+                      className={`flex items-end gap-3 ${
                         message.role === "user"
                           ? "justify-end"
                           : "justify-start"
                       }`}
                     >
+                      {message.role === "assistant" && (
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Bot size={17} />
+                        </div>
+                      )}
+
                       <div
-                        className={`max-w-[80%] rounded-[24px] px-5 py-4 text-base leading-7 shadow-sm whitespace-pre-wrap ${
+                        className={`max-w-[82%] rounded-[24px] px-5 py-4 text-base leading-7 shadow-sm whitespace-pre-wrap ${
                           message.role === "user"
                             ? "bg-primary text-primary-foreground"
                             : "border border-border bg-card text-foreground"
@@ -431,8 +570,32 @@ export default function ChatPage() {
                       >
                         {message.content}
                       </div>
+
+                      {message.role === "user" && (
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground">
+                          <User size={17} />
+                        </div>
+                      )}
                     </div>
                   ))}
+
+                  {sending && (
+                    <div className="flex items-end gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Bot size={17} />
+                      </div>
+
+                      <div className="rounded-[24px] border border-border bg-card px-5 py-4 text-base text-muted-foreground shadow-sm">
+                        <span>AI skriver</span>
+                        <span className="ml-1 inline-flex gap-1">
+                          <span className="animate-bounce">.</span>
+                          <span className="animate-bounce delay-100">.</span>
+                          <span className="animate-bounce delay-200">.</span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   <div ref={messagesEndRef} />
                 </div>
               )}
@@ -451,9 +614,13 @@ export default function ChatPage() {
               <button
                 onClick={handleSendMessage}
                 disabled={sending || !messageInput.trim()}
-                className="flex h-[76px] w-[76px] items-center justify-center rounded-[22px] bg-primary text-2xl text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
+                className="flex h-[76px] w-[76px] items-center justify-center rounded-[22px] bg-primary text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
               >
-                {sending ? "..." : "➤"}
+                {sending ? (
+                  <MessageCircle size={24} />
+                ) : (
+                  <MessageCircle size={26} />
+                )}
               </button>
             </div>
           </section>
