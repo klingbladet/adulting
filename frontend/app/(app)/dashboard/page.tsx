@@ -1,4 +1,3 @@
-import RichTextEditor from "@/components/ui/lessons/rich-text-editor";
 import { requireUser } from "@/lib/guards";
 
 export default async function DashboardPage() {
