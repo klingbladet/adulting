@@ -1,13 +1,9 @@
-import { requireUser } from "@/lib/guards";
-
-export default async function DashboardPage() {
-  const session = await requireUser();
-
+export default function UserDashboardPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">Användarportal</h1>
       <p className="mt-2 text-muted-foreground">
-        Welcome to your dashboard, {session.user.name}!
+        Här är den vanliga appen som användare ser.
       </p>
     </div>
   );

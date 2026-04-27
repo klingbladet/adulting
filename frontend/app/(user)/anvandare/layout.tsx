@@ -1,17 +1,15 @@
-import { requireUser } from "@/lib/guards";
-import DashboardSidebar from "@/components/user/DashboardSidebar";
+import { requireRole } from "@/lib/guards";
 
-export default async function DashboardLayout({
+export default async function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  await requireUser();
+  await requireRole(["user", "creator", "admin"]);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <DashboardSidebar />
-      <main className="flex-1 p-6">{children}</main>
+    <div className="min-h-screen bg-background text-foreground">
+      <main className="p-6">{children}</main>
     </div>
   );
 }
