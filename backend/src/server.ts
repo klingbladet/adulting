@@ -1,4 +1,5 @@
 import "dotenv/config";
+console.log("--- SERVER STARTING ---");
 import express from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
@@ -27,6 +28,12 @@ app.use(
 
 app.use(express.json());
 
+// Lägg till denna för att debugga 404
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 app.use("/api/courses", courseRoutes);
 app.use("/api", sessionRoutes);
 
@@ -52,12 +59,23 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.post("sign-in", (req, res) => {
+// Fixade "/" här
+app.post("/sign-in", (req, res) => {
   console.log(req.body);
   res.json({ ok: true });
 });
 
 app.use("/api/auth", toNodeHandler(auth));
+
+// --- NYTT: Fånga alla 404 för att debugga ---
+app.use((req, res) => {
+  console.log(`404 på: ${req.method} ${req.url}`);
+  res.status(404).json({
+    error: "Route not found",
+    tried: `${req.method} ${req.url}`,
+    hint: "Kolla att du använder http://localhost:3001/api/courses"
+  });
+});
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
