@@ -43,14 +43,14 @@ export default function Header() {
             (isSignedIn ? (
               <>
                 {canAccessUserApp && (
-                  <Link href="/anvandare" className="text-foreground">
-                    Användare
+                  <Link href="/learn" className="text-foreground">
+                    Learn
                   </Link>
                 )}
 
                 {canAccessStaff && (
-                  <Link href="/staff" className="text-foreground">
-                    Staff
+                  <Link href="/create" className="text-foreground">
+                    Create
                   </Link>
                 )}
 
@@ -91,13 +91,13 @@ export default function Header() {
             (isSignedIn ? (
               <>
                 {canAccessUserApp && (
-                  <Link href="/anvandare" onClick={closeMenu}>
+                  <Link href="/learn" onClick={closeMenu}>
                     Användare
                   </Link>
                 )}
 
                 {canAccessStaff && (
-                  <Link href="/staff" onClick={closeMenu}>
+                  <Link href="/create" onClick={closeMenu}>
                     Staff
                   </Link>
                 )}
