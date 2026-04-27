@@ -25,7 +25,7 @@ export default function SignInForm() {
         },
         {
           onSuccess: () => {
-            router.push("/dashboard");
+            router.push("/learn");
             router.refresh();
           },
           onError: (ctx) => {
