@@ -7,6 +7,7 @@ import { db } from "./db";
 import { auth } from "./utils/auth";
 import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./routes/session";
+import adminRoutes from "./routes/admin";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -27,7 +28,11 @@ app.use(
 
 app.use(express.json());
 
-app.get("/health", async (_req: Request, res: Response) => {
+app.use("/api", sessionRoutes);
+app.use("/api", adminRoutes);
+app.use("/api/auth", toNodeHandler(auth));
+
+app.get("/health", async (_req, res) => {
   try {
     await db.execute(sql`SELECT 1`);
 
