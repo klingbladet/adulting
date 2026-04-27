@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
 import sessionRoutes from "./routes/session";
+import adminRoutes from "./routes/admin";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -27,6 +28,8 @@ app.use(
 app.use(express.json());
 
 app.use("/api", sessionRoutes);
+app.use("/api", adminRoutes);
+app.use("/api/auth", toNodeHandler(auth));
 
 app.get("/health", async (_req, res) => {
   try {
@@ -50,7 +53,7 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.post("sign-in", (req, res) => {
+app.post("/sign-in", (req, res) => {
   console.log(req.body);
   res.json({ ok: true });
 });
@@ -58,5 +61,3 @@ app.post("sign-in", (req, res) => {
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
 });
-
-app.use("/api/auth", toNodeHandler(auth));
