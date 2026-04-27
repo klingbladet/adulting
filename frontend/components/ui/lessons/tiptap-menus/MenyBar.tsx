@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
+import { useCallback } from 'react'
 
 import menuBarStateSelector from './menyBarState'
 
@@ -16,6 +17,14 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
             return context.editor.isEditable
         },
     })
+
+    const addImage = useCallback(() => {
+        const url = window.prompt('URL')
+
+        if (url) {
+            editor!.chain().focus().setImage({ src: url }).run()
+        }
+    }, [editor])
 
     if(!editor) {
         return null
@@ -35,14 +44,14 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
             <div className="button-group text-sm flex items-center gap-1 flex-wrap">
                 <button
                     onClick={() => editor.chain().focus().setFontSize('28px').run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '28px' }) ? 'is-active' : ''}`}
+                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '28px' }) ? 'is-active bg-gray-400' : ''}`}
                     data-test-id="28px"
                 >
                     Font size 28px
                 </button>
                 <button
                     onClick={() => editor.chain().focus().setFontSize('32px').run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '32px' }) ? 'is-active' : ''}`}
+                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '32px' }) ? 'is-active bg-gray-400' : ''}`}
                     data-test-id="32px"
                 >
                     Font size 32px
@@ -170,6 +179,12 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
                     className='bg-purple-300 px-2 rounded-sm'
                 >
                     Hard break
+                </button>
+                <button 
+                    onClick={addImage}
+                    className='bg-gray-300 px-2 rounded-sm hover:bg-gray-400'
+                >
+                    Set image
                 </button>
                 <button 
                     onClick={toggleEditable}
