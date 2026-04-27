@@ -6,7 +6,7 @@ export const checkRole = (allowedRoles: string[]) => {
     NextFunction) => {
       try {
         const session = await auth.api.getSession({
-          headers: req.headers,
+          headers: new Headers(req.headers as any),
         });
         if (!session) {
           res.status(401).json({ error: "Unauthorized - Please sign in" });
