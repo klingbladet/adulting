@@ -29,6 +29,6 @@ export async function requireGuest() {
   const session = await getServerSession();
 
   if (session) {
-    redirect("/dashboard");
+    redirect("/learn");
   }
 }

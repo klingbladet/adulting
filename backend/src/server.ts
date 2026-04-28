@@ -8,6 +8,7 @@ import { db } from "./db";
 import { auth } from "./utils/auth";
 import courseRoutes from "./api/routes/course-routes";
 import sessionRoutes from "./api/routes/session";
+import adminRoutes from "./api/routes/admin";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -36,6 +37,8 @@ app.use((req, res, next) => {
 
 app.use("/api/courses", courseRoutes);
 app.use("/api", sessionRoutes);
+app.use("/api", adminRoutes);
+app.use("/api/auth", toNodeHandler(auth));
 
 app.get("/health", async (_req, res) => {
   try {
@@ -59,7 +62,6 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-// Fixade "/" här
 app.post("/sign-in", (req, res) => {
   console.log(req.body);
   res.json({ ok: true });
@@ -80,5 +82,3 @@ app.use((req, res) => {
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
 });
-
-
