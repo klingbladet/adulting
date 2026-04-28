@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { ZodError, ZodIssue } from "zod"; // Lade till ZodIssue här
+import { ZodError, ZodIssue } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
 import { insertCourseSchema } from "../../db/validation";
 import { courseService } from "../../services/course-service";
-import { auth } from "../../utils/auth"; // Lade till import för auth här
+import { auth } from "../../utils/auth"; 
+import { fromNodeHeaders } from "better-auth/node";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.get("/", async (req, res) => {
 router.post("/", checkRole(["admin", "creator"]), async (req, res) => {
   try {
     const session = await auth.api.getSession({
-      headers: new Headers(req.headers as any)
+      headers: fromNodeHeaders(req.headers)
     });
     // Lägg till kontroll för session och userId
     if (!session || !session.user || !session.user.id) {
