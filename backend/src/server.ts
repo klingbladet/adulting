@@ -9,6 +9,7 @@ import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./routes/session";
 import adminRoutes from "./routes/admin";
 
+
 const app = express();
 const port = Number(process.env.PORT || 3001);
 
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
+app.use("/api/ai", aiRoutes)
 
 app.get("/health", async (_req, res) => {
   try {

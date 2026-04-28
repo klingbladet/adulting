@@ -10,17 +10,27 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, isPending } = useSession();
 
-  const role = session?.user?.role ?? "guest";
+  const role = (session?.user as { role?: string } | undefined)?.role ?? "guest";
+
   const roles = String(role)
     .split(",")
     .map((r) => r.trim())
     .filter(Boolean);
 
   const isSignedIn = !!session;
-  const isCreator = roles.includes("creator") || roles.includes("admin");
-  const isAdmin = roles.includes("admin");
 
-  return (
+  const canAccessUserApp =
+    roles.includes("user") 
+    roles.includes("creator") 
+    roles.includes("admin");
+
+  const canAccessStaff =
+    roles.includes("creator") || roles.includes("admin");
+
+  function closeMenu() {
+    setMenuOpen(false);
+  }
+return (
     <header className="border-b bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold text-primary">
@@ -49,13 +59,13 @@ export default function Header() {
               <>
                 <Link
                   href="/sign-in"
-                  className="rounded-xl border border-border px-4 py-2 text-sm"
+                  className="rounded-lg border border-border px-4 py-2 text-sm"
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
                 >
                   Sign up
                 </Link>
@@ -68,12 +78,12 @@ export default function Header() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="rounded-lg border border-border px-3 py-2 text-sm md:hidden"
+          aria-label="Open menu"
         >
           ☰
         </button>
       </div>
-
-      {menuOpen && (
+{menuOpen && (
         <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
           {!isPending &&
             (isSignedIn ? (
@@ -96,15 +106,14 @@ export default function Header() {
               <>
                 <Link
                   href="/sign-in"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-lg border border-border px-4 py-2 text-sm"
                 >
                   Sign in
                 </Link>
-
                 <Link
                   href="/sign-up"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
                 >
                   Sign up
@@ -118,3 +127,4 @@ export default function Header() {
     </header>
   );
 }
+﻿
