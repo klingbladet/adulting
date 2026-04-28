@@ -6,9 +6,9 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
-import courseRoutes from "./api/routes/course-routes";
-import sessionRoutes from "./api/routes/session";
-import adminRoutes from "./api/routes/admin";
+import courseRoutes from "./routes/course-routes";
+import sessionRoutes from "./routes/session";
+import adminRoutes from "./routes/admin";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;

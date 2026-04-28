@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { ZodError, ZodIssue } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
-import { insertCourseSchema } from "../../db/validation";
-import { courseService } from "../../services/course-service";
-import { auth } from "../../utils/auth"; 
+import { insertCourseSchema } from "../db/validation";
+import { courseService } from "../services/course-service";
+import { auth } from "../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
 
 const router = Router();

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { fromNodeHeaders } from "better-auth/node";
-import { auth } from "../../utils/auth";
+import { auth } from "../utils/auth";
 
 const router = Router();
 
