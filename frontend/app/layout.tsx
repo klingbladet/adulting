@@ -32,7 +32,7 @@ export default function RootLayout({
       <body>
         <Header />
         <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
-        <Footer />
+        <Footer />  
       </body>
     </html>
   );
