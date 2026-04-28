@@ -1,27 +1,4 @@
-"use client";
-
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
-
-type Thread = {
-  id: string;
-  userId: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type Message = {
-  id: string;
-  threadId: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: string;
-};
+import AiChat from "@/components/chat/ai-chat";
 
 type Creator = {
   id: string;
@@ -30,6 +7,7 @@ type Creator = {
 };
 
 export default function ChatPage() {
+<<<<<<< HEAD
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -522,4 +500,7 @@ export default function ChatPage() {
       </div>
     </main>
   );
+=======
+  return <AiChat />;
+>>>>>>> dev
 }

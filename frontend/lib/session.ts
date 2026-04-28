@@ -1,15 +1,12 @@
 import { cookies } from "next/headers";
+import { BACKEND_URL } from "@/lib/backend-url";
 
 export async function getServerSession() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const baseUrl = process.env.BACKEND_URL || "http://backend:3001";
-
-  console.log("Fetching session from:", `${baseUrl}/api/session`);
-
   try {
-    const response = await fetch(`${baseUrl}/api/session`, {
+    const response = await fetch(`${BACKEND_URL}/api/session`, {
       method: "GET",
       headers: {
         cookie: cookieHeader,
