@@ -56,7 +56,7 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
           </CourseButton>
         </Link>
 
-        <Link href={`/courses/${courseId}/summary/${id}`} className="flex-[2]">
+        <Link href={`/courses/${courseId}/summary/${id}`} className="flex-2">
           <CourseButton variant="primary" fullWidth>
             Nästa steg
           </CourseButton>
