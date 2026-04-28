@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
 import aiRoutes from "./api/ai/routes";
-import sessionRoutes from "./routes/session";
+import sessionRoutes from "./api/routes/session";
 import userRoutes from "./api/users/routes";
 
 const app = express();
