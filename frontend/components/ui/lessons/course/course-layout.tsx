@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react"
 import { ChevronRight } from 'lucide-react';
 
@@ -24,19 +26,19 @@ const StepCard = ({
   return(
     <div
       onClick={isClickable ? onClick : undefined}
-      className={`flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm w-full ${interactiveStyles}`}
+      className={`flex items-center justify-between p-4 bg-background border-border rounded-2xl shadow-sm w-full ${interactiveStyles}`}
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full text-gray-500 flex-shrink-0">
+        <div className="flex items-center justify-center w-12 h-12 bg-background rounded-full text-secondary-foreground flex-shrink-0">
           {icon}
         </div>
         <div className="flex flex-col">
-          <h3 className="font-semibold text-[#1F2937] text-base">{title}</h3>
-          <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+          <h3 className="font-semibold text-foreground text-base">{title}</h3>
+          <p className="text-sm text-foreground mt-0.5">{description}</p>
         </div>
       </div>
       {isClickable && (
-        <div className="text-gray-400">
+        <div className="text-secondary-foreground">
           <ChevronRight size={20} /> 
         </div>
       )}
