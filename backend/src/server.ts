@@ -6,10 +6,11 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
-import aiRoutes from "./api/ai/routes";
+import aiRoutes from "./api/routes/ai";
 import sessionRoutes from "./api/routes/session";
 import adminRoutes from "./api/routes/admin";
 import courseRoutes from "./api/routes/course-routes";
+import userRoutes from "./api/routes/users"
 
 
 const app = express();
@@ -28,6 +29,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use("/api/users", userRoutes);
 
 app.use(express.json());
 
