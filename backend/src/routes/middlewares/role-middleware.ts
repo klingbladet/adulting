@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { auth } from "../../../utils/auth"
+import { auth } from "../../utils/auth"
 import { fromNodeHeaders } from "better-auth/node"
 
 export const checkRole = (allowedRoles: string[]) => {
