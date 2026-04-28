@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { asc } from "drizzle-orm";
 import { fromNodeHeaders } from "better-auth/node";
-import { db } from "../db";
+import { db } from "../db"
 import { auth } from "../utils/auth";
 import { user } from "../db/auth-schema";
 
