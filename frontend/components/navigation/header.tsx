@@ -10,26 +10,15 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, isPending } = useSession();
 
-  const role = (session?.user as { role?: string } | undefined)?.role ?? "guest";
-
+  const role = session?.user?.role ?? "guest";
   const roles = String(role)
     .split(",")
     .map((r) => r.trim())
     .filter(Boolean);
 
   const isSignedIn = !!session;
-
-  const canAccessUserApp =
-    roles.includes("user") ||
-    roles.includes("creator") ||
-    roles.includes("admin");
-
-  const canAccessStaff =
-    roles.includes("creator") || roles.includes("admin");
-
-  function closeMenu() {
-    setMenuOpen(false);
-  }
+  const isCreator = roles.includes("creator") || roles.includes("admin");
+  const isAdmin = roles.includes("admin");
 
   return (
     <header className="border-b bg-background text-foreground">
@@ -79,7 +68,6 @@ export default function Header() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="rounded-lg border border-border px-3 py-2 text-sm md:hidden"
-          aria-label="Open menu"
         >
           ☰
         </button>
@@ -108,7 +96,7 @@ export default function Header() {
               <>
                 <Link
                   href="/sign-in"
-                  onClick={closeMenu}
+                  onClick={() => setMenuOpen(false)}
                   className="rounded-lg border border-border px-4 py-2 text-sm"
                 >
                   Sign in
@@ -116,7 +104,7 @@ export default function Header() {
 
                 <Link
                   href="/sign-up"
-                  onClick={closeMenu}
+                  onClick={() => setMenuOpen(false)}
                   className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
                 >
                   Sign up

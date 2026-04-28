@@ -54,9 +54,11 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-app.use("/api/auth", toNodeHandler(auth));
-app.use("/api/ai", aiRoutes);
+app.post("/sign-in", (req, res) => {
+  console.log(req.body);
+  res.json({ ok: true });
+});
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`[backend running on http://localhost:${port}]`);
+  console.log(`Backend running on http://localhost:${port}`);
 });
