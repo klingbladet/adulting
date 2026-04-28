@@ -1,6 +1,6 @@
 import { createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod';
-import { courses, quizzes, } from './schema';
+import { courses, quizzes, } from './course-schema';
 
 export const insertCourseSchema = createInsertSchema(courses, {
   title: z.string().min(5, "Titeln måste vara minst 5 tecken"),
