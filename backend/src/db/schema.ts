@@ -46,3 +46,5 @@ export const aiThreadSettings = pgTable("ai_thread_settings", {
     .defaultNow()
     .notNull(),
 });
+export * from "./auth-schema";
+export * from "./course-schema";
