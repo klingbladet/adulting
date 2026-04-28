@@ -23,6 +23,12 @@ type Message = {
   createdAt: string;
 };
 
+type Creator = {
+  id: string;
+  name: string;
+  image: string | null;
+};
+
 export default function ChatPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -38,6 +44,8 @@ export default function ChatPage() {
   const [creatingThread, setCreatingThread] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"personer" | "ai">("ai");
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [loadingCreators, setLoadingCreators] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -48,6 +56,28 @@ export default function ChatPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+  if (tab === "personer" && session) {
+    fetchCreators();
+  }
+}, [tab, session]);
+
+  async function fetchCreators() {
+  try {
+    setLoadingCreators(true);
+    const response = await fetch(`${API_BASE}/api/users/creators`, {
+      credentials: "include",
+    });
+    const data = await safeJson(response);
+    if (!response.ok) throw new Error(data?.error);
+    setCreators(Array.isArray(data) ? data : []);
+  } catch {
+    setCreators([]);
+  } finally {
+    setLoadingCreators(false);
+  }
+}
 
   async function safeJson(response: Response) {
     try {
@@ -301,9 +331,40 @@ export default function ChatPage() {
           </div>
 
           {tab === "personer" ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-border bg-background p-5 text-sm text-muted-foreground">
-              Här kommer person-chatt senare från Daniel.
+  <div className="mt-6 space-y-3">
+    {loadingCreators ? (
+      <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
+        Laddar creators...
+      </div>
+    ) : creators.length === 0 ? (
+      <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
+        Inga creators hittades.
+      </div>
+    ) : (
+      creators.map((creator) => (
+        <div
+          key={creator.id}
+          className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"
+          
+        >
+          {creator.image ? (
+            <img
+              src={creator.image}
+              alt={creator.name}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+              {creator.name.charAt(0).toUpperCase()}
             </div>
+          )}
+          <p className="text-base font-medium text-foreground">
+            {creator.name}
+          </p>
+        </div>
+      ))
+    )}
+  </div>
           ) : (
             <>
               <button
@@ -355,17 +416,17 @@ export default function ChatPage() {
           )}
         </aside>
 
-        {tab === "personer" ? (
-          <section className="flex min-h-[78vh] items-center justify-center bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
-            <div className="w-full max-w-2xl rounded-[24px] border border-dashed border-border bg-background/70 px-8 py-16 text-center">
-              <h2 className="text-4xl font-bold text-foreground">
-                Person-chatt
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Den här ytan är tom så Daniel kan bygga vidare här.
-              </p>
-            </div>
-          </section>
+       {tab === "personer" ? (
+  <section className="flex min-h-[78vh] items-center justify-center bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
+    <div className="w-full max-w-2xl rounded-[24px] border border-dashed border-border bg-background/70 px-8 py-16 text-center">
+      <h2 className="text-4xl font-bold text-foreground">
+        Välj en person
+      </h2>
+      <p className="mt-4 text-lg text-muted-foreground">
+        Välj en creator i listan till vänster för att starta en chatt.
+      </p>
+    </div>
+  </section>
         ) : (
           <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
             <div className="mb-6 flex items-center justify-between">

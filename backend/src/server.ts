@@ -7,6 +7,7 @@ import { db } from "./db";
 import { auth } from "./utils/auth";
 import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./routes/session";
+import userRoutes from "./api/users/routes";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -24,6 +25,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use("/api/users", userRoutes);
 
 app.use(express.json());
 
