@@ -7,6 +7,7 @@ import { db } from "./db";
 import { auth } from "./utils/auth";
 import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./routes/session";
+import adminRoutes from "./routes/admin";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -27,7 +28,11 @@ app.use(
 
 app.use(express.json());
 
-app.get("/health", async (_req: Request, res: Response) => {
+app.use("/api", sessionRoutes);
+app.use("/api", adminRoutes);
+app.use("/api/auth", toNodeHandler(auth));
+
+app.get("/health", async (_req, res) => {
   try {
     await db.execute(sql`SELECT 1`);
 
@@ -49,9 +54,11 @@ app.get("/health", async (_req: Request, res: Response) => {
   }
 });
 
-app.use("/api/auth", toNodeHandler(auth));
-app.use("/api/ai", aiRoutes);
+app.post("/sign-in", (req, res) => {
+  console.log(req.body);
+  res.json({ ok: true });
+});
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`[backend running on http://localhost:${port}]`);
+  console.log(`Backend running on http://localhost:${port}`);
 });
