@@ -2,21 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import CourseButton from '@/components/ui/lessons/course/course-buttons';
 import { ChevronRight, Home } from 'lucide-react';
+import { getCourse } from '@/lib/course-data';
 
-const courseData: Record<string, { title: string; subtitle: string }> = {
-  "hitta-bostad": {
-    title: "Hitta din första bostad",
-    subtitle: "Vi hjälper dig genom hela processen, från sökande till kontrakt."
-  },
-  "ekonomi-for-alla": {
-    title: "Grundläggande ekonomi",
-    subtitle: "Lär dig hantera din budget och spara smartare."
-  }
-};
-
-export default function CourseStartPage({ params }: { params: { courseId: string } }) {
-  const { courseId } = params;
-  const course = courseData[courseId] || { title: "Hitta och hyra din första bostad", subtitle: "En steg-för-steg-kurs som guidar dig genom hela processen att hyra bostad i Sverige." };
+export default async function CourseStartPage({ params }: { params: Promise<{ courseId: string }> }) {
+  const { courseId } = await params;
+  const course = getCourse(courseId) || { 
+    title: "Hitta och hyra din första bostad", 
+    subtitle: "En steg-för-steg-kurs som guidar dig genom hela processen att hyra bostad i Sverige.",
+    totalSteps: 6
+  };
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
@@ -46,7 +40,7 @@ export default function CourseStartPage({ params }: { params: { courseId: string
           Nybörjare
         </div>
         <div className="bg-blue-300 p-1 rounded-sm">
-          6 steg
+          {course.totalSteps} steg
         </div>
       </div>
 
