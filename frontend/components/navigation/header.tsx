@@ -20,8 +20,8 @@ export default function Header() {
   const isSignedIn = !!session;
 
   const canAccessUserApp =
-    roles.includes("user") ||
-    roles.includes("creator") ||
+    roles.includes("user") 
+    roles.includes("creator") 
     roles.includes("admin");
 
   const canAccessStaff =
@@ -30,8 +30,7 @@ export default function Header() {
   function closeMenu() {
     setMenuOpen(false);
   }
-
-  return (
+return (
     <header className="border-b bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold text-primary">
@@ -84,8 +83,7 @@ export default function Header() {
           ☰
         </button>
       </div>
-
-      {menuOpen && (
+{menuOpen && (
         <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
           {!isPending &&
             (isSignedIn ? (
@@ -129,3 +127,4 @@ export default function Header() {
     </header>
   );
 }
+﻿

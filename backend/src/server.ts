@@ -6,12 +6,14 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
-import courseRoutes from "./api/routes/course-routes";
+import aiRoutes from "./api/ai/routes";
 import sessionRoutes from "./api/routes/session";
 import adminRoutes from "./api/routes/admin";
+import courseRoutes from "./api/routes/course-routes";
+
 
 const app = express();
-const port = Number(process.env.PORT) || 3001;
+const port = Number(process.env.PORT || 3001);
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -22,7 +24,7 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -39,6 +41,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
+app.use("/api/ai", aiRoutes)
 
 app.get("/health", async (_req, res) => {
   try {
