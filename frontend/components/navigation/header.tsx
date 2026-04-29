@@ -42,15 +42,20 @@ return (
             (isSignedIn ? (
               <>
                 {canAccessUserApp && (
-                  <Link href="/learn" className="text-foreground">
+                  <Link href="/courses" className="text-foreground">
                     Learn
                   </Link>
                 )}
 
                 {canAccessStaff && (
+                  <>
+                  <Link href="/courses" className="text-foreground">
+                    Learn
+                  </Link>
                   <Link href="/create" className="text-foreground">
                     Create
                   </Link>
+                  </>
                 )}
 
                 <LogoutButton />
@@ -84,14 +89,19 @@ return (
         </button>
       </div>
 {menuOpen && (
-        <div className="flex flex-col gap-4 px-6 pb-4 md:hidden">
+        <div className="flex flex-col gap-4 px-6 pb-4 md:hidden text-center">
           {!isPending &&
             (isSignedIn ? (
               <>
                 {canAccessUserApp && (
-                  <Link href="/learn" onClick={closeMenu}>
-                    Användare
-                  </Link>
+                  <>
+                    <Link href="/courses" className="text-foreground">
+                      Learn
+                    </Link>
+                    <Link href="/learn" onClick={closeMenu}>
+                      Användare
+                    </Link>
+                  </>        
                 )}
 
                 {canAccessStaff && (

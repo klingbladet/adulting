@@ -21,8 +21,8 @@ export default function CourseOverview({ params }: { params: Promise <{ courseId
   
   return (
     <>
-      <h1 className="text-center text-4xl">Översikt</h1>
-      <div className="flex flex-col gap-3 p-6 bg-background min-h-screen">
+      <h1 className="text-center mb-10 text-4xl">Översikt</h1>
+      <div className="flex flex-col gap-4 p-6 bg-background min-h-screen">
         {course.steps.map((step, index) => (
           <Link key={step.id} href={`/courses/${courseId}/steps/${step.id}`}>
             <StepCard 

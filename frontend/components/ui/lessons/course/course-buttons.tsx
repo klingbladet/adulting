@@ -15,7 +15,7 @@ const CourseButton = ({
 }: ButtonProps) => {
   
   // Bas-stilar som alla knappar delar
-  const baseStyles = "py-4 px-6 rounded-2xl font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-2";
+  const baseStyles = "py-4 px-6 rounded-2xl font-semibold flex items-center justify-center gap-2";
   
   // Specifika stilar för dina varianter från designen
   const variants = {

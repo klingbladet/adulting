@@ -18,13 +18,13 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
       <div className="flex flex-col items-center p-8 text-center">
         
         {/* Placeholder för din illustration (den stora blå cirkeln med huset) */}
-        <div className="w-64 h-64 bg-primary rounded-full flex items-center justify-center mb-8 relative">
-          <div className="bg-white p-6 rounded-3xl shadow-xl ">
+        <div className="w-50 h-50 bg-primary rounded-full flex items-center justify-center mb-8 relative">
+          <div className="bg-white p-6 rounded-xl shadow-2xl ">
              <Home size={80} className="text-[#5D7CFA]" />
           </div>
         </div>
 
-        <h1 className="text-3xl font-extrabold text-foreground mb-4 leading-tight">
+        <h1 className="text-2xl font-extrabold text-foreground mb-4 leading-tight">
           {course.title}
         </h1>
         

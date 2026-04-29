@@ -17,6 +17,8 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
     return `steps/${currentStep + 1}`;
   };
 
+  const previousStep = `steps/${Number(id) - 1}`
+
   if (!step) {
     return (
       <main className="flex flex-col min-h-screen items-center justify-center p-6 bg-background">
@@ -53,7 +55,7 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
       </div>
 
       {/* Innehållssektion */}
-      <div className="flex-1 p-6">
+      <div className="flex flex-col mb-10 p-6">
         <h1 className="text-2xl font-bold text-foreground mb-6">
           {step.title}
         </h1>
@@ -73,16 +75,16 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
       </div>
 
       {/* Footer med navigering */}
-      <div className="p-6 pb-10 border-t border-gray-50 flex gap-4">
-        <Link href={`/courses/${courseId}/overview`} className="flex-1">
-          <CourseButton variant="secondary" fullWidth>
-            Avbryt
+      <div className="p-6 pb-10 border-t border-gray-50 flex justify-center gap-4">
+        <Link href={`/courses/${courseId}/${previousStep}`} className="flex-2">
+          <CourseButton variant="primary" fullWidth>
+            {'Tillbaka'}
           </CourseButton>
         </Link>
 
         <Link href={`/courses/${courseId}/${getNextStepPath()}`} className="flex-2">
           <CourseButton variant="primary" fullWidth>
-            {Number(id) === totalSteps ? 'Slutför kurs' : 'Nästa steg'}
+            {Number(id) === totalSteps ? 'Slutför kurs' : 'Nästa'}
           </CourseButton>
         </Link>
       </div>
