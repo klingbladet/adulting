@@ -19,7 +19,7 @@ const CourseButton = ({
   
   // Specifika stilar för dina varianter från designen
   const variants = {
-    primary: "bg-[#5D7CFA] text-white hover:bg-[#4A6AEB] shadow-sm",
+    primary: "bg-primary text-white",
     secondary: "bg-[#F3F4F6] text-[#1F2937] hover:bg-[#E5E7EB]",
     outline: "border-2 border-[#5D7CFA] text-[#5D7CFA] hover:bg-[#F0F4FF]"
   };

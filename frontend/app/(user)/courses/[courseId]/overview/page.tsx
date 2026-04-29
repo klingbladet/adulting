@@ -2,59 +2,41 @@
 import StepCard from '@/components/ui/lessons/course/course-layout';
 import CourseButton from '@/components/ui/lessons/course/course-buttons';
 import Link from 'next/link'
+import { use } from 'react';
+import { getCourse } from '@/lib/course-data';
 
-export default function CourseOverview({ params }: { params: { courseId: string } }) {
-  const { courseId } = params;
+export default function CourseOverview({ params }: { params: Promise <{ courseId: string }> }) {
+  const resolvedParams = use(params)
+  const courseId = resolvedParams.courseId;
+  const course = getCourse(courseId);
+
+  if (!course) {
+    return (
+      <div className="p-6 text-foreground">
+        <h1 className="text-xl font-bold">Kursen hittades inte</h1>
+        <p>Kunde inte hitta kursen {courseId}</p>
+      </div>
+    );
+  }
   
   return (
-    <div className="flex flex-col gap-3 p-6 bg-background min-h-screen">
-      <Link href={`/courses/${courseId}/steps/1`}>
-        <StepCard 
-          icon={<span className="font-bold text-lg">1</span>}
-          title="Förstå marknaden"
-          description="Förstahand, andrahand, kötid"
-          onClick={() => console.log("Går till modul 1")}
-        />
-      </Link>
+    <>
+      <h1 className="text-center text-4xl">Översikt</h1>
+      <div className="flex flex-col gap-3 p-6 bg-background min-h-screen">
+        {course.steps.map((step, index) => (
+          <Link key={step.id} href={`/courses/${courseId}/steps/${step.id}`}>
+            <StepCard 
+              icon={<span className="font-bold text-lg">{index + 1}</span>}
+              title={step.title}
+              description={step.text.substring(0, 40) + "..."}
+            />
+          </Link>
+        ))}
 
-      <StepCard 
-        icon={<span className="font-bold text-lg">2</span>}
-        title="Sök bostad"
-        description="Blocket, kommunala bolag, FB"
-        onClick={() => console.log("Går till modul 2")}
-      />
-
-      <StepCard 
-        icon={<span className="font-bold text-lg">3</span>}
-        title="Läs kontraktet"
-        description="Vad ska finnas med?"
-        onClick={() => console.log("Går till modul 3")}
-      />
-
-      <StepCard 
-        icon={<span className="font-bold text-lg">4</span>}
-        title="Läs kontraktet"
-        description="Vad ska finnas med?"
-        onClick={() => console.log("Går till modul 4")}
-      />
-
-      <StepCard 
-        icon={<span className="font-bold text-lg">5</span>}
-        title="Förstå kostnaderna"
-        description="Hyra, deposition, el"
-        onClick={() => console.log("Går till modul 5")}
-      />
-
-      <StepCard 
-        icon={<span className="font-bold text-lg">6</span>}
-        title="Flytta in"
-        description="Besiktning, nycklar, folkbokföring"
-        onClick={() => console.log("Går till modul 6")}
-      />
-
-      <CourseButton className="mt-10" variant="primary">
-        Gå till personalisering
-      </CourseButton>
-    </div>
+        <CourseButton className="mt-10" variant="primary">
+          Gå till personalisering
+        </CourseButton>
+      </div>
+    </>
   );
 }

@@ -26,7 +26,7 @@ const StepCard = ({
   return(
     <div
       onClick={isClickable ? onClick : undefined}
-      className={`flex items-center justify-between p-4 bg-background border-border rounded-2xl shadow-sm w-full ${interactiveStyles}`}
+      className={`flex items-center justify-between p-4 bg-secondary border-border rounded-2xl shadow-sm w-full ${interactiveStyles}`}
     >
       <div className="flex items-center gap-4">
         <div className="flex items-center justify-center w-12 h-12 bg-background rounded-full text-secondary-foreground shrink-0">
