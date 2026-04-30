@@ -21,7 +21,7 @@ workflow:
 .kubeconfig setup:
   before_script:
     - mkdir "$HOME/.kube"
-    - echo "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
+    - echo "$KUBECONFIG_CONTENT" | base64 -d > "$HOME/.kube/config"
 
 build util image:
   stage: build util
