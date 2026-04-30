@@ -3,6 +3,7 @@ stages:
   - build test
   - lint
   - build
+  - deploy
 
 variables:
   VERSION: $CI_COMMIT_REF_SLUG
@@ -16,6 +17,10 @@ workflow:
 .docker login:
   before_script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+.kubeconfig setup:
+  before_script:
+    - echo "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
 
 build util image:
   stage: build util
@@ -69,3 +74,10 @@ build frontend:
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push -f ./frontend/prod.Dockerfile ./frontend
+
+
+deploy app:
+  stage: deploy
+  image: $CI_REGISTRY_IMAGE/util:latest
+  extends: .kubeconfig setup
+  script: kubectl get nodes
