@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adulting-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      adulting: frontend
+  template:
+    metadata:
+      labels:
+        adulting: frontend
+    spec:
+      containers:
+        - name: adulting-frontend
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
+      imagePullSecrets:
+        - name: registry-credentials
