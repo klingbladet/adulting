@@ -18,7 +18,7 @@ workflow:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
 
 build util image:
-  stage: build-util
+  stage: build util
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/util:latest --push -f ./docker/util.Dockerfile .
