@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@eslint/json": "^1.2.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -37,6 +38,6 @@
     "globals": "^17.5.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.59.0"
+    "typescript-eslint": "^8.59.1"
   }
 }
