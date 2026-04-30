@@ -11,5 +11,3 @@ RUN pnpm install --frozen-lockfile
 COPY . /app
 
 EXPOSE 3000
-
-CMD ["pnpm", "run", "dev"]
