@@ -10,11 +10,11 @@ services:
           path: ./frontend
           target: /app
           initial_sync: true
-          ignore: 
+          ignore:
             - node_modules
             - .next
         - action: rebuild
-          path: package.json
+          path: ./frontend/package.json
 
   backend:
     build: ./backend
@@ -25,6 +25,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3001
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL}
     depends_on:
       - migrate-db
     develop:
@@ -33,11 +35,11 @@ services:
           path: ./backend
           target: /app
           initial_sync: true
-          ignore: 
+          ignore:
             - node_modules
             - .next
         - action: rebuild
-          path: package.json
+          path: ./backend/package.json
 
   migrate-db:
     build:
@@ -50,6 +52,7 @@ services:
     entrypoint: ["pnpm", "push"]
     volumes:
       - db-migrations:/app/drizzle
+
   drizzle:
     build:
       context: ./backend
@@ -59,7 +62,7 @@ services:
     depends_on:
       - backend
     ports:
-      - 4983:4983
+      - "4983:4983"
     entrypoint: ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
 
   db:
@@ -69,9 +72,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
-      - db:/var/lib/postgresql/18/docker
+      - db:/var/lib/postgresql/data
+
 volumes:
   db-migrations:
   db:
