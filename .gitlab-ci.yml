@@ -20,6 +20,7 @@ workflow:
 
 .kubeconfig setup:
   before_script:
+    - mkdir "$HOME/.kube"
     - echo "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
 
 build util image:
