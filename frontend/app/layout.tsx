@@ -29,15 +29,16 @@ export default function RootLayout({
       lang="sv"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body>
+      <body className="min-h-screen bg-background text-foreground">
         <div className="hidden md:block">
           <Header />
         </div>
-        <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+
+        {children}
+
         <div className="hidden md:block">
-           <Footer  />
+          <Footer />
         </div>
-       
       </body>
     </html>
   );
