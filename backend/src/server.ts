@@ -11,6 +11,7 @@ import sessionRoutes from "./api/routes/session";
 import adminRoutes from "./api/routes/admin";
 import courseRoutes from "./api/routes/course-routes";
 import userRoutes from "./api/routes/users"
+import onboardingRouter from "./api/routes/onboarding";
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/ai", aiRoutes)
+app.use("/api/onboarding", onboardingRouter);
 
 app.get("/health", async (_req, res) => {
   try {

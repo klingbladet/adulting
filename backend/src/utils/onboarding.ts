@@ -1,19 +1,21 @@
-export type OnboardingStatus =
-  | "not_started"
-  | "in_progress"
-  | "completed"
-  | "skipped";
+export const onboardingStatuses = [
+  "not_started",
+  "in_progress",
+  "completed",
+  "skipped",
+] as const;
 
-export function shouldShowOnboarding(status: OnboardingStatus) {
+export type OnboardingStatus = (typeof onboardingStatuses)[number];
+
+export function isOnboardingStatus(value: unknown): value is OnboardingStatus {
   return (
-    status === "not_started" ||
-    status === "in_progress" ||
-    status === "skipped"
+    typeof value === "string" &&
+    onboardingStatuses.includes(value as OnboardingStatus)
   );
 }
 
 export function getPostAuthRedirectPath(status: OnboardingStatus) {
-  if (status === "completed") {
+  if (status === "completed" || status === "skipped") {
     return "/learn";
   }
 
