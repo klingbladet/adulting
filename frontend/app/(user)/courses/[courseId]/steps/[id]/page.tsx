@@ -76,11 +76,14 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
 
       {/* Footer med navigering */}
       <div className="p-6 pb-10 border-t border-gray-50 flex justify-center gap-4">
+        {Number(id) > 1 && (
         <Link href={`/courses/${courseId}/${previousStep}`} className="flex-2">
           <CourseButton variant="primary" fullWidth>
             {'Tillbaka'}
           </CourseButton>
+        
         </Link>
+        )}
 
         <Link href={`/courses/${courseId}/${getNextStepPath()}`} className="flex-2">
           <CourseButton variant="primary" fullWidth>

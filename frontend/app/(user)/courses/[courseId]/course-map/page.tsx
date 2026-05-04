@@ -33,9 +33,11 @@ export default function CourseOverview({ params }: { params: Promise <{ courseId
           </Link>
         ))}
 
-        <CourseButton className="mt-10" variant="primary">
-          Starta kursen
-        </CourseButton>
+        <Link href={`/courses/${courseId}/steps/1`}>
+          <CourseButton className="mt-10" variant="primary">
+            Starta kursen
+          </CourseButton>
+        </Link>
       </div>
     </>
   );
