@@ -32,15 +32,15 @@ export default function Personalize({ params }: { params: Promise <{ courseId: s
               className="peer sr-only" 
               value={price}
             />
-            <div className="flex items-center justify-between p-3 border-2 rounded-md transition-all
-                          peer-checked:border-violet-700 peer-checked:bg-violet-50
-                          group-hover:border-violet-300">
+            <div className="flex items-center justify-between p-3 border-2 border-border rounded-xl transition-all
+                          peer-checked:border-primary peer-checked:bg-secondary
+                          group-hover:border-ring">
               
-              <p className="font-medium text-gray-700 peer-checked:text-violet-900">
+              <p className="font-medium text-foreground peer-checked:text-secondary-foreground">
                 {price}
               </p>
               <CheckCircle2 
-                className="w-5 h-5 text-violet-700 opacity-0 transition-opacity peer-checked:opacity-100" 
+                className="w-5 h-5 text-primary opacity-0 transition-opacity peer-checked:opacity-100" 
               />
             </div>
           </label>
@@ -56,21 +56,21 @@ export default function Personalize({ params }: { params: Promise <{ courseId: s
               className="peer sr-only" 
               value={level}
             />
-            <div className="flex items-center justify-between p-3 border-2 rounded-md transition-all
-                          peer-checked:border-violet-700 peer-checked:bg-violet-50
-                          group-hover:border-violet-300">
+            <div className="flex items-center justify-between p-3 border-2 border-border rounded-xl transition-all
+                          peer-checked:border-primary peer-checked:bg-secondary
+                          group-hover:border-ring">
               
-              <p className="font-medium text-gray-700 peer-checked:text-violet-900">
+              <p className="font-medium text-foreground peer-checked:text-secondary-foreground">
                 {level}
               </p>
               <CheckCircle2 
-                className="w-5 h-5 text-violet-700 opacity-0 transition-opacity peer-checked:opacity-100" 
+                className="w-5 h-5 text-primary opacity-0 transition-opacity peer-checked:opacity-100" 
               />
             </div>
           </label>
         ))}
       </div>
-      <Link href={`/courses/${courseId}/course-map`}>
+      <Link href={`/courses/${courseId}/overview`}>
         <CourseButton>
           Spara och fortsätt till kurs
         </CourseButton>

@@ -1,4 +1,5 @@
 'use client';
+import StepCard from '@/components/ui/lessons/course/course-layout';
 import CourseButton from '@/components/ui/lessons/course/course-buttons';
 import Link from 'next/link'
 import { use } from 'react';
@@ -20,19 +21,23 @@ export default function CourseOverview({ params }: { params: Promise <{ courseId
   
   return (
     <>
-      <h1 className="text-center mb-10 text-4xl">Snabböversikt</h1>
+      <h1 className="text-center mb-10 text-4xl">{course.title}</h1>
       <div className="flex flex-col gap-4 p-6 bg-background min-h-screen">
-        <p className='text-center'>Sammanfattning...</p>
-      <Link href={`/courses/${courseId}/personalize`}>
-        <CourseButton className="mt-10" variant="primary">
-          Gå till personalisering
-        </CourseButton>
-      </Link>
-      <Link href={`/courses/${courseId}/course-map`}>
-        <CourseButton variant="primary">
-          Gå direkt till kursen
-        </CourseButton>
-      </Link>
+        {course.steps.map((step, index) => (
+          <Link key={step.id} href={`/courses/${courseId}/steps/${step.id}`}>
+            <StepCard 
+              icon={<span className="font-bold text-lg">{index + 1}</span>}
+              title={step.title}
+              description={step.text.substring(0, 40) + "..."}
+            />
+          </Link>
+        ))}
+
+        <Link href={`/courses/${courseId}/steps/1`}>
+          <CourseButton className="mt-10" variant="primary">
+            Starta kursen
+          </CourseButton>
+        </Link>
       </div>
     </>
   );

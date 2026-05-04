@@ -6,11 +6,7 @@ import { getCourse } from '@/lib/course-data';
 
 export default async function CourseStartPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const course = getCourse(courseId) || { 
-    title: "Hitta och hyra din första bostad", 
-    subtitle: "En steg-för-steg-kurs som guidar dig genom hela processen att hyra bostad i Sverige.",
-    totalSteps: 6
-  };
+  const course = getCourse(courseId) ||  "error";
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
@@ -19,8 +15,8 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
         
         {/* Placeholder för din illustration (den stora blå cirkeln med huset) */}
         <div className="w-50 h-50 bg-primary rounded-full flex items-center justify-center mb-8 relative">
-          <div className="bg-white p-6 rounded-xl shadow-2xl ">
-             <Home size={80} className="text-[#5D7CFA]" />
+          <div className="bg-card p-6 rounded-xl shadow-2xl ">
+             <Home size={80} className="text-primary" />
           </div>
         </div>
 
@@ -28,24 +24,29 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
           {course.title}
         </h1>
         
-        <p className="text-secondary-foreground text-lg max-w-sm">
-          {course.subtitle}
+        <p className="text-secondary-foreground text-lg ">
+          {course.summary}
         </p>
       </div>
-      <div className="flex justify-center gap-4">
-        <div className="bg-red-300 text-card-foreground p-1 rounded-sm">
-          25 min
+      <div className="flex justify-center gap-4 text-xs font-medium">
+        <div className="bg-muted text-muted-foreground p-1 px-3 rounded-full">
+          {course.time}
         </div>
-        <div className="bg-green-300 p-1 rounded-sm">
-          Nybörjare
+        <div className="bg-muted text-muted-foreground p-1 px-3 rounded-full">
+          {course.skillLevel}
         </div>
-        <div className="bg-blue-300 p-1 rounded-sm">
+        <div className="bg-muted text-muted-foreground p-1 px-3 rounded-full">
           {course.totalSteps} steg
         </div>
       </div>
 
       {/* Nedre sektion med knapp */}
-      <div className="p-6 pb-12 mt-10">
+      <div className="flex flex-col gap-3 p-6 pb-12 mt-10">
+        <Link href={`/courses/${courseId}/personalize`}>
+          <CourseButton className="mt-10" variant="primary">
+            Gå till personalisering
+          </CourseButton>
+        </Link>
         <Link href={`/courses/${courseId}/overview`}>
           <CourseButton variant="primary">
             Starta kursen

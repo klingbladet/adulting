@@ -22,8 +22,8 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
     <main className="flex flex-col min-h-screen bg-background p-6 text-center">
       
       <div className="mb-8">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-4xl text-green-600">✓</span>
+        <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-4xl text-primary font-bold">✓</span>
         </div>
         <h1 className="text-3xl font-bold mb-2 text-foreground">Snyggt jobbat!</h1>
         <p className="text-muted-foreground text-lg">

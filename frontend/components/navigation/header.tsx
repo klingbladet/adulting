@@ -98,7 +98,7 @@ return (
                     <Link href="/courses" className="text-foreground">
                       Learn
                     </Link>
-                    <Link href="/learn" onClick={closeMenu}>
+                    <Link href="/courses" onClick={closeMenu}>
                       Användare
                     </Link>
                   </>        

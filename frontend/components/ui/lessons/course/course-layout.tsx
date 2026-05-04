@@ -20,7 +20,7 @@ const StepCard = ({
   onClick
 }: StepCardProps) => {
   const interactiveStyles = isClickable
-  ? "cursor-pointer hover:border-[##5D7CFA] hover:shadow-md transition-all active:scale-[0.98]"
+  ? "cursor-pointer hover:border-primary hover:shadow-md transition-all active:scale-[0.98]"
   : "";
 
   return(
