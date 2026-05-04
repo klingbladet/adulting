@@ -14,7 +14,12 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   
-    role: text("role").notNull().default("user"),
+    role: text("role")
+      .notNull()
+      .default("user"),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
 });
 
 export const session = pgTable(
@@ -72,6 +77,9 @@ export const verification = pgTable(
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
