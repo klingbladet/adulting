@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { getOnboardingStatus } from "@/lib/onboarding";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -24,9 +25,19 @@ export default function SignInForm() {
           password,
         },
         {
-          onSuccess: () => {
-            router.push("/learn");
-            router.refresh();
+          onSuccess: async () => {
+            try {
+              const onboarding = await getOnboardingStatus();
+
+              router.push(onboarding.redirectTo);
+              router.refresh();
+            } catch (error) {
+              console.error("Could not get onboarding status:", error);
+
+              // Fallback om status-hämtning misslyckas
+              router.push("/onboarding");
+              router.refresh();
+            }
           },
           onError: (ctx) => {
             setErrorMsg(ctx.error.message || "Could not sign in");

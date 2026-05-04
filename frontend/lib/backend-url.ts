@@ -1,2 +1,2 @@
 export const BACKEND_URL =
-  process.env.BACKEND_URL || "http://backend:3001";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
