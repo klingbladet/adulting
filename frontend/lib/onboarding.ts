@@ -1,4 +1,4 @@
-import { BACKEND_URL } from "@/lib/backend-url";
+import { CLIENT_BACKEND_URL  } from "@/lib/client-backend-url";
 
 export type OnboardingStatus =
   | "not_started"
@@ -13,7 +13,7 @@ export type OnboardingStatusResponse = {
 
 export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
   const response = await fetch(
-    `${BACKEND_URL}/api/onboarding/status`,
+    `${CLIENT_BACKEND_URL}/api/onboarding/status`,
     {
       method: "GET",
       credentials: "include",
