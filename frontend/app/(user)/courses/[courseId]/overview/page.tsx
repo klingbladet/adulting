@@ -23,12 +23,12 @@ export default function CourseOverview({ params }: { params: Promise <{ courseId
     <>
       <h1 className="text-center mb-10 text-4xl">{course.title}</h1>
       <div className="flex flex-col gap-4 p-6 bg-background min-h-screen">
-        {course.steps.map((step, index) => (
-          <Link key={step.id} href={`/courses/${courseId}/steps/${step.id}`}>
+        {course.blocks.map((block, index) => (
+          <Link key={block.id} href={`/courses/${courseId}/steps/${block.id}`}>
             <StepCard 
               icon={<span className="font-bold text-lg">{index + 1}</span>}
-              title={step.title}
-              description={step.text.substring(0, 40) + "..."}
+              title={block.title}
+              description={block.content.substring(0, 40) + "..."}
             />
           </Link>
         ))}

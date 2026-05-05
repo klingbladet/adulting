@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import CourseButton from '@/components/ui/courses/course-buttons';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { getCourseById } from '@/lib/api';
+import getCourseIcon from '@/components/ui/courses/course-dynamic-icon';
 
 export default async function CourseStartPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  
-  // Hämta data utanför try/catch för att undvika JSX-problem
   const course = await getCourseById(courseId).catch(() => null);
 
   if (!course) {
@@ -25,8 +24,8 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
     <main className="flex flex-col min-h-screen bg-background">
       <div className="flex flex-col items-center p-8 text-center">
         <div className="w-50 h-50 bg-primary rounded-full flex items-center justify-center mb-8 relative">
-          <div className="bg-card p-6 rounded-xl shadow-2xl ">
-             <Home size={80} className="text-primary" />
+          <div className="bg-card p-6 rounded-xl shadow-2xl w-25 h-25 ">
+             {getCourseIcon(course)}
           </div>
         </div>
 
@@ -40,10 +39,10 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
       </div>
       
       <div className="flex justify-center gap-4 text-xs font-medium">
-        <div className="bg-red-200 text-muted-foreground p-1 px-3 rounded-full">
+        <div className="bg-red-200 text-foreground p-1 px-3 rounded-full">
           {course.time + " min"}
         </div>
-        <div className="bg-green-200 text-muted-foreground p-1 px-3 rounded-full">
+        <div className="bg-green-200 text-foreground p-1 px-3 rounded-full">
           {course.blocks + " steg"}
         </div>
       </div>

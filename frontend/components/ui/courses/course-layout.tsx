@@ -33,7 +33,7 @@ const BlockCard = ({
       className={`flex items-center justify-between p-4 bg-secondary border-border rounded-2xl shadow-sm w-full ${interactiveStyles}`}
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-background rounded-full text-secondary-foreground shrink-0">
+        <div className="flex items-center justify-center w-6 h-6 bg-background rounded-full text-secondary-foreground shrink-0">
           {icon}
         </div>
         <div className="flex flex-col">

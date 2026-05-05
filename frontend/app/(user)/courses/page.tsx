@@ -1,7 +1,8 @@
 import BlockCard from "@/components/ui/courses/course-layout";
-import { House, BookOpen } from 'lucide-react';
+import { House, } from 'lucide-react';
 import Link from "next/link";
 import { getCourses } from "@/lib/api";
+import getCourseIcon from "@/components/ui/courses/course-dynamic-icon";
 
 export default async function UserDashboardPage() {
   const courses = await getCourses();
@@ -18,7 +19,7 @@ export default async function UserDashboardPage() {
           courses.map((course) => (
             <Link key={course.id} href={`/courses/${course.id}`}>
               <BlockCard
-                  icon={<BookOpen />}
+                  icon={getCourseIcon(course)}
                   title={course.title}
                   time={course.time}
               />

@@ -1,13 +1,12 @@
-import React from 'react';
 import Link from 'next/link';
 import CourseButton from '@/components/ui/courses/course-buttons';
-import { getStep, getCourse } from '@/lib/course-data';
+import { getBlock, getCourse } from '@/lib/course-data';
 
 export default async function SummaryPage({ params }: { params: Promise<{ courseId: string, id: string }> }) {
   const { courseId, id } = await params;
-  const { step } = getStep(courseId, id);
+  const { step } = getBlock(courseId, id);
   const course = getCourse(courseId);
-  const totalSteps = course?.totalSteps ?? 0;
+  const totalSteps = course?.totalBlocks ?? 0;
   const isLastStep = Number(id) >= totalSteps;
 
   if (!step) {

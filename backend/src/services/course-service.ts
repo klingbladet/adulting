@@ -8,12 +8,20 @@ type NewCourse = z.infer<typeof insertCourseSchema>;
 
 export const courseService = {
   async getAllCourses() {
-    return await db.select().from(courses);
+    return await db.query.courses.findMany({
+      with: {
+        category: true
+      }
+    });
   },
 
   async getCourseById(id: number) {
-    const result = await db.select().from(courses).where(eq(courses.id, id));
-    return result[0];
+    return await db.query.courses.findFirst({
+      where: eq(courses.id, id),
+      with: {
+        category: true
+      }
+    });
   },
 
   async createCourse(data: NewCourse & { userId: string }) {
