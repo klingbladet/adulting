@@ -1,4 +1,4 @@
-import StepCard from "@/components/ui/lessons/course/course-layout";
+import BlockCard from "@/components/ui/courses/course-layout";
 import { House, BookOpen } from 'lucide-react';
 import Link from "next/link";
 import { getCourses } from "@/lib/api";
@@ -17,10 +17,10 @@ export default async function UserDashboardPage() {
         {courses.length > 0 ? (
           courses.map((course) => (
             <Link key={course.id} href={`/courses/${course.id}`}>
-              <StepCard
+              <BlockCard
                   icon={<BookOpen />}
                   title={course.title}
-                  description={course.status || "Tillgänglig nu"}
+                  time={course.time}
               />
             </Link>
           ))
@@ -30,10 +30,10 @@ export default async function UserDashboardPage() {
 
         {/* Behåller de andra som exempel/platshållare tills de finns i databasen */}
         <Link href="">
-          <StepCard
+          <BlockCard
               icon={<House />}
               title="Hitta bostad (Mock)"
-              description="Guide 25min"
+              time="Guide 25min"
           />
         </Link>
       </div>

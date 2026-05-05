@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import CourseButton from '@/components/ui/lessons/course/course-buttons';
+import CourseButton from '@/components/ui/courses/course-buttons';
 import { getStep, getCourse } from '@/lib/course-data';
 
 export default async function SummaryPage({ params }: { params: Promise<{ courseId: string, id: string }> }) {

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import CourseButton from '@/components/ui/lessons/course/course-buttons';
+import CourseButton from '@/components/ui/courses/course-buttons';
 import { ChevronRight, Home } from 'lucide-react';
 import { getCourseById } from '@/lib/api';
 
@@ -40,8 +40,11 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
       </div>
       
       <div className="flex justify-center gap-4 text-xs font-medium">
-        <div className="bg-muted text-muted-foreground p-1 px-3 rounded-full">
-          {course.status || "Aktiv"}
+        <div className="bg-red-200 text-muted-foreground p-1 px-3 rounded-full">
+          {course.time + " min"}
+        </div>
+        <div className="bg-green-200 text-muted-foreground p-1 px-3 rounded-full">
+          {course.blocks + " steg"}
         </div>
       </div>
 

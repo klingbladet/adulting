@@ -1,17 +1,16 @@
-import React from 'react';
 import Link from 'next/link';
-import CourseButton from '@/components/ui/lessons/course/course-buttons';
+import CourseButton from '@/components/ui/courses/course-buttons';
 import { X } from 'lucide-react';
-import { getStep } from '@/lib/course-data';
+import { getBlock } from '@/lib/course-data';
 
-export default async function StepPage({ params }: { params: Promise<{ courseId: string, id: string }> }) {
+export default async function BlockPage({ params }: { params: Promise<{ courseId: string, id: string }> }) {
   const { courseId, id } = await params;
-  const { step, totalSteps } = getStep(courseId, id);
+  const { step: block, totalSteps: totalBlocks } = getBlock(courseId, id);
 
   const getNextStepPath = () => {
     const currentStep = Number(id);
 
-    if (currentStep >= totalSteps) {
+    if (currentStep >= totalBlocks) {
       return `summary/${id}`;
     }
     return `steps/${currentStep + 1}`;
@@ -19,7 +18,7 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
 
   const previousStep = `steps/${Number(id) - 1}`
 
-  if (!step) {
+  if (!block) {
     return (
       <main className="flex flex-col min-h-screen items-center justify-center p-6 bg-background">
         <h1 className="text-2xl font-bold mb-4 text-foreground">Steget hittades inte</h1>
@@ -45,24 +44,24 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
         <div className="flex-1 mx-8 h-2 bg-secondary rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary transition-all duration-300" 
-            style={{ width: `${(Number(id) / totalSteps) * 100}%` }}
+            style={{ width: `${(Number(id) / totalBlocks) * 100}%` }}
           />
         </div>
 
         <span className="text-sm font-medium text-secondary-foreground">
-          {id}/{totalSteps}
+          {id}/{totalBlocks}
         </span>
       </div>
 
       {/* Innehållssektion */}
       <div className="flex flex-col mb-10 p-6">
         <h1 className="text-2xl font-bold text-foreground mb-6">
-          {step.title}
+          {block.title}
         </h1>
 
         <div className="prose prose-slate max-w-none">
           <p className="text-foreground leading-relaxed text-lg">
-            {step.text}
+            {block.content}
           </p>
         </div>
 
@@ -87,7 +86,7 @@ export default async function StepPage({ params }: { params: Promise<{ courseId:
 
         <Link href={`/courses/${courseId}/${getNextStepPath()}`} className="flex-2">
           <CourseButton variant="primary" fullWidth>
-            {Number(id) === totalSteps ? 'Slutför kurs' : 'Nästa'}
+            {Number(id) === totalBlocks ? 'Slutför kurs' : 'Nästa'}
           </CourseButton>
         </Link>
       </div>

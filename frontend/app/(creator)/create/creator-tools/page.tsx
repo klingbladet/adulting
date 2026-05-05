@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/guards";
-import RichTextEditor from "@/components/ui/lessons/rich-text-editor";
+import RichTextEditor from "@/components/ui/courses/rich-text-editor";
 
 export default async function CreatorToolsPage() {
   await requireRole(["creator", "admin"]);

@@ -6,6 +6,8 @@ export interface Course {
   textContent: string | null;
   imageUrl: string | null;
   videoUrl: string | null;
+  time: number | null;
+  blocks: number | null;
   status: string | null;
 }
 
