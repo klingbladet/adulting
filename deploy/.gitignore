@@ -1,4 +1,3 @@
 secret.yml
 *.json
 .dockerconfigjson
-

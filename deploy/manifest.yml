@@ -14,6 +14,26 @@ spec:
     spec:
       containers:
         - name: adulting-frontend
-          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
+      imagePullSecrets:
+        - name: registry-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adulting-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      adulting: backend
+  template:
+    metadata:
+      labels:
+        adulting: backend
+    spec:
+      containers:
+        - name: adulting-backend
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend:feature-linter
       imagePullSecrets:
         - name: registry-credentials
