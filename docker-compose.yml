@@ -75,6 +75,13 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
 volumes:
   db-migrations:
