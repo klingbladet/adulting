@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import { CreatorChat } from "@/components/ChatPage/SocketComponent";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -23,7 +24,7 @@ type Message = {
   createdAt: string;
 };
 
-type Creator = {
+export type Creator = {
   id: string;
   name: string;
   image: string | null;
@@ -46,6 +47,7 @@ export default function ChatPage() {
   const [tab, setTab] = useState<"personer" | "ai">("ai");
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loadingCreators, setLoadingCreators] = useState(false);
+  const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -342,11 +344,15 @@ export default function ChatPage() {
       </div>
     ) : (
       creators.map((creator) => (
-        <div
-          key={creator.id}
-          className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"
-          
-        >
+  <div
+    key={creator.id}
+    onClick={() => setSelectedCreator(creator)}
+    className={`flex items-center gap-3 rounded-2xl border p-4 cursor-pointer transition ${
+      selectedCreator?.id === creator.id
+        ? "border-primary bg-secondary"
+        : "border-border bg-background hover:border-primary/40"
+    }`}
+  >
           {creator.image ? (
             <img
               src={creator.image}

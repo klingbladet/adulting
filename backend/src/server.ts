@@ -55,6 +55,32 @@ app.get("/health", async (_req: Request, res: Response) => {
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/ai", aiRoutes);
 
+import { Server } from "socket.io";
+
+const io = new Server(3002, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log("Joined room:", roomId);
+  });
+
+  socket.on("send_message", ({ roomId, message }) => {
+    socket.to(roomId).emit("receive_message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`[backend running on http://localhost:${port}]`);
 });
