@@ -8,7 +8,7 @@
 		"start": "tsx ./src/server.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"push": "drizzle-kit generate && drizzle-kit migrate"
+		"db:push": "drizzle-kit generate && drizzle-kit migrate"
 	},
 	"dependencies": {
 		"better-auth": "^1.6.0",
