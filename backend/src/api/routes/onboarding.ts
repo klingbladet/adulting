@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { fromNodeHeaders } from "better-auth/node";
 
 import { db } from "../../db";
-import { user } from "../../db/auth-schema";
+import { user, userOnboarding  } from "../../db/auth-schema";
 import { auth } from "../../utils/auth";
 import {
   getPostAuthRedirectPath,
@@ -101,6 +101,140 @@ router.patch("/status", async (req, res) => {
     console.error("PATCH ONBOARDING STATUS ERROR:", error);
     return res.status(500).json({
       error: "Kunde inte uppdatera onboarding-status.",
+    });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const [currentUser] = await db
+      .select({
+        onboardingStatus: user.onboardingStatus,
+      })
+      .from(user)
+      .where(eq(user.id, userId));
+
+    if (!currentUser) {
+      return res.status(404).json({ error: "Användaren hittades inte." });
+    }
+
+    const [onboarding] = await db
+      .select()
+      .from(userOnboarding)
+      .where(eq(userOnboarding.userId, userId));
+
+    const status = isOnboardingStatus(currentUser.onboardingStatus)
+      ? currentUser.onboardingStatus
+      : "not_started";
+
+    return res.json({
+      onboardingStatus: status,
+      redirectTo: getPostAuthRedirectPath(status),
+      currentStep: onboarding?.currentStep ?? 1,
+      stepOneData: onboarding?.stepOneData ?? {},
+      stepTwoData: onboarding?.stepTwoData ?? {},
+      stepThreeData: onboarding?.stepThreeData ?? {},
+    });
+  } catch (error) {
+    console.error("GET ONBOARDING ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte hämta onboarding.",
+    });
+  }
+});
+
+router.patch("/step", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const { step, data } = req.body;
+
+    if (![1, 2, 3].includes(step)) {
+      return res.status(400).json({ error: "Ogiltigt onboarding-steg." });
+    }
+
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({ error: "Ogiltig onboarding-data." });
+    }
+
+    const [existing] = await db
+      .select()
+      .from(userOnboarding)
+      .where(eq(userOnboarding.userId, userId));
+
+    const nextStep = step === 3 ? 3 : step + 1;
+    const nextStatus = step === 3 ? "completed" : "in_progress";
+
+    const updateData =
+      step === 1
+        ? { stepOneData: data }
+        : step === 2
+          ? { stepTwoData: data }
+          : { stepThreeData: data };
+
+    if (existing) {
+      await db
+        .update(userOnboarding)
+        .set({
+          ...updateData,
+          currentStep: nextStep,
+          updatedAt: new Date(),
+        })
+        .where(eq(userOnboarding.userId, userId));
+    } else {
+      await db.insert(userOnboarding).values({
+        userId,
+        currentStep: nextStep,
+        ...updateData,
+      });
+    }
+
+    await db
+      .update(user)
+      .set({
+        onboardingStatus: nextStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+
+    return res.json({
+      onboardingStatus: nextStatus,
+      currentStep: nextStep,
+      redirectTo: step === 3 ? "/learn" : "/onboarding",
+    });
+  } catch (error) {
+    console.error("PATCH ONBOARDING STEP ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte spara onboarding-steget.",
+    });
+  }
+});
+
+router.patch("/skip", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    await db
+      .update(user)
+      .set({
+        onboardingStatus: "skipped",
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+
+    return res.json({
+      onboardingStatus: "skipped",
+      redirectTo: "/learn",
+    });
+  } catch (error) {
+    console.error("PATCH ONBOARDING SKIP ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte skippa onboarding.",
     });
   }
 });

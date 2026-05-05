@@ -21,3 +21,7 @@ export function getPostAuthRedirectPath(status: OnboardingStatus) {
 
   return "/onboarding";
 }
+
+export function getNextOnboardingStep(currentStep: number) {
+  return Math.min(currentStep + 1, 3);
+}

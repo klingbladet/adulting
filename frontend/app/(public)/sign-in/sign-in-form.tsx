@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { getOnboardingStatus } from "@/lib/onboarding";
+import { getOnboarding } from "@/lib/onboarding";
 
 export default function SignInForm() {
   const router = useRouter();
@@ -27,14 +27,14 @@ export default function SignInForm() {
         {
           onSuccess: async () => {
             try {
-              const onboarding = await getOnboardingStatus();
+              const onboarding = await getOnboarding();
 
               router.push(onboarding.redirectTo);
               router.refresh();
             } catch (error) {
               console.error("Could not get onboarding status:", error);
 
-              // Fallback om status-hämtning misslyckas
+             
               router.push("/onboarding");
               router.refresh();
             }
