@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { courses, userProgress } from "./course-schema"
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -13,7 +14,12 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   
-    role: text("role").notNull().default("user"),
+    role: text("role")
+      .notNull()
+      .default("user"),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
 });
 
 export const session = pgTable(
@@ -71,6 +77,9 @@ export const verification = pgTable(
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
@@ -78,6 +87,8 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  courses: many(courses),
+  progress: many(userProgress),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

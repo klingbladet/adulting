@@ -1,0 +1,61 @@
+stages:
+  - build test
+  - lint
+  - build
+
+variables:
+  VERSION: $CI_COMMIT_REF_SLUG
+workflow:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      variables:
+        VERSION: latest
+    - when: always
+
+.docker login:
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+build backend test:
+  stage: build test
+  image: docker:29
+  extends: .docker login
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-test:$VERSION --push ./backend
+
+build frontend test:
+  stage: build test
+  image: docker:29
+  extends: .docker login
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-test:$VERSION --push ./frontend
+
+
+lint frontend:
+  stage: lint
+  image: $CI_REGISTRY_IMAGE/frontend-test:$VERSION
+  before_script: cd /app
+  script: pnpm dlx eslint .
+  allow_failure: true # TODO: remove once issues are fixed
+  variables:
+    GIT_STRATEGY: none
+
+lint backend:
+  stage: lint
+  image: $CI_REGISTRY_IMAGE/backend-test:$VERSION
+  before_script: cd /app
+  script: pnpm dlx eslint .
+  allow_failure: true # TODO: remove once issues are fixed
+  variables:
+    GIT_STRATEGY: none
+
+
+build backend:
+  stage: build
+  image: docker:29
+  extends: .docker login
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push -f ./backend/prod.Dockerfile ./backend
+
+build frontend:
+  stage: build
+  image: docker:29
+  extends: .docker login
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push -f ./frontend/prod.Dockerfile ./frontend

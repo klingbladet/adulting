@@ -2,7 +2,8 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - 3000:3000
+    command: ["pnpm", "run", "dev"]
     develop:
       watch:
         - action: sync
@@ -18,12 +19,14 @@ services:
   backend:
     build: ./backend
     ports:
-      - "3001:3001"
+      - 3001:3001
+    command: ["pnpm", "run", "dev"]
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3001
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL}
     depends_on:
       - migrate-db
     develop:
@@ -46,7 +49,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
-    entrypoint: ["pnpm", "push"]
+    entrypoint: ["pnpm", "db:push"]
     volumes:
       - db-migrations:/app/drizzle
 

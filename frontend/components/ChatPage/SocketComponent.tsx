@@ -1,5 +1,5 @@
 "use client";
-import { io, Socket } from "socket.io-client";
+import { io, Socket } from "socket.io";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "@/lib/auth-client";
 import type { Creator } from "@/app/chat/page";

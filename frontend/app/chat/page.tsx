@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { CreatorChat } from "@/components/ChatPage/SocketComponent";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 type Thread = {
   id: string;
@@ -29,6 +27,8 @@ export type Creator = {
   name: string;
   image: string | null;
 };
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 export default function ChatPage() {
   const router = useRouter();
