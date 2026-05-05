@@ -1,7 +1,7 @@
 import { Course } from "@/app/types/types";
+import { BACKEND_URL } from "./backend-url";
 
-// Vi använder localhost:3001 för anrop från klienten och backend:3001 för anrop från servern (om du kör Docker)
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const BASE_URL = `${BACKEND_URL}/api`;
 
 export async function getCourses(): Promise<Course[]> {
   const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store' });
