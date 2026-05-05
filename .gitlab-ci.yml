@@ -81,4 +81,8 @@ deploy app:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
-  script: kubectl get nodes
+  before_script:
+    - cd deploy
+    - kustomize edit set nameprefix "${VERSION}-"
+  script: 
+    - kubectl apply -k deploy
