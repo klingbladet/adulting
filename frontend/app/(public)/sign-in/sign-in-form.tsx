@@ -25,7 +25,6 @@ export default function SignInForm() {
           password,
         },
         {
-<<<<<<< HEAD
           onSuccess: async () => {
             try {
               const onboarding = await getOnboarding();
@@ -39,11 +38,6 @@ export default function SignInForm() {
               router.push("/onboarding");
               router.refresh();
             }
-=======
-          onSuccess: () => {
-            router.push("/courses");
-            router.refresh();
->>>>>>> 3744306f0079bd56b114dc1c784c60964d768ee4
           },
           onError: (ctx) => {
             setErrorMsg(ctx.error.message || "Could not sign in");
