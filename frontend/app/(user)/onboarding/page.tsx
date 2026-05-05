@@ -1,13 +1,23 @@
-export default function UserDashboardPage() {
+import CompleteOnboardingButton from "@/components/onboarding/complete-onboarding-button";
+
+export default function OnboardingPage() {
   return (
-    <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
-          <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-            <h1 className="text-2xl font-bold">Onboarding</h1>
-            <p className="mt-2 text-muted-foreground">
-                    Här är onboardingen.
-            </p>
-          </section>
-         
-        </main>
+    <main className="flex min-h-dvh items-center justify-center px-4">
+      <section className="w-full max-w-md rounded-3xl border bg-card p-6 text-center shadow-sm">
+        <p className="text-sm font-medium text-muted-foreground">
+          Adulting
+        </p>
+
+        <h1 className="mt-2 text-2xl font-bold">
+          Välkommen till onboarding
+        </h1>
+
+        <p className="mt-3 text-muted-foreground">
+          Här kommer vi snart hjälpa dig att komma igång steg för steg.
+        </p>
+        <CompleteOnboardingButton />
+      </section>
+    </main>
   );
 }
+

@@ -26,3 +26,23 @@ export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
 
   return response.json();
 }
+
+export async function updateOnboardingStatus(status: OnboardingStatus) {
+  const response = await fetch(
+    `${CLIENT_BACKEND_URL}/api/onboarding/status`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Could not update onboarding status");
+  }
+
+  return response.json();
+}
