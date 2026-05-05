@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "../components/navigation/header";
 import Footer from "../components/navigation/footer";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -34,11 +35,14 @@ export default function RootLayout({
           <Header />
         </div>
 
-        {children}
+        
+          {children}
+        
 
         <div className="hidden md:block">
           <Footer />
         </div>
+         
       </body>
     </html>
   );
