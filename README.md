@@ -32,5 +32,5 @@ check logs for that specific container using the name from SERVICE column:
 docker compose logs SERVICE_NAME
 ```
 
-`docker ps` also shows if if the containers are healthy. Every 5 seconds the container makes a http request
-to itself checking if it returns 200. If it is not 200 or does not responds within 2 seconds, it is considered unhealthy.
+`docker ps` also shows if if the containers are __healthy__. Every 5 seconds the container makes a http request
+to itself checking if it returns 200. If it is not 200, or does not responds within 2 seconds, it is considered __unhealthy__.
