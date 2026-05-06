@@ -83,5 +83,6 @@ deploy app:
   extends: .kubeconfig setup
   script:
     - ./scripts/create-registry-secret.sh
-    - kustomize edit set nameprefix "${VERSION}-" deploy
-    - kubectl apply -k deploy
+    - cd deploy
+    - kustomize edit set nameprefix "${VERSION}-"
+    - kubectl apply -k .
