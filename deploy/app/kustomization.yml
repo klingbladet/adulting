@@ -3,3 +3,8 @@ kind: Kustomization
 namePrefix: asdf
 resources:
 - manifest.yml
+images:
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
+  newTag: latest
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
+  newTag: latest

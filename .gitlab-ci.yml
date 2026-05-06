@@ -85,5 +85,7 @@ deploy app:
     - ./scripts/create-registry-secret.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}."
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
     - cd -
     - kubectl apply -k deploy
