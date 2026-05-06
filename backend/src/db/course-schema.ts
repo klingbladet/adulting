@@ -11,6 +11,7 @@ export const categories = pgTable("categories", {
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
   userId: text("user_id")
+    .notNull()
     .references(() => user.id, { onDelete: "no action" }), // Motsvarar creator_id i din mall
   categoryId: uuid("category_id").references(() => categories.id),
   title: varchar("title", { length: 255 }).notNull(),
