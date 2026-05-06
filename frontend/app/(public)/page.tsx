@@ -2,12 +2,19 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/session";
+import { getServerOnboarding } from "@/lib/server-onboarding";
 
 export default async function HomePage() {
   const session = await getServerSession();
 
   if (session) {
-    redirect("/learn");
+    const onboarding = await getServerOnboarding();
+
+    if (onboarding) {
+      redirect(onboarding.redirectTo);
+    }
+
+    redirect("/onboarding");
   }
 
   return (

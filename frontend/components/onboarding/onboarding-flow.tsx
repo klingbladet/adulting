@@ -9,7 +9,7 @@ import {
 } from "@/lib/onboarding";
 
 type StepOneData = {
-  goal: string;
+  categories: string[];
 };
 
 type StepTwoData = {
@@ -28,7 +28,7 @@ export default function OnboardingFlow() {
   const [saving, setSaving] = useState(false);
 
   const [stepOneData, setStepOneData] = useState<StepOneData>({
-    goal: "",
+    categories: [],
   });
 
   const [stepTwoData, setStepTwoData] = useState<StepTwoData>({
@@ -38,6 +38,29 @@ export default function OnboardingFlow() {
   const [stepThreeData, setStepThreeData] = useState<StepThreeData>({
     focusArea: "",
   });
+
+  const categories = [
+  { id: "economy", label: "Ekonomi" },
+  { id: "housing", label: "Boende" },
+  { id: "work", label: "Jobb" },
+  { id: "health", label: "Hälsa" },
+  { id: "relationships", label: "Relationer" },
+  { id: "government", label: "Myndigheter" },
+  { id: "food", label: "Mat" },
+  { id: "studies", label: "Studier" },
+];
+
+function toggleCategory(categoryId: string) {
+  setStepOneData((current) => {
+    const alreadySelected = current.categories.includes(categoryId);
+
+    return {
+      categories: alreadySelected
+        ? current.categories.filter((id) => id !== categoryId)
+        : [...current.categories, categoryId],
+    };
+  });
+}
 
   useEffect(() => {
     async function loadOnboarding() {
@@ -59,11 +82,12 @@ export default function OnboardingFlow() {
         );
 
         setStepOneData({
-          goal:
-            typeof data.stepOneData.goal === "string"
-              ? data.stepOneData.goal
-              : "",
-        });
+            categories: Array.isArray(data.stepOneData.categories)
+            ? data.stepOneData.categories.filter(
+                (category): category is string => typeof category === "string"
+              )
+            : [],
+          });
 
         setStepTwoData({
           experience:
@@ -88,28 +112,35 @@ export default function OnboardingFlow() {
     loadOnboarding();
   }, [router]);
 
+  const isNextDisabled =
+      saving || (step === 1 && stepOneData.categories.length === 0);
+
   async function handleNext() {
-    setSaving(true);
-
-    try {
-      const data =
-        step === 1 ? stepOneData : step === 2 ? stepTwoData : stepThreeData;
-
-      const result = await saveOnboardingStep(step, data);
-
-      if (step === 3) {
-        router.push(result.redirectTo);
-        router.refresh();
-        return;
-      }
-
-      setStep(result.currentStep);
-    } catch (error) {
-      console.error("Could not save onboarding step:", error);
-    } finally {
-      setSaving(false);
-    }
+  if (step === 1 && stepOneData.categories.length === 0) {
+    return;
   }
+
+  setSaving(true);
+
+  try {
+    const data =
+      step === 1 ? stepOneData : step === 2 ? stepTwoData : stepThreeData;
+
+    const result = await saveOnboardingStep(step, data);
+
+    if (step === 3) {
+      router.push(result.redirectTo);
+      router.refresh();
+      return;
+    }
+
+    setStep(result.currentStep);
+  } catch (error) {
+    console.error("Could not save onboarding step:", error);
+  } finally {
+    setSaving(false);
+  }
+}
 
   async function handleSkip() {
     setSaving(true);
@@ -143,7 +174,7 @@ export default function OnboardingFlow() {
         <button
           type="button"
           onClick={handleSkip}
-          disabled={saving}
+          disabled={isNextDisabled}
           className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline disabled:opacity-50"
         >
           Skippa
@@ -151,27 +182,45 @@ export default function OnboardingFlow() {
       </div>
 
       {step === 1 ? (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Vad vill du få hjälp med?</h1>
-            <p className="text-sm text-muted-foreground">
-              Detta hjälper oss att anpassa din upplevelse.
-            </p>
-          </div>
+  <div className="space-y-5">
+    <div className="space-y-2 text-center">
+      <h1 className="text-2xl font-bold">
+        Vad vill du lära dig mer om?
+      </h1>
 
-          <input
-            value={stepOneData.goal}
-            onChange={(e) =>
-              setStepOneData({
-                ...stepOneData,
-                goal: e.target.value,
-              })
-            }
-            placeholder="Ex. ekonomi, boende, jobb..."
-            className="h-12 w-full rounded-xl border bg-background px-4 text-sm"
-          />
-        </div>
-      ) : null}
+      <p className="text-sm text-muted-foreground">
+        Välj en eller flera kategorier som känns relevanta för dig.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-3">
+      {categories.map((category) => {
+        const isSelected = stepOneData.categories.includes(category.id);
+
+        return (
+          <button
+            key={category.id}
+            type="button"
+            onClick={() => toggleCategory(category.id)}
+            className={`rounded-2xl border px-4 py-4 text-sm font-medium transition ${
+              isSelected
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:bg-muted"
+            }`}
+          >
+            {category.label}
+          </button>
+        );
+      })}
+    </div>
+
+    {stepOneData.categories.length > 0 ? (
+      <p className="text-center text-xs text-muted-foreground">
+        {stepOneData.categories.length} valda
+      </p>
+    ) : null}
+  </div>
+) : null}
 
       {step === 2 ? (
         <div className="space-y-4">
