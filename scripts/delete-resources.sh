@@ -10,12 +10,13 @@ delete-resource () {
     local kind=$1
     local resources=""
     resources=$(kubectl get "$kind" -o json \
-    | jq '.items.[].metadata.name' -r \
-    | grep -E "^$VERSION\..*$")
+        | jq '.items.[].metadata.name' -r \
+        | grep -E "^$VERSION\..*$")
     if [[ -n "$resources" ]]; then
+        echo "--- '$kind' resources deleting with version '$VERSION' ---"
         kubectl delete "$kind" $resources
     else
-        echo "no resources of kind '$kind' found."
+        echo "--- '$kind' resources not found with version '$VERSION' ---"
     fi
 }
 
