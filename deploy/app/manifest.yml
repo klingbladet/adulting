@@ -15,6 +15,7 @@ spec:
       containers:
         - name: adulting-frontend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
+          imagePullPolicy: Always
       imagePullSecrets:
         - name: registry-credentials
 ---
@@ -35,5 +36,6 @@ spec:
       containers:
         - name: adulting-backend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend:latest
+          imagePullPolicy: Always
       imagePullSecrets:
         - name: registry-credentials
