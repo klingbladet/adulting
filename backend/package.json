@@ -8,7 +8,7 @@
 		"start": "tsx ./src/server.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"push": "drizzle-kit generate && drizzle-kit migrate"
+		"db:push": "drizzle-kit generate && drizzle-kit migrate"
 	},
 	"dependencies": {
 		"better-auth": "^1.6.0",
@@ -19,6 +19,7 @@
 		"express": "^5.2.1",
 		"openai": "^6.34.0",
 		"pg": "^8.20.0",
+		"socket.io": "^4.8.3",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {

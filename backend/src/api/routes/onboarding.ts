@@ -1,0 +1,242 @@
+import { Router, Request, Response } from "express";
+import { eq } from "drizzle-orm";
+import { fromNodeHeaders } from "better-auth/node";
+
+import { db } from "../../db";
+import { user, userOnboarding  } from "../../db/auth-schema";
+import { auth } from "../../utils/auth";
+import {
+  getPostAuthRedirectPath,
+  isOnboardingStatus,
+  OnboardingStatus,
+} from "../../utils/onboarding";
+
+
+
+const router = Router();
+
+async function requireUser(req: Request, res: Response) {
+  const session = await auth.api.getSession({
+    headers: fromNodeHeaders(req.headers),
+  });
+
+  const userId = session?.user?.id ?? null;
+
+  if (!userId) {
+    res.status(401).json({ error: "Du måste vara inloggad." });
+    return null;
+  }
+
+  return userId;
+}
+
+router.get("/status", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const [currentUser] = await db
+      .select({
+        id: user.id,
+        onboardingStatus: user.onboardingStatus,
+      })
+      .from(user)
+      .where(eq(user.id, userId));
+
+    if (!currentUser) {
+      return res.status(404).json({ error: "Användaren hittades inte." });
+    }
+
+const status: OnboardingStatus = isOnboardingStatus(currentUser.onboardingStatus)
+  ? currentUser.onboardingStatus
+  : "not_started";
+  
+    return res.json({
+      onboardingStatus: status,
+      redirectTo: getPostAuthRedirectPath(status),
+    });
+  } catch (error) {
+    console.error("GET ONBOARDING STATUS ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte hämta onboarding-status.",
+    });
+  }
+});
+
+router.patch("/status", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const { status } = req.body;
+
+    if (!isOnboardingStatus(status)) {
+      return res.status(400).json({
+        error: "Ogiltig onboarding-status.",
+      });
+    }
+
+    const [updatedUser] = await db
+      .update(user)
+      .set({
+        onboardingStatus: status,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId))
+      .returning({
+        onboardingStatus: user.onboardingStatus,
+      });
+
+    const updatedStatus: OnboardingStatus = isOnboardingStatus(
+      updatedUser.onboardingStatus
+    )
+      ? updatedUser.onboardingStatus
+      : "not_started";
+
+    return res.json({
+      onboardingStatus: updatedStatus,
+      redirectTo: getPostAuthRedirectPath(updatedStatus),
+    });
+  } catch (error) {
+    console.error("PATCH ONBOARDING STATUS ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte uppdatera onboarding-status.",
+    });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const [currentUser] = await db
+      .select({
+        onboardingStatus: user.onboardingStatus,
+      })
+      .from(user)
+      .where(eq(user.id, userId));
+
+    if (!currentUser) {
+      return res.status(404).json({ error: "Användaren hittades inte." });
+    }
+
+    const [onboarding] = await db
+      .select()
+      .from(userOnboarding)
+      .where(eq(userOnboarding.userId, userId));
+
+    const status = isOnboardingStatus(currentUser.onboardingStatus)
+      ? currentUser.onboardingStatus
+      : "not_started";
+
+    return res.json({
+      onboardingStatus: status,
+      redirectTo: getPostAuthRedirectPath(status),
+      currentStep: onboarding?.currentStep ?? 1,
+      stepOneData: onboarding?.stepOneData ?? {},
+      stepTwoData: onboarding?.stepTwoData ?? {},
+      stepThreeData: onboarding?.stepThreeData ?? {},
+    });
+  } catch (error) {
+    console.error("GET ONBOARDING ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte hämta onboarding.",
+    });
+  }
+});
+
+router.patch("/step", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const { step, data } = req.body;
+
+    if (![1, 2, 3].includes(step)) {
+      return res.status(400).json({ error: "Ogiltigt onboarding-steg." });
+    }
+
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({ error: "Ogiltig onboarding-data." });
+    }
+
+    const [existing] = await db
+      .select()
+      .from(userOnboarding)
+      .where(eq(userOnboarding.userId, userId));
+
+    const nextStep = step === 3 ? 3 : step + 1;
+    const nextStatus = step === 3 ? "completed" : "in_progress";
+
+    const updateData =
+      step === 1
+        ? { stepOneData: data }
+        : step === 2
+          ? { stepTwoData: data }
+          : { stepThreeData: data };
+
+    if (existing) {
+      await db
+        .update(userOnboarding)
+        .set({
+          ...updateData,
+          currentStep: nextStep,
+          updatedAt: new Date(),
+        })
+        .where(eq(userOnboarding.userId, userId));
+    } else {
+      await db.insert(userOnboarding).values({
+        userId,
+        currentStep: nextStep,
+        ...updateData,
+      });
+    }
+
+    await db
+      .update(user)
+      .set({
+        onboardingStatus: nextStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+
+    return res.json({
+      onboardingStatus: nextStatus,
+      currentStep: nextStep,
+      redirectTo: step === 3 ? "/learn" : "/onboarding",
+    });
+  } catch (error) {
+    console.error("PATCH ONBOARDING STEP ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte spara onboarding-steget.",
+    });
+  }
+});
+
+router.patch("/skip", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    await db
+      .update(user)
+      .set({
+        onboardingStatus: "skipped",
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId));
+
+    return res.json({
+      onboardingStatus: "skipped",
+      redirectTo: "/learn",
+    });
+  } catch (error) {
+    console.error("PATCH ONBOARDING SKIP ERROR:", error);
+    return res.status(500).json({
+      error: "Kunde inte skippa onboarding.",
+    });
+  }
+});
+
+export default router;
