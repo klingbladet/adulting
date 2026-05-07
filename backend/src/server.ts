@@ -6,10 +6,12 @@ import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { auth } from "./utils/auth";
-import aiRoutes from "./api/ai/routes";
+import aiRoutes from "./api/routes/ai";
 import sessionRoutes from "./api/routes/session";
 import adminRoutes from "./api/routes/admin";
 import courseRoutes from "./api/routes/course-routes";
+import userRoutes from "./api/routes/users"
+import onboardingRouter from "./api/routes/onboarding";
 
 
 const app = express();
@@ -29,6 +31,8 @@ app.use(
   })
 );
 
+app.use("/api/users", userRoutes);
+
 app.use(express.json());
 
 // Lägg till denna för att debugga 404
@@ -42,6 +46,7 @@ app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/ai", aiRoutes)
+app.use("/api/onboarding", onboardingRouter);
 
 app.get("/health", async (_req, res) => {
   try {
@@ -81,6 +86,32 @@ app.use((req, res) => {
     hint: "Kolla att du använder http://localhost:3001/api/courses"
   });
 });
+
+import { Server } from "socket.io";
+
+const io = new Server(3002, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log("Joined room:", roomId);
+  });
+
+  socket.on("send_message", ({ roomId, message }) => {
+    socket.to(roomId).emit("receive_message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);

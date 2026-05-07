@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { courses, userProgress } from "./course-schema"
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, boolean, index, jsonb } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -14,7 +14,12 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   
-    role: text("role").notNull().default("user"),
+    role: text("role")
+      .notNull()
+      .default("user"),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
 });
 
 export const session = pgTable(
@@ -72,6 +77,9 @@ export const verification = pgTable(
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    onboardingStatus: text("onboarding_status")
+      .notNull()
+      .default("not_started"),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
@@ -96,3 +104,22 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const userOnboarding = pgTable("user_onboarding", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  currentStep: integer("current_step").notNull().default(1),
+
+  stepOneData: jsonb("step_one_data").$type<Record<string, unknown>>(),
+  stepTwoData: jsonb("step_two_data").$type<Record<string, unknown>>(),
+  stepThreeData: jsonb("step_three_data").$type<Record<string, unknown>>(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
