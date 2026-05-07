@@ -1,7 +1,22 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/session";
+import { getServerOnboarding } from "@/lib/server-onboarding";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await getServerSession();
+
+  if (session) {
+    const onboarding = await getServerOnboarding();
+
+    if (onboarding) {
+      redirect(onboarding.redirectTo);
+    }
+
+    redirect("/onboarding");
+  }
+
   return (
     <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
       <div className="flex items-center justify-center py-4 text-center text-sm text-muted-foreground">
