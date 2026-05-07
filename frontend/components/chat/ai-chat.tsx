@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bot, MessageCircle, Trash2, User, Users, X } from "lucide-react";
+import {
+  Bot,
+  ChevronRight,
+  MessageCircle,
+  Menu,
+  Plus,
+  Trash2,
+  User,
+  Users,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
@@ -24,13 +34,6 @@ type Message = {
   createdAt: string;
 };
 
-const quickQuestions = [
-  "Hur gör jag en enkel budget?",
-  "Hur skriver jag ett CV?",
-  "Vad ska jag tänka på när jag söker bostad?",
-  "Hur planerar jag min vecka bättre?",
-];
-
 export default function AiChat() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -45,7 +48,7 @@ export default function AiChat() {
   const [sending, setSending] = useState(false);
   const [creatingThread, setCreatingThread] = useState(false);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"personer" | "ai">("ai");
+  const [view, setView] = useState<"ai" | "personer">("ai");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -152,6 +155,7 @@ export default function AiChat() {
     try {
       setCreatingThread(true);
       setError("");
+      setView("ai");
 
       const response = await fetch(`${API_BASE}/api/ai/threads`, {
         method: "POST",
@@ -212,6 +216,7 @@ export default function AiChat() {
   }
 
   async function handleSelectThread(threadId: string) {
+    setView("ai");
     setActiveThreadId(threadId);
     setSidebarOpen(false);
     await fetchMessages(threadId);
@@ -224,11 +229,13 @@ export default function AiChat() {
 
     setError("");
     setSending(true);
+    setView("ai");
 
     let threadId = activeThreadId;
 
     if (!threadId) {
       threadId = await createThread();
+
       if (!threadId) {
         setSending(false);
         return;
@@ -295,6 +302,16 @@ export default function AiChat() {
     }
   }
 
+  function openAiChat() {
+    setView("ai");
+    setSidebarOpen(false);
+  }
+
+  function openPersonChat() {
+    setView("personer");
+    setSidebarOpen(false);
+  }
+
   useEffect(() => {
     if (session) {
       fetchThreads();
@@ -302,10 +319,10 @@ export default function AiChat() {
   }, [session]);
 
   useEffect(() => {
-    if (activeThreadId && tab === "ai") {
+    if (activeThreadId && view === "ai") {
       fetchMessages(activeThreadId);
     }
-  }, [activeThreadId, tab]);
+  }, [activeThreadId, view]);
 
   const activeThreadTitle = useMemo(() => {
     const active = threads.find((item) => item.id === activeThreadId);
@@ -314,8 +331,8 @@ export default function AiChat() {
 
   if (isPending || !session) {
     return (
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        <div className="rounded-3xl border bg-card p-8 text-lg">
+      <main className="flex min-h-screen items-center justify-center bg-black/50 px-4">
+        <div className="rounded-3xl border border-border bg-card px-6 py-5 text-base shadow-xl">
           Laddar chatt...
         </div>
       </main>
@@ -323,305 +340,318 @@ export default function AiChat() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-10">
-      <div className="mb-4 flex items-center justify-between lg:hidden">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="rounded-2xl border border-border bg-card px-4 py-2 text-sm font-medium"
-        >
-          Chattar
-        </button>
+    <main className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-4">
+      <div className="relative flex h-[90vh] w-full max-w-6xl overflow-hidden rounded-[30px] bg-background shadow-2xl md:h-[82vh] md:border md:border-border">
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          />
+        )}
 
-        <button
-          onClick={createThread}
-          disabled={creatingThread}
-          className="rounded-2xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
-        >
-          Ny AI-chatt
-        </button>
-      </div>
-
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-        />
-      )}
-
-      <div className="grid min-h-[78vh] grid-cols-1 overflow-hidden rounded-[28px] border border-border bg-card shadow-sm lg:grid-cols-[340px_1fr]">
         <aside
-          className={`fixed left-0 top-0 z-50 h-full w-[320px] border-r border-border bg-card p-6 transition lg:static lg:z-auto lg:h-auto lg:w-auto lg:p-8 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          className={`fixed left-0 top-0 z-50 h-full w-[82%] max-w-[310px] border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Chatt
-            </h1>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              Meny
+            </h2>
 
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded-xl border border-border p-2 text-sm lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-foreground lg:hidden"
             >
-              <X size={18} />
+              <X size={19} />
             </button>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-border bg-background p-1">
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={() => setTab("personer")}
-                className={`rounded-xl px-4 py-3 text-base transition ${
-                  tab === "personer"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Personer
-              </button>
+          <div className="mt-7">
+            <button
+              onClick={openAiChat}
+              className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
+                view === "ai" ? "bg-secondary" : "hover:bg-secondary/70"
+              }`}
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Bot size={20} />
+              </div>
 
-              <button
-                onClick={() => setTab("ai")}
-                className={`rounded-xl px-4 py-3 text-base transition ${
-                  tab === "ai"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
-                AI
-              </button>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  AI-chat
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Gå tillbaka till AI-assistenten
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <div className="mt-7">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Historik
+            </p>
+
+            <div className="space-y-1">
+              {loadingThreads ? (
+                <div className="rounded-2xl border border-border bg-background p-4 text-sm text-muted-foreground">
+                  Laddar tidigare chattar...
+                </div>
+              ) : threads.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-background p-4 text-sm text-muted-foreground">
+                  Ingen tidigare AI-chatt än.
+                </div>
+              ) : (
+                threads.map((thread) => {
+                  const isActive = activeThreadId === thread.id && view === "ai";
+
+                  return (
+                    <div
+                      key={thread.id}
+                      className={`group flex items-center gap-2 rounded-2xl px-2 py-2 transition ${
+                        isActive ? "bg-secondary" : "hover:bg-secondary/70"
+                      }`}
+                    >
+                      <button
+                        onClick={() => handleSelectThread(thread.id)}
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background text-muted-foreground">
+                          <MessageCircle size={17} />
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="line-clamp-1 text-sm font-semibold text-foreground">
+                            {thread.title}
+                          </p>
+
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {formatDateTime(thread.updatedAt)}
+                          </p>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => deleteThread(thread.id)}
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-background hover:text-red-600"
+                        title="Radera chatt"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
-          {tab === "personer" ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-border bg-background p-5 text-sm text-muted-foreground">
-              Här kommer person-chatt senare från Daniel.
+          <div className="mt-6 border-t border-border pt-5">
+            <button
+              onClick={openPersonChat}
+              className={`flex w-full items-center justify-between rounded-2xl p-3 text-left transition ${
+                view === "personer"
+                  ? "bg-secondary"
+                  : "hover:bg-secondary/70"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Users size={20} />
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Person-chatt
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Chatta med en riktig person
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight size={18} className="text-muted-foreground" />
+            </button>
+          </div>
+        </aside>
+
+        <section className="flex min-w-0 flex-1 flex-col bg-background">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/70 px-4 md:h-20 md:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl text-foreground hover:bg-secondary lg:hidden"
+            >
+              <Menu size={23} />
+            </button>
+
+            <div className="hidden h-10 w-10 lg:block" />
+
+            <div className="min-w-0 text-center">
+              <h1 className="text-base font-bold tracking-tight text-foreground md:text-lg">
+                {view === "ai" ? "AI-chat" : "Person-chatt"}
+              </h1>
+
+              <p className="hidden max-w-[260px] truncate text-xs text-muted-foreground md:block">
+                {view === "ai"
+                  ? activeThreadTitle
+                  : "Kontakta en riktig person"}
+              </p>
             </div>
-          ) : (
-            <>
+
+            <div className="flex items-center gap-2">
               <button
                 onClick={createThread}
                 disabled={creatingThread}
-                className="mt-6 hidden w-full rounded-2xl bg-primary px-5 py-4 text-lg font-medium text-primary-foreground transition hover:opacity-95 disabled:opacity-60 lg:block"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition hover:scale-105 disabled:opacity-50"
+                title="Ny AI-chatt"
               >
-                {creatingThread ? "Skapar..." : "Ny AI-chatt"}
+                <Plus size={22} />
               </button>
 
-              <div className="mt-10">
-                <p className="mb-4 text-sm font-medium text-muted-foreground">
-                  Senaste
+              <button
+                onClick={() => router.back()}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl text-foreground transition hover:bg-secondary"
+                title="Stäng"
+              >
+                <X size={22} />
+              </button>
+            </div>
+          </header>
+
+          {error && (
+            <div className="mx-4 mt-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {error}
+            </div>
+          )}
+
+          {view === "personer" ? (
+            <div className="flex flex-1 items-center justify-center px-6 py-8">
+              <div className="w-full max-w-sm text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                  <Users size={30} />
+                </div>
+
+                <h2 className="mt-6 text-2xl font-bold tracking-tight text-foreground">
+                  Person-chatt
+                </h2>
+
+                <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-muted-foreground">
+                  Här kommer användaren kunna chatta med en riktig person från
+                  teamet.
                 </p>
 
-                <div className="space-y-3">
-                  {loadingThreads ? (
-                    <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
-                      Laddar tidigare chattar...
-                    </div>
-                  ) : threads.length === 0 ? (
-                    <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
-                      Ingen tidigare AI-chatt än.
-                    </div>
-                  ) : (
-                    threads.map((thread) => {
-                      const isActive = activeThreadId === thread.id;
+                <button
+                  onClick={openAiChat}
+                  className="mt-7 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+                >
+                  Tillbaka till AI-chat
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-6">
+                {loadingMessages ? (
+                  <div className="text-sm text-muted-foreground">
+                    Laddar meddelanden...
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex h-full items-center justify-center">
+                    <div className="w-full max-w-sm text-center">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                        <Bot size={30} />
+                      </div>
 
-                      return (
+                      <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
+                        Hur kan jag hjälpa dig?
+                      </h2>
+
+                      <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-muted-foreground">
+                        Skriv din fråga så hjälper jag dig på bästa sätt.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mx-auto max-w-3xl space-y-4">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex items-end gap-2 ${
+                          message.role === "user"
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
+                        {message.role === "assistant" && (
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            <Bot size={15} />
+                          </div>
+                        )}
+
                         <div
-                          key={thread.id}
-                          className={`group flex items-center gap-2 rounded-2xl border p-3 transition ${
-                            isActive
-                              ? "border-primary bg-secondary"
-                              : "border-border bg-background hover:border-primary/40"
+                          className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "border border-border bg-card text-foreground"
                           }`}
                         >
-                          <button
-                            onClick={() => handleSelectThread(thread.id)}
-                            className="min-w-0 flex-1 text-left"
-                          >
-                            <p className="line-clamp-1 text-base font-semibold text-foreground">
-                              {thread.title}
-                            </p>
-
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              {formatDateTime(thread.updatedAt)}
-                            </p>
-                          </button>
-
-                          <button
-                            onClick={() => deleteThread(thread.id)}
-                            className="rounded-xl p-2 text-muted-foreground opacity-70 transition hover:bg-background hover:text-red-600 group-hover:opacity-100"
-                            title="Radera chatt"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          {message.content}
                         </div>
-                      );
-                    })
-                  )}
+
+                        {message.role === "user" && (
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground">
+                            <User size={15} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {sending && (
+                      <div className="flex items-end gap-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Bot size={15} />
+                        </div>
+
+                        <div className="rounded-[22px] border border-border bg-card px-4 py-3 text-left text-[15px] text-muted-foreground shadow-sm">
+                          <span>AI skriver</span>
+                          <span className="ml-1 inline-flex gap-1">
+                            <span className="animate-bounce">.</span>
+                            <span className="animate-bounce delay-100">.</span>
+                            <span className="animate-bounce delay-200">.</span>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
+                <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
+                  <textarea
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={handleTextareaKeyDown}
+                    placeholder="Skriv din fråga här..."
+                    rows={1}
+                    className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+                  />
+
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={sending || !messageInput.trim()}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                  >
+                    <MessageCircle size={20} />
+                  </button>
                 </div>
               </div>
             </>
           )}
-        </aside>
-
-        {tab === "personer" ? (
-          <section className="flex min-h-[78vh] items-center justify-center bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
-            <div className="w-full max-w-2xl rounded-[24px] border border-dashed border-border bg-background/70 px-8 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Users size={28} />
-              </div>
-
-              <h2 className="mt-6 text-4xl font-bold text-foreground">
-                Person-chatt
-              </h2>
-
-              <p className="mt-4 text-lg leading-8 text-muted-foreground">
-                Här kommer användaren kunna kontakta en riktig person från
-                teamet och få svar direkt eller senare.
-              </p>
-
-              <button
-                disabled
-                className="mt-8 rounded-2xl border border-border bg-card px-6 py-3 text-sm text-muted-foreground"
-              >
-                Kommer snart
-              </button>
-            </div>
-          </section>
-        ) : (
-          <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-5 md:p-8">
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-3xl font-bold text-foreground md:text-4xl">
-                  AI-assistent
-                </h2>
-
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Fråga om vad som helst i vardagen.
-                </p>
-              </div>
-
-              <div className="hidden rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground md:block">
-                {activeThreadTitle}
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                {error}
-              </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto rounded-[24px] border border-border bg-background/70 p-4 md:p-6">
-              {loadingMessages ? (
-                <div className="text-muted-foreground">
-                  Laddar meddelanden...
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                  <div className="max-w-2xl rounded-[28px] border border-border bg-card px-8 py-8 text-center shadow-sm">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      <Bot size={28} />
-                    </div>
-
-                    <p className="mt-5 text-2xl font-semibold text-foreground">
-                      Ställ din första fråga
-                    </p>
-
-                    <p className="mt-3 text-base leading-7 text-muted-foreground">
-                      Välj en snabbfråga eller skriv själv.
-                    </p>
-
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                      {quickQuestions.map((question) => (
-                        <button
-                          key={question}
-                          onClick={() => setMessageInput(question)}
-                          className="rounded-2xl border border-border bg-background px-4 py-3 text-left text-sm text-foreground transition hover:border-primary hover:bg-secondary"
-                        >
-                          {question}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex items-end gap-3 ${
-                        message.role === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
-                    >
-                      {message.role === "assistant" && (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          <Bot size={17} />
-                        </div>
-                      )}
-
-                      <div
-                        className={`max-w-[82%] whitespace-pre-wrap rounded-[24px] px-5 py-4 text-base leading-7 shadow-sm ${
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "border border-border bg-card text-foreground"
-                        }`}
-                      >
-                        {message.content}
-                      </div>
-
-                      {message.role === "user" && (
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground">
-                          <User size={17} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {sending && (
-                    <div className="flex items-end gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Bot size={17} />
-                      </div>
-
-                      <div className="rounded-[24px] border border-border bg-card px-5 py-4 text-base text-muted-foreground shadow-sm">
-                        <span>AI skriver</span>
-                        <span className="ml-1 inline-flex gap-1">
-                          <span className="animate-bounce">.</span>
-                          <span className="animate-bounce delay-100">.</span>
-                          <span className="animate-bounce delay-200">.</span>
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div ref={messagesEndRef} />
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 flex items-end gap-3">
-              <textarea
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
-                onKeyDown={handleTextareaKeyDown}
-                placeholder="Skriv din fråga här..."
-                rows={2}
-                className="min-h-[76px] flex-1 resize-none rounded-[22px] border border-border bg-card px-5 py-4 text-base outline-none placeholder:text-muted-foreground"
-              />
-
-              <button
-                onClick={handleSendMessage}
-                disabled={sending || !messageInput.trim()}
-                className="flex h-[76px] w-[76px] items-center justify-center rounded-[22px] bg-primary text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
-              >
-                <MessageCircle size={sending ? 24 : 26} />
-              </button>
-            </div>
-          </section>
-        )}
+        </section>
       </div>
     </main>
   );

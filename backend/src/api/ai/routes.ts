@@ -3,6 +3,7 @@ import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { aiMessages, aiThreads } from "../../db/schema";
 import { auth } from "../../utils/auth";
+import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
 
 const router = Router();
 
@@ -11,18 +12,6 @@ const OPENROUTER_MODEL =
   process.env.OPENROUTER_MODEL ||
   "meta-llama/llama-3.1-8b-instruct:free";
 
-const SYSTEM_PROMPT = `
-Du är "Adulting coach", en hjälpsam AI för unga vuxna i Sverige.
-
-Du hjälper med alla typer av frågor i vardagen.
-
-Regler:
-- Svara enkelt
-- Svara tydligt
-- Ge praktiska steg
-- Om du är osäker säg det
-- Hitta inte på fakta
-`;
 
 function makeHeadersFromRequest(req: Request) {
   const headers = new Headers();
@@ -225,11 +214,7 @@ router.delete("/threads/:threadId", async (req, res) => {
   }
 });
 
-/*
-========================
-GET MESSAGES
-========================
-*/
+
 router.get("/threads/:threadId/messages", async (req, res) => {
   try {
     const userId = await requireUser(req, res);
@@ -269,11 +254,7 @@ router.get("/threads/:threadId/messages", async (req, res) => {
   }
 });
 
-/*
-========================
-SEND MESSAGE
-========================
-*/
+
 router.post("/threads/:threadId/messages", async (req, res) => {
   try {
     const userId = await requireUser(req, res);
@@ -306,18 +287,14 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       });
     }
 
-    /*
-    Save user message
-    */
+   
     await db.insert(aiMessages).values({
       threadId,
       role: "user",
       content: cleanMessage,
     });
 
-    /*
-    Better title
-    */
+    
     let newTitle = thread.title;
 
     if (thread.title === "Ny AI-chatt") {
@@ -332,9 +309,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       })
       .where(eq(aiThreads.id, threadId));
 
-    /*
-    Get full history
-    */
+    
     const allMessages = await db
       .select()
       .from(aiMessages)
@@ -357,9 +332,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
         "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
     }
 
-    /*
-    Save AI response
-    */
+  
     await db.insert(aiMessages).values({
       threadId,
       role: "assistant",
