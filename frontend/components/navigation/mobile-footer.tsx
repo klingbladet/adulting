@@ -5,13 +5,13 @@ import { usePathname } from 'next/navigation'
 import { Home, BookOpen, LifeBuoy, User } from 'lucide-react'
 
 const links = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/learn', label: 'Learn', icon: BookOpen },
+  { href: '/learn', label: 'Home', icon: Home },
+  { href: '/courses', label: 'Courses', icon: BookOpen },
   { href: '/assistance', label: 'Assistance', icon: LifeBuoy },
-  { href: '/you', label: 'You', icon: User },
+  { href: '/profile', label: 'You', icon: User },
 ]
 
-export default function Navbar() {
+export default function MobileFooter() {
   const pathname = usePathname()
 
   return (

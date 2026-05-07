@@ -20,6 +20,7 @@ services:
     build: ./backend
     ports:
       - 3001:3001
+      - 3002:3002
     command: ["pnpm", "run", "dev"]
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -49,7 +50,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
-    entrypoint: ["pnpm", "push"]
+    entrypoint: ["pnpm", "db:push"]
     volumes:
       - db-migrations:/app/drizzle
 

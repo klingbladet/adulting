@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { courses, userCourses, quizAttempts, userAchievements } from "./course-schema"
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, boolean, index, jsonb} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -84,7 +84,7 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ one, many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   courses: many(userCourses),
@@ -105,3 +105,22 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const userOnboarding = pgTable("user_onboarding", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  currentStep: integer("current_step").notNull().default(1),
+
+  stepOneData: jsonb("step_one_data").$type<Record<string, unknown>>(),
+  stepTwoData: jsonb("step_two_data").$type<Record<string, unknown>>(),
+  stepThreeData: jsonb("step_three_data").$type<Record<string, unknown>>(),
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
