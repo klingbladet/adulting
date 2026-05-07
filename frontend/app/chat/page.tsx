@@ -61,19 +61,21 @@ export default function ChatPage() {
 
   useEffect(() => {
   if (tab === "personer" && session) {
-    fetchCreators();
+    fetchUsers();
   }
 }, [tab, session]);
 
-  async function fetchCreators() {
+  async function fetchUsers() {
   try {
     setLoadingCreators(true);
-    const response = await fetch(`${API_BASE}/api/users/creators`, {
+    const response = await fetch(`${API_BASE}/api/users`, {
       credentials: "include",
     });
     const data = await safeJson(response);
     if (!response.ok) throw new Error(data?.error);
-    setCreators(Array.isArray(data) ? data : []);
+    // Filtrera bort sig själv från listan
+    const filteredUsers = Array.isArray(data) ? data.filter((user: Creator) => user.id !== session?.user.id) : [];
+    setCreators(filteredUsers);
   } catch {
     setCreators([]);
   } finally {
@@ -333,44 +335,9 @@ export default function ChatPage() {
           </div>
 
           {tab === "personer" ? (
-  <div className="mt-6 space-y-3">
-    {loadingCreators ? (
-      <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
-        Laddar creators...
-      </div>
-    ) : creators.length === 0 ? (
-      <div className="rounded-2xl border border-border bg-background p-4 text-muted-foreground">
-        Inga creators hittades.
-      </div>
-    ) : (
-      creators.map((creator) => (
-  <div
-    key={creator.id}
-    onClick={() => setSelectedCreator(creator)}
-    className={`flex items-center gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-      selectedCreator?.id === creator.id
-        ? "border-primary bg-secondary"
-        : "border-border bg-background hover:border-primary/40"
-    }`}
-  >
-          {creator.image ? (
-            <img
-              src={creator.image}
-              alt={creator.name}
-              className="h-10 w-10 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-              {creator.name.charAt(0).toUpperCase()}
+            <div className="mt-6 rounded-2xl border border-border bg-background p-6 text-sm text-muted-foreground">
+              Välj en kreatör i chattfältet till höger för att börja skriva.
             </div>
-          )}
-          <p className="text-base font-medium text-foreground">
-            {creator.name}
-          </p>
-        </div>
-      ))
-    )}
-  </div>
           ) : (
             <>
               <button
@@ -423,16 +390,9 @@ export default function ChatPage() {
         </aside>
 
        {tab === "personer" ? (
-  <section className="flex min-h-[78vh] items-center justify-center bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
-    <div className="w-full max-w-2xl rounded-[24px] border border-dashed border-border bg-background/70 px-8 py-16 text-center">
-      <h2 className="text-4xl font-bold text-foreground">
-        Välj en person
-      </h2>
-      <p className="mt-4 text-lg text-muted-foreground">
-        Välj en creator i listan till vänster för att starta en chatt.
-      </p>
-    </div>
-  </section>
+          <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-0 md:p-0">
+            <CreatorChat creators={creators} />
+          </section>
         ) : (
           <section className="flex min-h-[78vh] flex-col bg-gradient-to-br from-secondary via-background to-accent p-6 md:p-8">
             <div className="mb-6 flex items-center justify-between">

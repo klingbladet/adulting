@@ -1,5 +1,5 @@
 "use client";
-import { io, Socket } from "socket.io";
+import { io, type Socket } from "socket.io-client";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "@/lib/auth-client";
 import type { Creator } from "@/app/chat/page";
@@ -11,15 +11,15 @@ interface Message {
   createdAt: string;
 }
 
-let socket: Socket;
-
 export function CreatorChat({ creators }: { creators: Creator[] }) {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [connected, setConnected] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
   const { data: session } = useSession();
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3002";
 
   const roomId = selectedCreator
     ? [session?.user.id, selectedCreator.id].sort().join("_")
@@ -28,22 +28,30 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
   useEffect(() => {
     if (!session?.user.id) return;
 
-    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
+    const socket = io(socketUrl, {
       auth: { userId: session.user.id },
     });
 
+    socketRef.current = socket;
+
     socket.on("connect", () => setConnected(true));
     socket.on("disconnect", () => setConnected(false));
+    socket.on("connect_error", (error) => {
+      console.error("Socket connect error:", error);
+    });
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
-  }, [session?.user.id]);
+  }, [session?.user.id, socketUrl]);
 
   useEffect(() => {
+    const socket = socketRef.current;
     if (!roomId || !socket) return;
 
     socket.emit("join_room", roomId);
+    console.log("join_room", roomId);
 
     const handler = (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -52,18 +60,22 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
     socket.on("receive_message", handler);
 
     return () => {
-      socket.off("receive_message", handler);
-      socket.emit("leave_room", roomId);
+      if (socket) {
+        socket.off("receive_message", handler);
+        socket.emit("leave_room", roomId);
+      }
       setMessages([]);
     };
   }, [roomId]);
 
   useEffect(() => {
+    console.log("CreatorChat messages changed", messages.length, bottomRef.current);
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = () => {
-    if (!input.trim() || !roomId || !session?.user.id) return;
+    const socket = socketRef.current;
+    if (!input.trim() || !roomId || !session?.user.id || !socket) return;
 
     const message: Message = {
       id: crypto.randomUUID(),
@@ -72,16 +84,17 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
       createdAt: new Date().toISOString(),
     };
 
+    console.log("send_message", roomId, message);
     socket.emit("send_message", { roomId, message });
     setMessages((prev) => [...prev, message]);
     setInput("");
   };
 
   return (
-    <div className="flex h-screen">
-      <aside className="w-64 border-r bg-gray-50 p-4 flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-          Kreatörer
+    <div className="flex h-full min-h-[78vh] overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+      <aside className="w-64 border-r border-border bg-background p-6 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+          Användare
         </h2>
         {creators.map((creator) => (
           <button
@@ -101,31 +114,31 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
         ))}
       </aside>
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col bg-background/70 p-4">
         {selectedCreator ? (
           <>
-            <header className="border-b px-6 py-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-bold uppercase">
+            <header className="border-b border-border px-6 py-4 flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold uppercase">
                 {selectedCreator.name?.[0]}
               </div>
               <div>
-                <p className="font-semibold">{selectedCreator.name}</p>
-                <p className={`text-xs ${connected ? "text-green-500" : "text-gray-400"}`}>
+                <p className="text-base font-semibold text-foreground">{selectedCreator.name}</p>
+                <p className={`text-xs ${connected ? "text-green-500" : "text-muted-foreground"}`}>
                   {connected ? "Ansluten" : "Offline"}
                 </p>
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3">
+            <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
               {messages.map((msg) => {
                 const isMe = msg.senderId === session?.user.id;
                 return (
                   <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-xs px-4 py-2 rounded-2xl text-sm ${
+                      className={`max-w-xs px-4 py-3 rounded-[22px] text-sm leading-6 whitespace-pre-wrap shadow-sm ${
                         isMe
-                          ? "bg-black text-white rounded-br-sm"
-                          : "bg-gray-100 text-gray-900 rounded-bl-sm"
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "border border-border bg-card text-foreground rounded-bl-sm"
                       }`}
                     >
                       {msg.content}
@@ -142,18 +155,18 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
               <div ref={bottomRef} />
             </div>
 
-            <footer className="border-t px-6 py-4 flex gap-3">
-              <input
-                className="flex-1 border rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-black"
+            <footer className="border-t border-border px-6 py-4 flex gap-3">
+              <textarea
+                className="min-h-19 flex-1 resize-none rounded-[22px] border border-border bg-card px-5 py-4 text-base outline-none placeholder:text-muted-foreground"
                 placeholder="Skriv ett meddelande..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendMessage())}
               />
               <button
                 onClick={sendMessage}
                 disabled={!input.trim()}
-                className="bg-black text-white rounded-full px-5 py-2 text-sm font-medium disabled:opacity-40 hover:bg-gray-800 transition-colors"
+                className="flex h-19 w-19 items-center justify-center rounded-[22px] bg-primary text-primary-foreground transition hover:opacity-95 disabled:opacity-50"
               >
                 Skicka
               </button>
@@ -161,7 +174,7 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-            Välj en kreatör för att börja chatta
+            Välj en användare för att börja chatta
           </div>
         )}
       </main>
