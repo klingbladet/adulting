@@ -19,7 +19,7 @@ export const courses = pgTable("courses", {
 });
 
 export const blocks = pgTable("blocks", {
-  id: uuid("id").primaryKey(),
+  id: serial("id").primaryKey(),
   courseId: integer("course_id")
     .notNull()
     .references(() => courses.id),
@@ -32,7 +32,7 @@ export const blocks = pgTable("blocks", {
 
 export const quizzes = pgTable("quizzes", {
   id: serial("id").primaryKey(),
-  blockId: uuid("block_id")
+  blockId: integer("block_id")
     .notNull()
     .references(() => blocks.id, { onDelete: "cascade" }), // Enligt din mall
   questionText: text("question_text").notNull(),
