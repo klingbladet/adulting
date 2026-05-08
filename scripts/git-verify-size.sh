@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 # 512000 = 500KiB
 max=512000
 
@@ -20,13 +22,14 @@ if [ "$#" -ne 2 ] || [ -z "$merge_from_branch" ] || [ -z "$merge_to_branch" ]; t
     exit 2
 fi
 
+git fetch -a
 echo "from: $merge_from_branch"
 echo "to:   $merge_to_branch"
 echo
 echo "available branches:"
 git branch -a
 
-size_diff_bytes=$(git rev-list --disk-usage --objects "$merge_to_branch..$merge_from_branch" || exit)
+size_diff_bytes=$(git rev-list --disk-usage --objects "$merge_to_branch..$merge_from_branch")
 
 if [ "$size_diff_bytes" -gt "$max" ]; then
     echo "--- BRANCH CHANGES ARE TOO BIG!!! ---"
