@@ -31,7 +31,9 @@ check git size diff:
   image: alpine:latest
   script:
     - apk add --no-cache git
-    - ./scripts/git-verify-size.sh $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - ./scripts/git-verify-size.sh \
+      remotes/origin$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME \
+      remotes/origin$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
