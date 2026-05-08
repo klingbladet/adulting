@@ -3,7 +3,7 @@
 set -e
 
 # 512000 = 500KiB
-max=512000
+max=5100
 
 human() {
     # takes in bytes
@@ -26,8 +26,6 @@ git fetch -a
 echo "from: $merge_from_branch"
 echo "to:   $merge_to_branch"
 echo
-echo "available branches:"
-git branch -a
 
 size_diff_bytes=$(git rev-list --disk-usage --objects "$merge_to_branch..$merge_from_branch")
 
