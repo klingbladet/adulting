@@ -24,9 +24,9 @@ echo "from: $merge_from_branch"
 echo "to:   $merge_to_branch"
 echo
 echo "available branches:"
-git branch
+git branch -a
 
-size_diff_bytes=$(git rev-list --disk-usage --objects "$merge_to_branch..$merge_from_branch")
+size_diff_bytes=$(git rev-list --disk-usage --objects "$merge_to_branch..$merge_from_branch" || exit)
 
 if [ "$size_diff_bytes" -gt "$max" ]; then
     echo "--- BRANCH CHANGES ARE TOO BIG!!! ---"
