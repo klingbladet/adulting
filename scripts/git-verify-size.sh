@@ -22,7 +22,6 @@ if [ "$#" -ne 2 ] || [ -z "$merge_from_branch" ] || [ -z "$merge_to_branch" ]; t
     exit 2
 fi
 
-git fetch -a
 echo "from: $merge_from_branch"
 echo "to:   $merge_to_branch"
 echo
