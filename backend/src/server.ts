@@ -12,6 +12,7 @@ import adminRoutes from "./api/routes/admin";
 import courseRoutes from "./api/routes/course-routes";
 import userRoutes from "./api/routes/users"
 import onboardingRouter from "./api/routes/onboarding";
+import learningRoutes from "./api/routes/learning-routes";
 
 
 const app = express();
@@ -47,6 +48,7 @@ app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/ai", aiRoutes)
 app.use("/api/onboarding", onboardingRouter);
+app.use("/api/learning", learningRoutes);
 
 app.get("/health", async (_req, res) => {
   try {

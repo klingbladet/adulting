@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, BookOpen, LifeBuoy, User } from 'lucide-react'
 
+
 const links = [
   { href: '/learn', label: 'Home', icon: Home },
   { href: '/courses', label: 'Courses', icon: BookOpen },

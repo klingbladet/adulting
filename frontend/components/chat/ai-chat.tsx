@@ -350,7 +350,7 @@ export default function AiChat() {
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 h-full w-[82%] max-w-[310px] border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
+          className={`fixed left-0 top-0 z-50 h-full w-[82%] max-w-77 border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
