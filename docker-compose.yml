@@ -28,6 +28,45 @@ services:
       BETTER_AUTH_URL: http://localhost:3001
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL}
+      OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-http://localhost:3000}
+      OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-Adulting Learning App}
+      LEARNING_LESSON_PROVIDER: mock
+      LEARNING_PROFILE_PROVIDER: mock
+    depends_on:
+      - migrate-db
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          initial_sync: true
+          ignore:
+            - node_modules
+            - .next
+        - action: rebuild
+          path: ./backend/package.json
+
+  mcp:
+    build: ./backend
+    ports:
+      - 3003:3003
+    command: ["pnpm", "run", "mcp:dev"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: http://localhost:3001
+
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL}
+      OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-http://localhost:3000}
+      OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-Adulting Learning App}
+
+      MCP_PORT: 3003
+      MCP_HOST: 0.0.0.0
+      MCP_INTERNAL_TOKEN: ${MCP_INTERNAL_TOKEN:-}
+
+      LEARNING_LESSON_PROVIDER: mock
+      LEARNING_PROFILE_PROVIDER: mock
     depends_on:
       - migrate-db
     develop:

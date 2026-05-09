@@ -13,6 +13,7 @@ import courseRoutes from "./api/routes/course-routes";
 import userRoutes from "./api/routes/users"
 import onboardingRouter from "./api/routes/onboarding";
 import learningRoutes from "./api/routes/learning-routes";
+import learningAssistantRoutes from "./api/routes/learning-assistant-routes";
 
 
 const app = express();
@@ -49,6 +50,8 @@ app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/ai", aiRoutes)
 app.use("/api/onboarding", onboardingRouter);
 app.use("/api/learning", learningRoutes);
+app.use("/api/learning-assistant", learningAssistantRoutes);
+
 
 app.get("/health", async (_req, res) => {
   try {
