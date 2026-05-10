@@ -1,4 +1,4 @@
-import AiChatModal from "@/components/chat/ai/ai-chat-modal";
+import AiChatModal from "@/components/chat/ai-chat-modal";
 
 export default function AiChatPopupPage() {
   return (

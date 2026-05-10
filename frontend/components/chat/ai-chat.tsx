@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
+import type { AiLearningContext } from "@/lib/learning-context";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -34,7 +35,35 @@ type Message = {
   createdAt: string;
 };
 
-export default function AiChat() {
+type AiChatProps = {
+  /**
+   * Används när chatten ligger i en modal.
+   * Då ska stäng-knappen stänga modal, inte köra router.back().
+   */
+  onClose?: () => void;
+
+  /**
+   * Optional learning context.
+   *
+   * Om denna skickas med blir befintlig AI-chat lesson-aware.
+   */
+  learningContext?: AiLearningContext;
+
+  /**
+   * standalone:
+   * AiChat renderar egen overlay.
+   *
+   * embedded:
+   * AiChat ligger redan inuti en modal och ska inte skapa extra overlay.
+   */
+  variant?: "standalone" | "embedded";
+};
+
+export default function AiChat({
+  onClose,
+  learningContext,
+  variant = "standalone",
+}: AiChatProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -263,8 +292,21 @@ export default function AiChat() {
           },
           credentials: "include",
           body: JSON.stringify({
-            message: cleanMessage,
-          }),
+          message: cleanMessage,
+
+          /**
+           * Om AiChat får learningContext via props skickar vi den till backend.
+           *
+           * Backend använder då:
+           * - courseId
+           * - lessonId
+           * - mode
+           * - quizAnswers
+           *
+           * för att göra assistenten lesson-aware.
+           */
+          ...(learningContext ? { learningContext } : {}),
+        }),
         }
       );
 
@@ -312,6 +354,15 @@ export default function AiChat() {
     setSidebarOpen(false);
   }
 
+  function handleCloseChat() {
+  if (onClose) {
+    onClose();
+    return;
+  }
+
+  router.back();
+}
+
   useEffect(() => {
     if (session) {
       fetchThreads();
@@ -339,10 +390,24 @@ export default function AiChat() {
     );
   }
 
-  return (
-    <main className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-4">
-      <div className="relative flex h-[90vh] w-full max-w-6xl overflow-hidden rounded-[30px] bg-background shadow-2xl md:h-[82vh] md:border md:border-border">
-        {sidebarOpen && (
+  const isEmbedded = variant === "embedded";
+
+return (
+  <main
+    className={
+      isEmbedded
+        ? "flex h-full w-full items-center justify-center bg-transparent"
+        : "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-4"
+    }
+  >
+    <div
+      className={
+        isEmbedded
+          ? "relative flex h-full w-full overflow-hidden bg-background"
+          : "relative flex h-[90vh] w-full max-w-6xl overflow-hidden rounded-[30px] bg-background shadow-2xl md:h-[82vh] md:border md:border-border"
+      }
+    >
+       {sidebarOpen && (
           <div
             onClick={() => setSidebarOpen(false)}
             className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
@@ -510,7 +575,7 @@ export default function AiChat() {
               </button>
 
               <button
-                onClick={() => router.back()}
+                onClick={handleCloseChat}
                 className="flex h-10 w-10 items-center justify-center rounded-2xl text-foreground transition hover:bg-secondary"
                 title="Stäng"
               >
