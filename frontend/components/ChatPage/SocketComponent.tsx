@@ -1,4 +1,4 @@
-/* "use client";
+"use client";
 import { io, type Socket } from "socket.io-client";
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "@/lib/auth-client";
@@ -180,4 +180,4 @@ export function CreatorChat({ creators }: { creators: Creator[] }) {
       </main>
     </div>
   );
-} */
+}
