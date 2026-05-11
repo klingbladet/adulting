@@ -1,47 +1,54 @@
 import Link from 'next/link';
 import CourseButton from '@/components/ui/courses/course-buttons';
-import { getBlock, getCourse } from '@/lib/course-data';
+import { getCourseById, getBlocksByCourseId } from '@/lib/api';
 
-export default async function SummaryPage({ params }: { params: Promise<{ courseId: string, id: string }> }) {
+export default async function SummaryPage({ params }: { params: Promise<{ courseId: string; id: string }> }) {
   const { courseId, id } = await params;
-  const { step } = getBlock(courseId, id);
-  const course = getCourse(courseId);
-  const totalSteps = course?.totalBlocks ?? 0;
-  const isLastStep = Number(id) >= totalSteps;
 
-  if (!step) {
+  let course;
+  let blocks;
+
+  try {
+    [course, blocks] = await Promise.all([
+      getCourseById(courseId),
+      getBlocksByCourseId(courseId),
+    ]);
+  } catch {
+    return <div>Kunde inte hämta kursdata</div>;
+  }
+
+  const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
+  const block = sortedBlocks.find((b) => b.id === Number(id));
+  const isLastBlock = sortedBlocks[sortedBlocks.length - 1]?.id === Number(id);
+
+  if (!block) {
     return <div>Steg hittades inte</div>;
   }
 
-  const nextStepPath = isLastStep 
-    ? `/courses/${courseId}/overview` 
-    : `/courses/${courseId}/steps/${Number(id) + 1}`;
-
   return (
     <main className="flex flex-col min-h-screen bg-background p-6 text-center">
-      
+
       <div className="mb-8">
         <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-4xl text-primary font-bold">✓</span>
         </div>
         <h1 className="text-3xl font-bold mb-2 text-foreground">Snyggt jobbat!</h1>
         <p className="text-muted-foreground text-lg">
-          Du har slutfört: {step.title}
+          Du har slutfört: {block.title}
         </p>
+        {isLastBlock && course && (
+          <p className="text-muted-foreground mt-2">
+            Du har nu gått igenom hela kursen: <strong>{course.title}</strong>
+          </p>
+        )}
       </div>
 
       <div className="w-full space-y-4">
-        <Link href={nextStepPath} className="block">
+        <Link href={`/courses/${courseId}/overview`} className="block">
           <CourseButton variant="primary">
-            {isLastStep ? 'Tillbaka till översikt' : 'Nästa steg'}
+            Tillbaka till översikt
           </CourseButton>
         </Link>
-        
-        {!isLastStep && (
-          <Link href={`/courses/${courseId}/overview`} className="block">
-            <CourseButton variant="secondary">Tillbaka till kursöversikt</CourseButton>
-          </Link>
-        )}
       </div>
     </main>
   );
