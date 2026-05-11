@@ -8,9 +8,12 @@
 		"start": "tsx ./src/server.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:push": "drizzle-kit generate && drizzle-kit migrate"
+		"db:push": "drizzle-kit generate && drizzle-kit migrate",
+		"mcp:dev": "tsx watch ./src/mcp/http-server.ts",
+    	"mcp:start": "tsx ./src/mcp/http-server.ts"
 	},
 	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.29.0",
 		"better-auth": "^1.6.0",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.0",
