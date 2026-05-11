@@ -89,7 +89,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
-    entrypoint: ["pnpm", "db:push"]
+    entrypoint: ["pnpm", "db:migrate"]
     volumes:
       - db-migrations:/app/drizzle
 
