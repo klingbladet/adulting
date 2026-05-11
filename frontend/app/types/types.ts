@@ -16,17 +16,50 @@ export interface Course {
   time: number | null;
   blocks: number | null;
   status: string | null;
+  isPublished: boolean;
+  blocksList?: Block[];
 }
 
-export interface Blocks {
-  id: number,
-  
+export interface Block {
+  id: number;
+  courseId: number;
+  orderIndex: number;
+  title: string | null;
+  content: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  quizzes?: Quiz[];
 }
 
 export interface Quiz {
   id: number;
-  courseId: number;
+  blockId: number;
   questionText: string;
   correctAnswer: string | null;
 }
 
+export interface UserCourse {
+  id: string;
+  userId: string;
+  courseId: number;
+  status: "not_started" | "in_progress" | "completed" | string;
+  enrolledAt: string;
+  completedAt: string | null;
+  score: number | null;
+  course?: Course;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string | null;
+  iconUrl: string | null;
+}
+
+export interface UserAchievement {
+  id: string;
+  userId: string;
+  achievementId: string;
+  unlockedAt: string;
+  achievement?: Achievement;
+}
