@@ -17,7 +17,7 @@ export default async function BlockPage({ params }: { params: Promise<{ courseId
   };
 
   const previousStep = `steps/${Number(id) - 1}`
-
+ 
   if (!block) {
     return (
       <main className="flex flex-col min-h-screen items-center justify-center p-6 bg-background">

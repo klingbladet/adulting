@@ -1,4 +1,4 @@
-﻿import { relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { user } from "./auth-schema"
 import { pgTable, uuid, varchar, serial, integer, text, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
 
@@ -132,4 +132,9 @@ export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
 export const quizAttemptsRelations = relations(quizAttempts, ({ one }) => ({
   user: one(user, { fields: [quizAttempts.userId], references: [user.id] }),
   quiz: one(quizzes, { fields: [quizAttempts.quizId], references: [quizzes.id] }),
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(user, { fields: [userAchievements.userId], references: [user.id] }),
+  achievement: one(achievements, { fields: [userAchievements.achievementId], references: [achievements.id] }),
 }));

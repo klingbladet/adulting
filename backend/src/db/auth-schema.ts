@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import crypto from "crypto";
 import { courses, userCourses, quizAttempts, userAchievements } from "./course-schema"
 import { pgTable, text, timestamp, integer, boolean, index, jsonb} from "drizzle-orm/pg-core";
 

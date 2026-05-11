@@ -18,6 +18,11 @@ export interface Course {
   status: string | null;
 }
 
+export interface Blocks {
+  id: number,
+  
+}
+
 export interface Quiz {
   id: number;
   courseId: number;
@@ -25,10 +30,3 @@ export interface Quiz {
   correctAnswer: string | null;
 }
 
-export interface UserProgress {
-  id: number;
-  userId: string;
-  courseId: number;
-  status: string;
-  score: number | null;
-}
