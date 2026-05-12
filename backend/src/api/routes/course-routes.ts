@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { ZodError, ZodIssue } from "zod"; 
+import { ZodError, ZodIssue, z } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
 import { insertCourseSchema } from "../../db/validation";
 import { courseService } from "../../services/course-service";
 import { auth } from "../../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
+import { db } from "../../db";
+import { userCourses } from "../../db/course-schema";
+import { eq, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -70,6 +73,73 @@ router.post("/", checkRole(["admin", "creator"]), async (req, res) => {
       return;
     }
     console.error("Fel vid skapande av kurs", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+const enrollSchema = z.object({
+  knowledgeLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+});
+
+// POST /api/courses/:courseId/enroll
+// Skapar eller uppdaterar en userCourses-rad med knowledgeLevel
+router.post("/:courseId/enroll", async (req, res) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Du måste vara inloggad." });
+      return;
+    }
+
+    const courseId = parseInt(req.params.courseId);
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Ogiltigt kurs-ID." });
+      return;
+    }
+
+    const { knowledgeLevel } = enrollSchema.parse(req.body ?? {});
+    const userId = session.user.id;
+
+    // Kolla om användaren redan är inskriven
+    const [existing] = await db
+      .select()
+      .from(userCourses)
+      .where(and(eq(userCourses.userId, userId), eq(userCourses.courseId, courseId)));
+
+    if (existing) {
+      // Uppdatera knowledgeLevel
+      const [updated] = await db
+        .update(userCourses)
+        .set({ knowledgeLevel: knowledgeLevel ?? null })
+        .where(and(eq(userCourses.userId, userId), eq(userCourses.courseId, courseId)))
+        .returning();
+      res.status(200).json({ message: "Kursregistrering uppdaterad.", userCourse: updated });
+    } else {
+      // Skapa ny rad
+      const [created] = await db
+        .insert(userCourses)
+        .values({
+          userId,
+          courseId,
+          status: "not_started",
+          enrolledAt: new Date(),
+          knowledgeLevel: knowledgeLevel ?? null,
+        })
+        .returning();
+      res.status(201).json({ message: "Inskriven i kursen.", userCourse: created });
+    }
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        error: "Validation failed",
+        details: error.issues.map((e: ZodIssue) => ({ path: e.path, message: e.message })),
+      });
+      return;
+    }
+    console.error("Fel vid inskrivning i kurs:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

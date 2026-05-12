@@ -1,80 +1,79 @@
 'use client';
 import CourseButton from '@/components/ui/courses/course-buttons';
 import Link from 'next/link'
-import { use } from 'react';
-import { getCourse } from '@/lib/course-data';
+import { use, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { enrollInCourse } from '@/lib/api';
 import { CheckCircle2 } from 'lucide-react';
 
-export default function Personalize({ params }: { params: Promise <{ courseId: string }> }) {
-  const resolvedParams = use(params)
-  const courseId = resolvedParams.courseId;
-  const course = getCourse(courseId)
+type KnowledgeLevel = "beginner" | "intermediate";
 
-  if (!course) {
-    return (
-      <div className="p-6 text-foreground">
-        <h1 className="text-xl font-bold">Kursen hittades inte</h1>
-        <p>Kunde inte hitta kursen {courseId}</p>
-      </div>
-    );
+const levelOptions: { label: string; value: KnowledgeLevel }[] = [
+  { label: 'Helt ny - vet inte var jag ska börja', value: 'beginner' },
+  { label: 'Lite grann - har kollat men osäker', value: 'intermediate' }
+];
+
+export default function Personalize({ params }: { params: Promise<{ courseId: string }> }) {
+  const resolvedParams = use(params);
+  const courseId = resolvedParams.courseId;
+  const router = useRouter();
+
+  const [selectedLevel, setSelectedLevel] = useState<KnowledgeLevel | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await enrollInCourse(courseId, selectedLevel ?? undefined);
+      router.push(`/courses/${courseId}/overview`);
+    } catch (err) {
+      console.error(err);
+      setError('Något gick fel. Försök igen.');
+      setIsLoading(false);
+    }
   }
-  return(
+
+  return (
     <div className="flex flex-col gap-4">
       <h1 className="text-3xl">Anpassa kursen till dig</h1>
       <p className="text-sm">Svara på några korta frågor så anpassar vi innehållet. Du kan hoppa över ifall du vill</p>
-      <h3 className="text-sm"><strong>Vad är din budget per månad?</strong></h3>
-      <div className="flex flex-col gap-3 text-sm">
-        {['Under 5 000 kr', '5 000 - 8 000 kr', 'Över 8 000 kr'].map((price) => (
-          <label key={price} className="cursor-pointer group">
-            <input 
-              type="radio" 
-              name="price-range" 
-              className="peer sr-only" 
-              value={price}
-            />
-            <div className="flex items-center justify-between p-3 border-2 border-border rounded-xl transition-all
-                          peer-checked:border-primary peer-checked:bg-secondary
-                          group-hover:border-ring">
-              
-              <p className="font-medium text-foreground peer-checked:text-secondary-foreground">
-                {price}
-              </p>
-              <CheckCircle2 
-                className="w-5 h-5 text-primary opacity-0 transition-opacity peer-checked:opacity-100" 
-              />
-            </div>
-          </label>
-        ))}
-      </div>
       <h3 className="text-sm"><strong>Hur mycket vet du om att hyra bostad?</strong></h3>
       <div className="flex flex-col gap-3 text-sm">
-        {['Helt ny - vet inte var jag ska börja', 'Lite grann - har kollat men osäker', 'Ganska bra - behöver kolla av'].map((level) => (
-          <label key={level} className="cursor-pointer group">
-            <input 
-              type="radio" 
-              name="level-range" 
-              className="peer sr-only" 
-              value={level}
+        {levelOptions.map((option) => (
+          <label key={option.value} className="cursor-pointer group">
+            <input
+              type="radio"
+              name="knowledge-level"
+              className="peer sr-only"
+              value={option.value}
+              checked={selectedLevel === option.value}
+              onChange={() => setSelectedLevel(option.value)}
             />
             <div className="flex items-center justify-between p-3 border-2 border-border rounded-xl transition-all
                           peer-checked:border-primary peer-checked:bg-secondary
                           group-hover:border-ring">
-              
-              <p className="font-medium text-foreground peer-checked:text-secondary-foreground">
-                {level}
+              <p className="font-medium text-foreground">
+                {option.label}
               </p>
-              <CheckCircle2 
-                className="w-5 h-5 text-primary opacity-0 transition-opacity peer-checked:opacity-100" 
+              <CheckCircle2
+                className={`w-5 h-5 text-primary transition-opacity ${selectedLevel === option.value ? 'opacity-100' : 'opacity-0'}`}
               />
             </div>
           </label>
         ))}
       </div>
-      <Link href={`/courses/${courseId}/overview`}>
-        <CourseButton>
-          Spara och fortsätt till kurs
-        </CourseButton>
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      <CourseButton onClick={handleSave} disabled={isLoading}>
+        {isLoading ? 'Sparar...' : 'Spara och fortsätt till kurs'}
+      </CourseButton>
+
+      <Link href={`/courses/${courseId}/overview`} className="text-center text-sm text-muted-foreground underline">
+        Hoppa över
       </Link>
     </div>
-  )
+  );
 }

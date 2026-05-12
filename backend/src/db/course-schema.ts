@@ -82,6 +82,8 @@ export const userCourses = pgTable("user_courses", {
   enrolledAt: timestamp("enrolled_at").notNull(),
   completedAt: timestamp("completed_at"),
   score: integer("score"),
+  // Personalisering: "beginner" | "intermediate" | "advanced"
+  knowledgeLevel: varchar("knowledge_level", { length: 50 }),
 });
 
 export const userAchievements = pgTable("user_achievements", {
