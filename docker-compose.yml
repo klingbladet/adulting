@@ -4,6 +4,9 @@ services:
     ports:
       - 3000:3000
     command: ["pnpm", "run", "dev"]
+    depends_on:
+      backend:
+        condition: service_healthy
     develop:
       watch:
         - action: sync
@@ -33,7 +36,8 @@ services:
       LEARNING_LESSON_PROVIDER: mock
       LEARNING_PROFILE_PROVIDER: mock
     depends_on:
-      - migrate-db
+      migrate-db:
+        condition: service_completed_successfully
     develop:
       watch:
         - action: sync
@@ -68,7 +72,8 @@ services:
       LEARNING_LESSON_PROVIDER: mock
       LEARNING_PROFILE_PROVIDER: mock
     depends_on:
-      - migrate-db
+      backend:
+        condition: service_healthy
     develop:
       watch:
         - action: sync
@@ -88,7 +93,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     entrypoint: ["pnpm", "db:migrate"]
 
   drizzle:
@@ -98,7 +104,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "4983:4983"
     entrypoint: ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
