@@ -104,8 +104,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
-      backend:
-        condition: service_healthy
+      migrate-db:
+        condition: service_completed_successfully
     ports:
       - "4983:4983"
     entrypoint: ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
