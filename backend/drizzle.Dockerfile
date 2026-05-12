@@ -4,8 +4,8 @@ WORKDIR /app
 
 RUN npm install --global pnpm@latest
 
-COPY ./package.json ./package.json
+COPY ./package.json ./pnpm-lock.yaml* pnpm-workspace.yaml ./
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY . .
