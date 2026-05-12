@@ -4,24 +4,28 @@ import React from "react"
 import { ChevronRight } from 'lucide-react';
 
 
-interface StepCardProps {
+interface BlockCardProps {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  time?: string | number | null;
+  description?: string;
   isClickable?: boolean;
   onClick?: () => void;
 }
 
-const StepCard = ({
+const BlockCard = ({
   icon,
   title,
+  time,
   description,
   isClickable = true,
   onClick
-}: StepCardProps) => {
+}: BlockCardProps) => {
   const interactiveStyles = isClickable
   ? "cursor-pointer hover:border-primary hover:shadow-md transition-all active:scale-[0.98]"
   : "";
+
+  const displaySubtitle = description || (typeof time === 'number' ? `${time} min` : time);
 
   return(
     <div
@@ -29,12 +33,14 @@ const StepCard = ({
       className={`flex items-center justify-between p-4 bg-secondary border-border rounded-2xl shadow-sm w-full ${interactiveStyles}`}
     >
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 bg-background rounded-full text-secondary-foreground shrink-0">
+        <div className="flex items-center justify-center w-6 h-6 bg-background rounded-full text-secondary-foreground shrink-0">
           {icon}
         </div>
         <div className="flex flex-col">
           <h3 className="font-semibold text-foreground text-base">{title}</h3>
-          <p className="text-sm text-foreground mt-0.5">{description}</p>
+          {displaySubtitle && (
+            <p className="text-sm text-foreground mt-0.5">{displaySubtitle}</p>
+          )}
         </div>
       </div>
       {isClickable && (
@@ -48,4 +54,4 @@ const StepCard = ({
 
 
 
-export default StepCard;
+export default BlockCard;

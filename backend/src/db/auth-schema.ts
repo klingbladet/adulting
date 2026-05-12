@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
-import { courses, userProgress } from "./course-schema"
-import { pgTable, text, timestamp, integer, boolean, index, jsonb } from "drizzle-orm/pg-core";
+import crypto from "crypto";
+import { courses, userCourses, quizAttempts, userAchievements } from "./course-schema"
+import { pgTable, text, timestamp, integer, boolean, index, jsonb} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -87,8 +88,9 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
-  courses: many(courses),
-  progress: many(userProgress),
+  courses: many(userCourses),
+  quizAttempts: many(quizAttempts),
+  achievements: many(userAchievements),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

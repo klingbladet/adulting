@@ -1,11 +1,15 @@
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import { useCallback } from 'react'
+import React from 'react'
 
 import menuBarStateSelector from './menyBarState'
 
 export default function MenuBar ({ editor } : { editor: Editor | null }) {
-    
+    const [height, setHeight] = React.useState(180)
+    const [width, setWidth] = React.useState(320)
+
+
     const editorState = useEditorState({
         editor: editor!,
         selector: menuBarStateSelector
@@ -25,6 +29,33 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
             editor!.chain().focus().setImage({ src: url }).run()
         }
     }, [editor])
+
+    const addYoutubeVideo = () => {
+      const url = window.prompt('Enter YouTube URL')
+
+      if (url) {
+        editor!.commands.setYoutubeVideo({
+          src: url,
+          width: Math.max(320, width) || 640,
+          height: Math.max(180, height) || 480,
+        })
+      }
+    }
+
+    const updateMediaSize = () => {
+        editor!.chain()
+        .focus()
+        .selectAll()
+        .updateAttributes('youtube', {
+            width: Math.max(320, width) || 640,
+            height: Math.max(180, height) || 480,
+        })
+        .updateAttributes('image', {
+            width: Math.max(320, width) || 640,
+            height: Math.max(180, height) || 480,
+        })
+        .run()
+    }
 
     if(!editor) {
         return null
@@ -89,6 +120,24 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
                     className={`bg-gray-300 px-2 rounded-sm ${editorState.isCode ? 'is-active bg-gray-400' : ''}`}
                 >
                     Code
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                    className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
+                >
+                    Left
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                    className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
+                >
+                    Center
+                </button>
+                <button
+                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                    className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
+                >
+                    Right
                 </button>
                 <button 
                     onClick={() => editor.chain().focus().unsetAllMarks().run()}
@@ -187,10 +236,48 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
                     Set image
                 </button>
                 <button 
+                    id="add" 
+                    onClick={addYoutubeVideo}
+                    className='bg-gray-300 px-2 rounded-sm hover:bg-gray-400'
+                >
+                    Add YouTube video
+                </button>
+                <div
+                    className='flex justify-center gap-1 bg-gray-300 px-2 rounded-sm'
+                >
+                    <input
+                        id="width"
+                        type="number"
+                        min="320"
+                        max="1024"
+                        placeholder="width"
+                        value={width}
+                        onChange={event => setWidth(Number(event.target.value))}
+                        className='bg-gray-300 px-2 rounded-sm'
+                    />
+                    <input
+                        id="height"
+                        type="number"
+                        min="180"
+                        max="720"
+                        placeholder="height"
+                        value={height}
+                        onChange={event => setHeight(Number(event.target.value))}
+                        className='bg-gray-300 px-2 rounded-sm'
+                    />
+                    <button 
+                        onClick={updateMediaSize}
+                        className='bg-gray-200 border border-gray-300 px-2 rounded-sm hover:bg-gray-400'
+                    >
+                        Update video/image size
+                    </button>
+                </div>
+
+                <button 
                     onClick={toggleEditable}
                     className={`bg-gray-300 px-2 rounded-sm ${isEditable ? 'is-active bg-gray-400' : ''}`}
                 >
-                        Toggle editable
+                    Toggle editable
                 </button>
                 <button 
                     onClick={() => editor.chain().focus().undo().run()} disabled={!editorState.canUndo}

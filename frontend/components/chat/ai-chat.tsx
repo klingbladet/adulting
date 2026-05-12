@@ -264,7 +264,6 @@ export default function AiChat({
 
     if (!threadId) {
       threadId = await createThread();
-
       if (!threadId) {
         setSending(false);
         return;

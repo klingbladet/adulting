@@ -18,6 +18,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid course ID" });
+      return;
+    }
+    const course = await courseService.getCourseById(id);
+    if (!course) {
+      res.status(404).json({ error: "Course not found" });
+      return;
+    }
+    res.json(course);
+  } catch (error) {
+    console.error("Fel vid hämtningen av kurs", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/", checkRole(["admin", "creator"]), async (req, res) => {
   try {
     const session = await auth.api.getSession({

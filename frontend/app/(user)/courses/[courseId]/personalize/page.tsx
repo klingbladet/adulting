@@ -1,5 +1,5 @@
 'use client';
-import CourseButton from '@/components/ui/lessons/course/course-buttons';
+import CourseButton from '@/components/ui/courses/course-buttons';
 import Link from 'next/link'
 import { use } from 'react';
 import { getCourse } from '@/lib/course-data';
