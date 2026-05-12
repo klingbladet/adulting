@@ -10,8 +10,6 @@ RUN pnpm install --frozen-lockfile
 
 COPY . /app
 
-RUN find app -name 'page.tsx' -size 0 -exec sh -c 'echo "export default function Page() { return null; }" > "$1"' _ {} \;
-ENV NEXT_IGNORE_TYPE_ERRORS=true
 RUN pnpm run build
 
 
