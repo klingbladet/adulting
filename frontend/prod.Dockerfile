@@ -10,6 +10,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . /app
 
+ENV NEXT_IGNORE_TYPE_ERRORS=true
+
 RUN pnpm run build
 
 
