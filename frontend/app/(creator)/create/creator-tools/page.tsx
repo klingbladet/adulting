@@ -1,14 +1,18 @@
 import { requireRole } from "@/lib/guards";
+import RichTextEditor from "@/components/courses/rich-text-editor";
+import GenerateQuizPanel from "@/components/learning/generate-quiz-panel";
+import { BlockPriorityDemoPanel } from "@/components/learning/block-priority-demo-panel";
+import { LearningDemoPanel } from "@/components/learning/learning-demo-panel";
 
 export default async function CreatorToolsPage() {
   await requireRole(["creator", "admin"]);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Creator Tools</h1>
-      <p className="mt-2 text-muted-foreground">
-        Verktyg för creators och admins.
-      </p>
+      <h1 className="text-2xl font-bold">Skapa en kurs</h1>
+      <RichTextEditor />
+      
+
     </div>
   );
 }

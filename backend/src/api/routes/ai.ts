@@ -1,8 +1,58 @@
 import { Router, Request, Response } from "express";
 import { and, asc, desc, eq } from "drizzle-orm";
+import { z } from "zod";
+
 import { db } from "../../db";
 import { aiMessages, aiThreads } from "../../db/schema";
 import { auth } from "../../utils/auth";
+import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
+import {
+  buildAssistantSystemPrompt,
+  defaultAssistantContextService,
+} from "../../services/learning/assistant-context-service";
+
+/**
+ * Existing AI chat route, now with optional learning context.
+ *
+ * Detta är fortfarande er vanliga AI-chat:
+ * - threads
+ * - messages
+ * - auth
+ * - OpenRouter
+ *
+ * Nytt:
+ * Frontend kan nu skicka learningContext när användaren är inne på en kurs/lektion.
+ *
+ * Exempel body till:
+ * POST /api/ai/threads/:threadId/messages
+ *
+ * {
+ *   "message": "Kan du förklara kontantinsats enklare?",
+ *   "learningContext": {
+ *     "courseId": "course_bostad_001",
+ *     "lessonId": "lesson_bolan_001",
+ *     "mode": "lesson_help",
+ *     "quizAnswers": [
+ *       {
+ *         "blockId": "block_bolan_text_004",
+ *         "isCorrect": false
+ *       },
+ *       {
+ *         "blockId": "block_bolan_text_004",
+ *         "isCorrect": false
+ *       }
+ *     ]
+ *   }
+ * }
+ *
+ * TODO när lessonbuilder-teamet är ikapp:
+ * - lessonId ska komma från riktig kurs/lektion i frontend.
+ * - LEARNING_LESSON_PROVIDER kan bytas från mock till database.
+ *
+ * TODO när quiz_attempts finns:
+ * - Sluta skicka quizAnswers från frontend.
+ * - Hämta senaste quiz attempt från DB baserat på userId + lessonId.
+ */
 
 const router = Router();
 
@@ -11,18 +61,30 @@ const OPENROUTER_MODEL =
   process.env.OPENROUTER_MODEL ||
   "meta-llama/llama-3.1-8b-instruct:free";
 
-const SYSTEM_PROMPT = `
-Du är "Adulting coach", en hjälpsam AI för unga vuxna i Sverige.
+const aiLearningContextSchema = z
+  .object({
+    courseId: z.string().optional(),
+    lessonId: z.string().optional(),
+    mode: z
+      .enum(["general", "lesson_help", "quiz_review", "course_recommendation"])
+      .optional(),
+    quizAnswers: z
+      .array(
+        z.object({
+          blockId: z.string(),
+          isCorrect: z.boolean(),
+        }),
+      )
+      .optional(),
+  })
+  .optional();
 
-Du hjälper med alla typer av frågor i vardagen.
+const sendMessageBodySchema = z.object({
+  message: z.string().min(1),
+  learningContext: aiLearningContextSchema,
+});
 
-Regler:
-- Svara enkelt
-- Svara tydligt
-- Ge praktiska steg
-- Om du är osäker säg det
-- Hitta inte på fakta
-`;
+type LearningContext = z.infer<typeof aiLearningContextSchema>;
 
 function makeHeadersFromRequest(req: Request) {
   const headers = new Headers();
@@ -59,11 +121,57 @@ async function requireUser(req: Request, res: Response) {
   return userId;
 }
 
+/**
+ * Bygger systemprompt.
+ *
+ * Utan learningContext:
+ * - använder vanliga SYSTEM_PROMPT
+ *
+ * Med learningContext:
+ * - kombinerar vanliga SYSTEM_PROMPT med lesson-aware context
+ */
+async function buildLearningAwareSystemPrompt(input: {
+  userId: string;
+  learningContext?: LearningContext;
+}) {
+  const { userId, learningContext } = input;
+
+  if (!learningContext?.lessonId && !learningContext?.courseId) {
+    return SYSTEM_PROMPT;
+  }
+
+  const assistantContext =
+    await defaultAssistantContextService.buildAssistantContext({
+      userId,
+      courseId: learningContext.courseId,
+      lessonId: learningContext.lessonId,
+      mode: learningContext.mode ?? "lesson_help",
+      quizAnswers: learningContext.quizAnswers,
+    });
+
+  const learningSystemPrompt = buildAssistantSystemPrompt(
+    assistantContext.promptContext,
+  );
+
+  return [
+    SYSTEM_PROMPT,
+    "",
+    "========================",
+    "EXTRA LEARNING CONTEXT",
+    "========================",
+    "",
+    learningSystemPrompt,
+  ].join("\n");
+}
+
 async function callOpenRouter(
   history: Array<{
     role: "user" | "assistant";
     content: string;
-  }>
+  }>,
+  options?: {
+    systemPrompt?: string;
+  },
 ) {
   if (!OPENROUTER_API_KEY) {
     throw new Error("OPENROUTER_API_KEY saknas");
@@ -84,14 +192,14 @@ async function callOpenRouter(
         messages: [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: options?.systemPrompt ?? SYSTEM_PROMPT,
           },
           ...history,
         ],
         temperature: 0.7,
         max_tokens: 700,
       }),
-    }
+    },
   );
 
   const rawText = await response.text();
@@ -109,7 +217,7 @@ async function callOpenRouter(
 
   if (!response.ok) {
     throw new Error(
-      data?.error?.message || "OpenRouter kunde inte svara"
+      data?.error?.message || "OpenRouter kunde inte svara",
     );
   }
 
@@ -195,8 +303,8 @@ router.delete("/threads/:threadId", async (req, res) => {
       .where(
         and(
           eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId)
-        )
+          eq(aiThreads.userId, userId),
+        ),
       );
 
     if (!thread) {
@@ -227,7 +335,7 @@ router.delete("/threads/:threadId", async (req, res) => {
 
 /*
 ========================
-GET MESSAGES
+GET THREAD MESSAGES
 ========================
 */
 router.get("/threads/:threadId/messages", async (req, res) => {
@@ -243,8 +351,8 @@ router.get("/threads/:threadId/messages", async (req, res) => {
       .where(
         and(
           eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId)
-        )
+          eq(aiThreads.userId, userId),
+        ),
       );
 
     if (!thread) {
@@ -280,7 +388,9 @@ router.post("/threads/:threadId/messages", async (req, res) => {
     if (!userId) return;
 
     const { threadId } = req.params;
-    const { message } = req.body;
+
+    const parsedBody = sendMessageBodySchema.parse(req.body ?? {});
+    const { message, learningContext } = parsedBody;
 
     if (!message?.trim()) {
       return res.status(400).json({
@@ -296,8 +406,8 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       .where(
         and(
           eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId)
-        )
+          eq(aiThreads.userId, userId),
+        ),
       );
 
     if (!thread) {
@@ -306,18 +416,12 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       });
     }
 
-    /*
-    Save user message
-    */
     await db.insert(aiMessages).values({
       threadId,
       role: "user",
       content: cleanMessage,
     });
 
-    /*
-    Better title
-    */
     let newTitle = thread.title;
 
     if (thread.title === "Ny AI-chatt") {
@@ -332,9 +436,6 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       })
       .where(eq(aiThreads.id, threadId));
 
-    /*
-    Get full history
-    */
     const allMessages = await db
       .select()
       .from(aiMessages)
@@ -346,10 +447,18 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       content: msg.content,
     }));
 
+    const learningAwareSystemPrompt =
+      await buildLearningAwareSystemPrompt({
+        userId,
+        learningContext,
+      });
+
     let aiReply = "";
 
     try {
-      aiReply = await callOpenRouter(history);
+      aiReply = await callOpenRouter(history, {
+        systemPrompt: learningAwareSystemPrompt,
+      });
     } catch (error) {
       console.error("AI ERROR:", error);
 
@@ -357,9 +466,6 @@ router.post("/threads/:threadId/messages", async (req, res) => {
         "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
     }
 
-    /*
-    Save AI response
-    */
     await db.insert(aiMessages).values({
       threadId,
       role: "assistant",
@@ -377,9 +483,26 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       ok: true,
       threadTitle: newTitle,
       assistantMessage: aiReply,
+
+      /**
+       * Bra för debug just nu.
+       *
+       * TODO production:
+       * Ta eventuellt bort detta fält om ni inte vill exponera det.
+       */
+      learningContextUsed: Boolean(
+        learningContext?.lessonId || learningContext?.courseId,
+      ),
     });
   } catch (error) {
     console.error(error);
+
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Validation error",
+        issues: error.issues,
+      });
+    }
 
     res.status(500).json({
       error: "Kunde inte skicka meddelande",

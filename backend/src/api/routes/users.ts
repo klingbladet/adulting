@@ -27,6 +27,26 @@ async function requireUser(req: Request, res: Response) {
   return userId;
 }
 
+router.get("/", async (req, res) => {
+  try {
+    const userId = await requireUser(req, res);
+    if (!userId) return;
+
+    const users = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        image: user.image,
+      })
+      .from(user);
+
+    res.json(users);
+  } catch (error) {
+    console.error("GET USERS ERROR:", error);
+    res.status(500).json({ error: "Kunde inte hämta användare." });
+  }
+});
+
 router.get("/creators", async (req, res) => {
   try {
     const userId = await requireUser(req, res);

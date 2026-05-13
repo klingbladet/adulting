@@ -1,18 +1,69 @@
-export default function Home() {
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getServerSession } from "@/lib/session";
+import { getServerOnboarding } from "@/lib/server-onboarding";
+
+export default async function HomePage() {
+  const session = await getServerSession();
+
+  if (session) {
+    const onboarding = await getServerOnboarding();
+
+    if (onboarding) {
+      redirect(onboarding.redirectTo);
+    }
+
+    redirect("/onboarding");
+  }
+
   return (
-    
-    
-      <div className="bg-background text-foreground p-8 min-h-screen">
-          <div className="max-w-md rounded-lg border bg-card text-card-foreground p-6 shadow-md">
-            <h1 className="font-heading text-2xl">Hej Next + Tailwind v7</h1>
-            <p className="mt-2 text-muted-foreground">
-              Det här använder CSS variables via @theme.
+    <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
+      <div className="flex items-center justify-center py-4 text-center text-sm text-muted-foreground">
+        <p className="text-sm font-medium text-muted-foreground">
+          Select language
+        </p>
+      </div>
+
+      <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+        <div className="rounded-3xl border bg-card p-6 shadow-sm">
+          <div className="mb-8 space-y-3 text-center">
+            <p className="text-sm font-medium text-muted-foreground">
+              Välkommen till Adulting
             </p>
 
-            <button className="mt-4 rounded-md bg-primary px-4 py-2 text-primary-foreground">
-              Klicka här
-            </button>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Ta kontroll över vuxenlivet
+            </h1>
+
+            <p className="text-base text-muted-foreground">
+              Logga in eller skapa ett konto för att komma igång med ditt
+              personliga flöde.
+            </p>
           </div>
-      </div>  
-      );
+
+          <div className="space-y-3">
+            <Link
+              href="/sign-up"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold transition hover:bg-muted"
+            >
+              Kom igång
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Har du redan ett konto?
+            </p>
+
+            <Link
+              href="/sign-in"
+              className="flex w-full items-center justify-center text-sm font-semibold text-primary transition hover:opacity-90"
+            >
+              Logga in
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
