@@ -20,3 +20,12 @@ spec:
             - secretRef:
                 name: env
                 optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  clusterIP: None
+  selector:
+    app: db
