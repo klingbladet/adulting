@@ -101,6 +101,7 @@ deploy app:
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   script:
+    - ./scripts/inject-passwords.sh ./deploy/app/secret-envs.yml
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
