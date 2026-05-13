@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe2, Hand } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/session";
 import { getServerOnboarding } from "@/lib/server-onboarding";
@@ -18,48 +18,49 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
-      <div className="flex items-center justify-center py-4 text-center text-sm text-muted-foreground">
-        <p className="text-sm font-medium text-muted-foreground">
-          Select language
-        </p>
-      </div>
+    <main className="flex min-h-screen items-center justify-center bg-[#F5FBFF] px-4 py-6">
+      <section className="flex min-h-[760px] w-full max-w-[430px] flex-col rounded-[36px] bg-[#EAF8FF] px-6 py-10 shadow-sm">
+        
+        <div className="flex justify-center">
+          <button className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <Globe2 size={18} />
+            Välj ditt språk
+          </button>
+        </div>
 
-      <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-        <div className="rounded-3xl border bg-card p-6 shadow-sm">
-          <div className="mb-8 space-y-3 text-center">
-            <p className="text-sm font-medium text-muted-foreground">
-              Välkommen till Adulting
-            </p>
+        <div className="flex flex-1 flex-col justify-center">
+          <div className="text-center">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white text-[#2563EB] shadow-sm">
+               <Hand size={48} strokeWidth={2.4} />
+            </div>
 
-            <h1 className="text-3xl font-bold tracking-tight">
-              Ta kontroll över vuxenlivet
-            </h1>
-
-            <p className="text-base text-muted-foreground">
-              Logga in eller skapa ett konto för att komma igång med ditt
-              personliga flöde.
+            <p className="mt-4 text-lg font-semibold text-[#2563EB]">
+              Hej!
             </p>
           </div>
 
-          <div className="space-y-3">
-            <Link
-              href="/sign-up"
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold transition hover:bg-muted"
-            >
-              Kom igång
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="mt-20">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-950">
+              Välkommen!
+            </h1>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Har du redan ett konto?
+            <p className="mt-3 text-base leading-7 text-gray-600">
+              Lär dig vuxenlivet steg för steg
             </p>
 
             <Link
-              href="/sign-in"
-              className="flex w-full items-center justify-center text-sm font-semibold text-primary transition hover:opacity-90"
+              href="/auth"
+              className="mt-16 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#2563EB] text-base font-bold text-white shadow-sm transition hover:bg-[#1D4ED8]"
             >
-              Logga in
+              Skapa konto / Sign in
+              <ArrowRight size={20} />
+            </Link>
+
+            <Link
+              href="/chat"
+              className="mt-7 block text-center text-sm font-bold text-gray-900"
+            >
+              Eller utforska som gäst
             </Link>
           </div>
         </div>

@@ -27,17 +27,25 @@ services:
     command: ["pnpm", "run", "dev"]
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3001
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL}
       OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-http://localhost:3000}
       OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-Adulting Learning App}
+
       LEARNING_LESSON_PROVIDER: mock
       LEARNING_PROFILE_PROVIDER: mock
+
     depends_on:
       migrate-db:
         condition: service_completed_successfully
+
     develop:
       watch:
         - action: sync
@@ -55,10 +63,15 @@ services:
     ports:
       - 3003:3003
     command: ["pnpm", "run", "mcp:dev"]
+
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: http://localhost:3001
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
 
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL}
@@ -71,9 +84,11 @@ services:
 
       LEARNING_LESSON_PROVIDER: mock
       LEARNING_PROFILE_PROVIDER: mock
+
     depends_on:
       backend:
         condition: service_healthy
+
     develop:
       watch:
         - action: sync
@@ -90,38 +105,52 @@ services:
     build:
       context: ./backend
       dockerfile: ./drizzle.Dockerfile
+
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
     depends_on:
       db:
         condition: service_healthy
+
     entrypoint: ["pnpm", "db:migrate"]
 
   drizzle:
     build:
       context: ./backend
       dockerfile: ./drizzle.Dockerfile
+
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
     depends_on:
       migrate-db:
         condition: service_completed_successfully
+
     ports:
       - "4983:4983"
-    entrypoint: ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
+
+    entrypoint:
+      ["pnpm", "drizzle-kit", "studio", "--host", "0.0.0.0"]
 
   db:
     image: postgres:18-alpine
+
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
+
     ports:
       - "5432:5432"
+
     volumes:
       - db:/var/lib/postgresql
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+
       start_period: 10s
       start_interval: 1s
       interval: 5s
