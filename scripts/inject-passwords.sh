@@ -12,12 +12,11 @@ if ! [ -f "$file" ]; then
     exit 2
 fi
 
-
 i=0
-while grep "PASSWORD_REPLACE_$i" "$file" > /dev/null; do
+while grep "PASSWORD_REPLACE" "$file" > /dev/null; do
     PASS=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 64)
-    sed -i "s/PASSWORD_REPLACE_${i}/${PASS}/" "$file"
-    echo "replaced 'PASSWORD_REPLACE_$i' for a random password"
+    new_content=$(awk "NR==1,/PASSWORD_REPLACE/{sub(/PASSWORD_REPLACE/, \"${PASS}\")} 1" "$file")
+    printf '%s' "$new_content" > "$file"
     i=$((i+1))
 done
 
