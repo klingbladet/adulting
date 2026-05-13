@@ -16,8 +16,6 @@ export const courses = pgTable("courses", {
     .references(() => categories.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
   textContent: text("text_content"),
-  imageUrl: text("image_url"), 
-  videoUrl: varchar("video_url", { length: 255 }),
   time: integer("time"),
   blocks: integer("blocks"),
   status: varchar("status", { length: 255 }).notNull(),
