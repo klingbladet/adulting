@@ -1,4 +1,4 @@
-import { Block, Course as BaseCourse } from "@/app/types/types";
+import { Block, Course as BaseCourse } from "@/types/types";
 
 export interface Course extends Omit<BaseCourse, 'id'> {
   id: string; // Keep as string for mock slug-based routing
