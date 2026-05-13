@@ -16,6 +16,7 @@ delete-resource () {
     if [[ -n "$resources" ]]; then
         echo "--- '$kind' resources deleting with version '$VERSION' ---"
         kubectl delete "$kind" $resources
+        echo
     else
         echo "--- '$kind' resources not found with version '$VERSION' ---"
     fi
@@ -23,3 +24,5 @@ delete-resource () {
 
 delete-resource deploy
 delete-resource service
+delete-resource secret
+delete-resource statefulset
