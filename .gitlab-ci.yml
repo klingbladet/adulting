@@ -101,7 +101,6 @@ deploy app:
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   script:
-    - ./scripts/create-registry-secret.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
