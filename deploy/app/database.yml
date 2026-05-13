@@ -16,3 +16,7 @@ spec:
         - name: postgres
           image: postgres:18
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: env
+                optional: false
