@@ -104,7 +104,7 @@ deploy app:
   script:
     - ./scripts/create-registry-secret.sh
     - cd deploy/app
-    - kustomize edit set nameprefix "${VERSION}."
+    - kustomize edit set nameprefix "${VERSION}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
     - cd -
