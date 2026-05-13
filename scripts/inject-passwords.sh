@@ -21,4 +21,4 @@ while grep "PASSWORD_REPLACE_$i" "$file" > /dev/null; do
     i=$((i+1))
 done
 
-echo "added $i passwords"
+echo "injected $i passwords in $file"
