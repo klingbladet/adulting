@@ -5,13 +5,14 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
+seperator="-0-"
 
 delete-resource () {
     local kind=$1
     local resources=""
     resources=$(kubectl get "$kind" -o json \
         | jq '.items.[].metadata.name' -r \
-        | grep -E "^$VERSION\..*$")
+        | grep -E "^${VERSION}${seperator}.*$")
     if [[ -n "$resources" ]]; then
         echo "--- '$kind' resources deleting with version '$VERSION' ---"
         kubectl delete "$kind" $resources
