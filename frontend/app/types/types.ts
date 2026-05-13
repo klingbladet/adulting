@@ -64,3 +64,7 @@ export interface UserAchievement {
   unlockedAt: string;
   achievement?: Achievement;
 }
+
+export interface UserInfo {
+  name: string;
+}

@@ -15,6 +15,12 @@ export async function getCourseById(id: string): Promise<Course> {
   return res.json();
 }
 
+export async function getCoursesByCategory(categoryName: string): Promise<Course[]> {
+  const res = await fetch(`${BASE_URL}/courses?category=${encodeURIComponent(categoryName)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error("Misslyckades att hämta kurser för kategori");
+  return res.json();
+}
+
 export async function getBlocksByCourseId(courseId: string): Promise<Block[]> {
   const res = await fetch(`${BASE_URL}/courses/${courseId}/blocks`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Misslyckades att hämta block för kurs ${courseId}`);

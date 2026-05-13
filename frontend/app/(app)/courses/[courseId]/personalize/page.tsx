@@ -36,7 +36,7 @@ export default function Personalize({ params }: { params: Promise<{ courseId: st
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 relative mx-auto max-w-5xl">
       <h1 className="text-3xl">Anpassa kursen till dig</h1>
       <p className="text-sm">Svara på några korta frågor så anpassar vi innehållet. Du kan hoppa över ifall du vill</p>
       <h3 className="text-sm"><strong>Hur mycket vet du om att hyra bostad?</strong></h3>

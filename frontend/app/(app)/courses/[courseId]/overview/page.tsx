@@ -39,7 +39,7 @@ export default async function CourseOverview({ params }: { params: Promise<{ cou
   return (
     <>
       <h1 className="text-center mb-10 text-4xl">{course.title}</h1>
-      <div className="flex flex-col gap-4 p-6 bg-background min-h-screen">
+      <div className="flex flex-col gap-4 p-6 bg-background min-h-screen relative mx-auto max-w-5xl">
         {blocksError && (
           <p className="text-red-500 text-sm mb-4">Fel vid hämtning av block: {blocksError}</p>
         )}

@@ -13,7 +13,8 @@ const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    const allCourses = await courseService.getAllCourses();
+    const categoryName = req.query.category as string | undefined;
+    const allCourses = await courseService.getAllCourses(categoryName);
     res.json(allCourses) 
   } catch (error) {
     console.error("Fel vid hämtningen av kurser", error);
