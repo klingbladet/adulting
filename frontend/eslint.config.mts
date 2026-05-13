@@ -8,6 +8,13 @@ import { defineConfig } from "eslint/config";
 const jsonPlugin = json as any;
 
 export default defineConfig([
+  {
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+  },
   { files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: {...globals.browser, ...globals.node} } },
   tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
