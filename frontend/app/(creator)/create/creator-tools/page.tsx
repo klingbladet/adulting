@@ -12,7 +12,6 @@ export default async function CreatorToolsPage() {
       <h1 className="text-2xl font-bold">Skapa en kurs</h1>
       <RichTextEditor />
       
-      <LearningDemoPanel />
 
     </div>
   );
