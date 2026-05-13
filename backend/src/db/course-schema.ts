@@ -16,8 +16,6 @@ export const courses = pgTable("courses", {
     .references(() => categories.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
   textContent: text("text_content"),
-  imageUrl: text("image_url"), 
-  videoUrl: varchar("video_url", { length: 255 }),
   time: integer("time"),
   blocks: integer("blocks"),
   status: varchar("status", { length: 255 }).notNull(),
@@ -82,6 +80,8 @@ export const userCourses = pgTable("user_courses", {
   enrolledAt: timestamp("enrolled_at").notNull(),
   completedAt: timestamp("completed_at"),
   score: integer("score"),
+  // Personalisering: "beginner" | "intermediate" | "advanced"
+  knowledgeLevel: varchar("knowledge_level", { length: 50 }),
 });
 
 export const userAchievements = pgTable("user_achievements", {

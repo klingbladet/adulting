@@ -53,7 +53,8 @@ lint frontend:
   stage: lint
   image: $CI_REGISTRY_IMAGE/frontend-test:$VERSION
   before_script: cd /app
-  script: pnpm dlx eslint .
+  script:
+    - pnpm lint
   allow_failure: true # TODO: remove once issues are fixed
   variables:
     GIT_STRATEGY: none
@@ -62,7 +63,8 @@ lint backend:
   stage: lint
   image: $CI_REGISTRY_IMAGE/backend-test:$VERSION
   before_script: cd /app
-  script: pnpm dlx eslint .
+  script: 
+    - pnpm eslint
   allow_failure: true # TODO: remove once issues are fixed
   variables:
     GIT_STRATEGY: none
