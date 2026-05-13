@@ -1,7 +1,7 @@
-import React from 'react';
 import Link from 'next/link';
 import { getServerSession } from '@/lib/session';
 import { Bell} from 'lucide-react';
+import CategoryCard from '@/components/courses/catagory-cards';
 
 const UserDashboardPage = async () => {
   const session = await getServerSession()
@@ -99,19 +99,5 @@ const UserDashboardPage = async () => {
     </div>
   );
 };
-
-interface CategoryCardProps {
-  name: string;
-  description?: string; // optional, manually provided
-}
-
-const CategoryCard = ({ name, description }: CategoryCardProps) => (
-  <button className="bg-secondary p-4 rounded-xl flex flex-col items-center justify-center text-center min-h-[110px] hover:bg-accent transition-colors">
-    <h3 className="font-extrabold text-foreground text-sm mb-1">{name}</h3>
-    <p className="text-xs text-muted-foreground leading-tight">{description}</p>
-  </button>
-);
-
-
 
 export default UserDashboardPage;

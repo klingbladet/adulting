@@ -1,8 +1,8 @@
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import Link from 'next/link';
 import { getCourseById, getBlocksByCourseId } from '@/lib/api';
-import { Block } from '@/app/types/types';
-import BlockCard from '@/components/ui/courses/course-layout';
+import { Block } from '@/types/types';
+import BlockCard from '@/components/courses/course-layout';
 
 export default async function CourseOverview({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;

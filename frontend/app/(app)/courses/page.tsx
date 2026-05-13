@@ -1,7 +1,7 @@
-import BlockCard from "@/components/ui/courses/course-layout";
+import BlockCard from "@/components/courses/course-layout";
 import Link from "next/link";
 import { getCourses } from "@/lib/api";
-import getCourseIcon from "@/components/ui/courses/course-dynamic-icon";
+import getCourseIcon from "@/components/courses/course-dynamic-icon";
 
 export default async function UserDashboardPage() {
   const courses = await getCourses();

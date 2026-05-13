@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import { X } from 'lucide-react';
 import { getBlocksByCourseId } from '@/lib/api';
 

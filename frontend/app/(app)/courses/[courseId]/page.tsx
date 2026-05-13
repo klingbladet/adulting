@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import { ChevronRight } from 'lucide-react';
 import { getCourseById } from '@/lib/api';
-import getCourseIcon from '@/components/ui/courses/course-dynamic-icon';
+import getCourseIcon from '@/components/courses/course-dynamic-icon';
 
 export default async function CourseStartPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;

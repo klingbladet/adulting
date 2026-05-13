@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/guards";
-import RichTextEditor from "@/components/ui/courses/rich-text-editor";
+import RichTextEditor from "@/components/courses/rich-text-editor";
 import GenerateQuizPanel from "@/components/learning/generate-quiz-panel";
 import { BlockPriorityDemoPanel } from "@/components/learning/block-priority-demo-panel";
 import { LearningDemoPanel } from "@/components/learning/learning-demo-panel";

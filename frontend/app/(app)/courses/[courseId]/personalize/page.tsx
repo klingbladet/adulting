@@ -1,5 +1,5 @@
 'use client';
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import Link from 'next/link'
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';

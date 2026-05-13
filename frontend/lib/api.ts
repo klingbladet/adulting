@@ -1,4 +1,4 @@
-import { Block, Course, UserCourse } from "@/app/types/types";
+import { Block, Course, UserCourse } from "@/types/types";
 import { BACKEND_URL } from "./backend-url";
 
 const BASE_URL = `${BACKEND_URL}/api`;

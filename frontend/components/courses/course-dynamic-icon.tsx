@@ -1,5 +1,5 @@
 import { House, Wallet, Briefcase, GraduationCap, HeartPulse, BookOpen, Car } from 'lucide-react';
-import { Course } from '@/app/types/types';
+import { Course } from '@/types/types';
 
 
 const ICON_MAP: Record<string, React.ElementType> = {
