@@ -26,4 +26,12 @@ while grep "$REPLACE" "$FILE" > /dev/null; do
     i=$((i+1))
 done
 
+# This is so the pipeline fails if by some reason it did not replace the passwords.
+# We do not want to deploy with unsafe passwords which are also accessible in the repo.
+if [ "$i" -le 0 ]; then
+    echo "did not find any '$REPLACE' in '$FILE' to replace for a password"
+    exit 3
+fi
+
 echo "injected $i passwords in $FILE"
+
