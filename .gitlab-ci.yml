@@ -55,26 +55,26 @@ check git size diff:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-build backend test:
+build backend base:
   stage: build before
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-test:$VERSION --push ./backend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-base:$VERSION --push ./backend
   rules:
     - if: $VERSION
 
-build frontend test:
+build frontend base:
   stage: build before
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-test:$VERSION --push ./frontend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-base:$VERSION --push ./frontend
   rules:
     - if: $VERSION
 
 
 lint frontend:
   stage: lint
-  image: $CI_REGISTRY_IMAGE/frontend-test:$VERSION
+  image: $CI_REGISTRY_IMAGE/frontend-base:$VERSION
   before_script: cd /app
   script: pnpm dlx eslint .
   allow_failure: true # TODO: remove once issues are fixed
@@ -85,7 +85,7 @@ lint frontend:
 
 lint backend:
   stage: lint
-  image: $CI_REGISTRY_IMAGE/backend-test:$VERSION
+  image: $CI_REGISTRY_IMAGE/backend-base:$VERSION
   before_script: cd /app
   script: pnpm dlx eslint .
   allow_failure: true # TODO: remove once issues are fixed
