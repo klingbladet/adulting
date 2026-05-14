@@ -13,7 +13,7 @@ workflow:
     - if: $CI_COMMIT_REF_NAME == main
       variables:
         VERSION: main
-    - if: asdf
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       variables:
         VERSION: mr-$CI_MERGE_REQUEST_IID
     - when: always
