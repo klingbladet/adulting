@@ -6,11 +6,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: db
+      adulting: db
+  serviceName: postgres
   template:
     metadata:
       labels:
-        app: db
+        adulting: db
     spec:
       containers:
         - name: postgres
@@ -18,8 +19,11 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - secretRef:
-                name: env
+                name: env-postgres
                 optional: false
+          ports:
+            - containerPort: 5432
+              protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -28,4 +32,6 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: db
+    adulting: db
+  ports:
+    - port: 3001
