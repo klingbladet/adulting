@@ -12,9 +12,22 @@ spec:
       labels:
         adulting: frontend
     spec:
+      imagePullSecrets:
+        - name: registry-credentials
       containers:
         - name: adulting-frontend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
           imagePullPolicy: Always
-      imagePullSecrets:
-        - name: registry-credentials
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 5
