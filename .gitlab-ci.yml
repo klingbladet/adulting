@@ -104,9 +104,9 @@ deploy app:
     - ./scripts/inject-passwords.sh ./deploy/app/secret-auth.yml
     - ./scripts/inject-passwords.sh ./deploy/app/secret-postgres.yml
     - cd deploy/app
-    - kustomize edit set nameprefix "${VERSION}-0-"
+    - kustomize edit set nameprefix "${CI_COMMIT_SHORT_SHA}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
-    - sed -i "s/asdf/${VERSION}/" *
+    - sed -i "s/asdf/${CI_COMMIT_SHORT_SHA}/" *
     - cd -
     - kubectl apply -k deploy
