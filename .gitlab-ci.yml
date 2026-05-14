@@ -5,13 +5,17 @@ stages:
   - build
   - deploy
 
-variables:
-  VERSION: $CI_COMMIT_REF_SLUG
 workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       variables:
         VERSION: latest
+    - if: $CI_COMMIT_REF_NAME == main
+      variables:
+        VERSION: main
+    - if: asdf
+      variables:
+        VERSION: mr-$CI_MERGE_REQUEST_IID
     - when: always
 
 .docker login:
@@ -56,12 +60,16 @@ build backend test:
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-test:$VERSION --push ./backend
+  rules:
+    - if: $VERSION
 
 build frontend test:
   stage: build before
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-test:$VERSION --push ./frontend
+  rules:
+    - if: $VERSION
 
 
 lint frontend:
@@ -72,6 +80,8 @@ lint frontend:
   allow_failure: true # TODO: remove once issues are fixed
   variables:
     GIT_STRATEGY: none
+  rules:
+    - if: $VERSION
 
 lint backend:
   stage: lint
@@ -81,6 +91,8 @@ lint backend:
   allow_failure: true # TODO: remove once issues are fixed
   variables:
     GIT_STRATEGY: none
+  rules:
+    - if: $VERSION
 
 
 build backend:
@@ -88,25 +100,31 @@ build backend:
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push -f ./backend/prod.Dockerfile ./backend
+  rules:
+    - if: $VERSION
 
 build frontend:
   stage: build
   image: docker:29
   extends: .docker login
   script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push -f ./frontend/prod.Dockerfile ./frontend
+  rules:
+    - if: $VERSION
 
 
 deploy app:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
+  rules:
+    - if: $VERSION
   script:
     - ./scripts/inject-passwords.sh ./deploy/app/secret-auth.yml
     - ./scripts/inject-passwords.sh ./deploy/app/secret-postgres.yml
     - cd deploy/app
-    - kustomize edit set nameprefix "${CI_COMMIT_SHORT_SHA}-0-"
+    - kustomize edit set nameprefix "${VERSION}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
-    - sed -i "s/asdf/${CI_COMMIT_SHORT_SHA}/g" *
+    - sed -i "s/asdf/${VERSION}/g" *
     - cd -
     - kubectl apply -k deploy
