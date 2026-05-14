@@ -107,6 +107,6 @@ deploy app:
     - kustomize edit set nameprefix "${VERSION}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
-    - sed -i 's/asdf/${VERSION}/' *
+    - sed -i "s/asdf/${VERSION}/" *
     - cd -
     - kubectl apply -k deploy
