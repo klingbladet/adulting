@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: adulting-frontend
+  name: frontend
 spec:
   replicas: 3
   selector:
@@ -25,7 +25,7 @@ spec:
                 sleep 1
               done
       containers:
-        - name: adulting-frontend
+        - name: frontend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
           imagePullPolicy: Always
           env:

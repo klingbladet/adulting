@@ -122,7 +122,7 @@ deploy app:
     - ./scripts/inject-passwords.sh ./deploy/app/secret-auth.yml
     - ./scripts/inject-passwords.sh ./deploy/app/secret-postgres.yml
     - cd deploy/app
-    - kustomize edit set nameprefix "${VERSION}-0-"
+    - kustomize edit set nameprefix "${VERSION}-0-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
     - sed -i "s/asdf/${VERSION}/g" *
