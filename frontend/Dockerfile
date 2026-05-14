@@ -1,4 +1,4 @@
-FROM node:25-alpine
+FROM node:25-alpine AS base
 
 WORKDIR /app
 
@@ -16,3 +16,26 @@ HEALTHCHECK --interval=5s --timeout=2s --start-period=10s --start-interval=1s --
     CMD curl -f http://localhost:3000 || exit 1
 
 EXPOSE 3000
+
+
+
+
+FROM base AS builder
+
+ENV NEXT_IGNORE_TYPE_ERRORS=true
+
+RUN pnpm run build
+
+
+
+
+FROM node:25-alpine
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

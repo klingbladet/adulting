@@ -1,6 +1,8 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: base
     ports:
       - 3000:3000
     command: ["pnpm", "run", "dev"]
@@ -20,7 +22,9 @@ services:
           path: ./frontend/package.json
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: base
     ports:
       - 3001:3001
       - 3002:3002
