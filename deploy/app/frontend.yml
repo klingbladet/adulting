@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: adulting-frontend
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       adulting: frontend
@@ -27,16 +27,29 @@ spec:
         - name: adulting-frontend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
           imagePullPolicy: Always
+          env:
+            - name: BACKEND_URL
+              value: http://asdf-0-adulting-backend.doe25-group-1.svc.cluster.local:8080
+            - name: HOSTNAME
+              value: 0.0.0.0
           ports:
             - containerPort: 3000
               protocol: TCP
+          startupProbe:
+            httpGet:
+              port: 3000
+            periodSeconds: 1
+            failureThreshold: 60
+            timeoutSeconds: 1
           livenessProbe:
             httpGet:
               port: 3000
-            initialDelaySeconds: 20
-            periodSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 2
           readinessProbe:
             httpGet:
               port: 3000
-            initialDelaySeconds: 20
             periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 2

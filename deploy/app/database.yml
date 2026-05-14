@@ -33,5 +33,3 @@ spec:
   clusterIP: None
   selector:
     adulting: db
-  ports:
-    - port: 3001
