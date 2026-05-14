@@ -107,6 +107,6 @@ deploy app:
     - kustomize edit set nameprefix "${CI_COMMIT_SHORT_SHA}-0-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
-    - sed -i "s/asdf/${CI_COMMIT_SHORT_SHA}/" *
+    - sed -i "s/asdf/${CI_COMMIT_SHORT_SHA}/g" *
     - cd -
     - kubectl apply -k deploy
