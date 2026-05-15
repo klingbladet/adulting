@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import { X } from 'lucide-react';
 import { getBlocksByCourseId } from '@/lib/api';
 
@@ -109,7 +109,7 @@ export default async function BlockPage({ params }: { params: Promise<{ courseId
             </CourseButton>
           </Link>
         ) : (
-          <Link href={`/courses/${courseId}/summary`} className="flex-2">
+          <Link href={`/courses/${courseId}/summary/${block.id}`} className="flex-2">
             <CourseButton variant="primary" fullWidth>
               Slutför kurs
             </CourseButton>

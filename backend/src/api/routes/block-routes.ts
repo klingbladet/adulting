@@ -12,11 +12,45 @@ const router = Router();
 /*CRUD blocks*/
 //GET /:courseId/blocks - hämtar alla block i en specifik kurs
 router.get("/:courseId/blocks", async (req, res) => {
-  const courseId = req.params.courseId;
-
   try {
-    const allBlocks = await blockService.getAllBlocks(Number(courseId))
-    res.status(200).json({message: "Hämtade alla block i kursen", blocks: allBlocks}) 
+    const courseId = parseInt(req.params.courseId);
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Invalid course ID" });
+      return;
+    }
+    const allBlocks = await blockService.getAllBlocks(courseId);
+    if (!allBlocks) {
+      res.status(404).json({ error: "Blocks not found" });
+      return;
+    }
+    res.status(200).json({
+      message: "Hämtade alla block i kursen", 
+      blocks: allBlocks
+    }) 
+  } catch (error) {
+    console.error("Fel vid hämtningen av block", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//GET /:courseId/blocks/:blockId - hämtar alla block i en specifik kurs
+router.get("/:courseId/blocks/:blockId", async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const blockId = parseInt(req.params.blockId);
+    if (isNaN(blockId)) {
+      res.status(400).json({ error: "Invalid block ID" });
+      return;
+    }
+    const oneBlock = await blockService.getOneBlock(blockId, Number(courseId));
+    if (!oneBlock) {
+      res.status(404).json({ error: "Block not found" });
+      return;
+    }
+    res.status(200).json({
+      message: "Hämtade blocket från kursen", 
+      block: oneBlock
+    }) 
   } catch (error) {
     console.error("Fel vid hämtningen av block", error);
     res.status(500).json({ error: "Internal server error" });
@@ -24,12 +58,22 @@ router.get("/:courseId/blocks", async (req, res) => {
 });
 
 //POST /:courseId/blocks - Skapar ett block
-router.post("/:courseId/blocks", async (req, res) => {
-    const { title, content, orderIndex } : { title: string, content: { type: string; content: any[]; }, orderIndex: number } = req.body;
+router.post("/:courseId/blocks", checkRole(["admin", "creator"]),async (req, res) => {
     const courseId = req.params.courseId;
-    const data = { courseId: Number(courseId), title, content, orderIndex };
 
     try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers)
+        });
+        // Lägg till kontroll för session och userId
+        if (!session || !session.user || !session.user.id) {
+          res.status(401).json({ error: "Unauthorized - User session not found" });
+          return;
+        }
+        const validatedData = insertBlockSchema.parse(req.body);
+        const userId = session.user.id;
+        const data = { courseId: Number(courseId), userId, ...validatedData };
+        
         const createOneBlock = await blockService.createBlock(data);
 
         res.status(201).json({ message: "Blocket har skapats!", block: createOneBlock});
@@ -58,6 +102,7 @@ router.patch("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]), asyn
         const updateOneBlock = await blockService.updateBlock(
           data.blockId,
           data.courseId,
+          session.user.id,
           validatedData
         );
 
@@ -89,12 +134,28 @@ router.patch("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]), asyn
 });
 
 //DELETE /:courseId/blocks/:blockId - Tar bort ett block
-router.delete("/:courseId/blocks/:blockId", async (req, res) => {
+router.delete("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]),async (req, res) => {
     const { blockId, courseId } = req.params;
 
     try {
-        const deleteOneBlock = await blockService.deleteBlock(Number(blockId), Number(courseId));
-        res.status(200).json({message : "Blocket har tagits bort!", block: deleteOneBlock});
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers)
+        });
+        // Lägg till kontroll för session och userId
+        if (!session || !session.user || !session.user.id) {
+          res.status(401).json({ error: "Unauthorized - User session not found" });
+          return;
+        }
+
+        const deleteOneBlock = await blockService.deleteBlock(
+          Number(blockId), 
+          Number(courseId),
+          session.user.id
+        );
+        res.status(200).json({
+          message : "Blocket har tagits bort!", 
+          block: deleteOneBlock
+        });
     } catch (error) {
         console.error("Fel vid borttagning av ett block:", error);
         res.status(500).json({ error: "Kunde inte ta bort blocket" });

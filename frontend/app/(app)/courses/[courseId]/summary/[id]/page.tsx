@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import CourseButton from '@/components/ui/courses/course-buttons';
+import CourseButton from '@/components/courses/course-buttons';
 import { getCourseById, getBlocksByCourseId } from '@/lib/api';
 
 export default async function SummaryPage({ params }: { params: Promise<{ courseId: string; id: string }> }) {

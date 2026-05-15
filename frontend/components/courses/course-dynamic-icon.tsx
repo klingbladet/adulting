@@ -1,5 +1,5 @@
-import { House, Wallet, Briefcase, GraduationCap, HeartPulse, BookOpen } from 'lucide-react';
-import { Course } from '@/app/types/types';
+import { House, Wallet, Briefcase, GraduationCap, HeartPulse, BookOpen, Car } from 'lucide-react';
+import { Course } from '@/types/types';
 
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -9,6 +9,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   GraduationCap,
   HeartPulse,
   BookOpen,
+  Car
 };
 
 export default function getCourseIcon(course: Course) {
@@ -21,6 +22,7 @@ export default function getCourseIcon(course: Course) {
   if (categoryName.includes("ekonomi")) return <Wallet />;
   if (categoryName.includes("bostad")) return <House />;
   if (categoryName.includes("jobb")) return <Briefcase />;
+  if (categoryName.includes("körkort")) return <Car />
 
   return <BookOpen />;
 }

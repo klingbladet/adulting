@@ -43,6 +43,7 @@ export interface UserCourse {
   userId: string;
   courseId: number;
   status: "not_started" | "in_progress" | "completed" | string;
+  knowledgeLevel: "beginner" | "intermediate" | string;
   enrolledAt: string;
   completedAt: string | null;
   score: number | null;
@@ -62,4 +63,8 @@ export interface UserAchievement {
   achievementId: string;
   unlockedAt: string;
   achievement?: Achievement;
+}
+
+export interface UserInfo {
+  name: string;
 }

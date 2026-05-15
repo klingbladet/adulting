@@ -1,0 +1,1 @@
+ALTER TABLE "user_courses" ADD COLUMN "knowledge_level" varchar(50);
