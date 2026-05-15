@@ -16,6 +16,8 @@ import learningRoutes from "./api/routes/learning-routes";
 import learningAssistantRoutes from "./api/routes/learning-assistant-routes";
 import blockRoutes from "./api/routes/block-routes";
 import quizRoutes from "./api/routes/quiz-routes";
+import quizQuestionsRoutes from "./api/routes/quiz-questions-routes";
+import quizAnswersRoutes from "./api/routes/quiz-answers-routes";
 
 
 const app = express();
@@ -48,6 +50,8 @@ app.use((req, res, next) => {
 app.use("/api/courses", courseRoutes);
 app.use("/api/courses", blockRoutes);
 app.use("/api/courses", quizRoutes);
+app.use("/api/courses", quizQuestionsRoutes);
+app.use("/api/courses", quizAnswersRoutes);
 app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
 app.use("/api/auth", toNodeHandler(auth));
