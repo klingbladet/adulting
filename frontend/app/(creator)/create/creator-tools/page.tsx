@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/guards";
-import RichTextEditor from "@/components/courses/rich-text-editor";
+import CreatorToolsClient from "@/components/courses/CreatorToolsClient";
 import GenerateQuizPanel from "@/components/learning/generate-quiz-panel";
 import { BlockPriorityDemoPanel } from "@/components/learning/block-priority-demo-panel";
 import { LearningDemoPanel } from "@/components/learning/learning-demo-panel";
@@ -9,8 +9,7 @@ export default async function CreatorToolsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Skapa en kurs</h1>
-      <RichTextEditor />
+      <CreatorToolsClient />
       
 
     </div>
