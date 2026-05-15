@@ -12,8 +12,10 @@ resources:
 - ingress.yml
 images:
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base
-  newTag: mr-42
+  newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
-  newTag: mr-42 
+  newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
-  newTag: mr-42 
+  newTag: mr42
+commonLabels:
+  env: asdf
