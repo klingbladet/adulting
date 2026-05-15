@@ -119,7 +119,7 @@ deploy app:
   extends: .kubeconfig setup
   environment:
     name: adulting/$VERSION
-    url: $VERSION-adulting.cc.k3s.chas-lab.dev
+    url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
     on_stop: delete env
   rules:
     - if: $VERSION
