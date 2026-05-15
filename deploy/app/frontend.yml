@@ -34,7 +34,7 @@ spec:
             - name: HOSTNAME
               value: 0.0.0.0
             - name: NEXT_PUBLIC_BACKEND_URL
-              value: https://adulting.cc.k3s.chas-lab.dev
+              value: https://asdf-adulting.cc.k3s.chas-lab.dev
           ports:
             - containerPort: 3000
               protocol: TCP
