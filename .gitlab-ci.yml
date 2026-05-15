@@ -124,6 +124,7 @@ deploy app:
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-0-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
     - sed -i "s/asdf/${VERSION}/g" *
     - cd -

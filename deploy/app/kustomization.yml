@@ -6,10 +6,13 @@ resources:
 - secret-auth.yml
 - secret-postgres.yml
 - database.yml
+- database-migration.yml
 - backend.yml
 - frontend.yml
 images:
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base
+  newTag: mr-42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
-  newTag: latest
+  newTag: mr-42 
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
-  newTag: latest
+  newTag: mr-42 
