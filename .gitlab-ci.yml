@@ -59,7 +59,7 @@ build backend base:
   stage: build before
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-base:$VERSION --push ./backend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend-base:$VERSION --push --target base ./backend
   rules:
     - if: $VERSION
 
@@ -67,7 +67,7 @@ build frontend base:
   stage: build before
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-base:$VERSION --push ./frontend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend-base:$VERSION --push --target base ./frontend
   rules:
     - if: $VERSION
 
@@ -99,7 +99,7 @@ build backend:
   stage: build
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push -f ./backend/prod.Dockerfile ./backend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/backend:$VERSION --push ./backend
   rules:
     - if: $VERSION
 
@@ -107,7 +107,7 @@ build frontend:
   stage: build
   image: docker:29
   extends: .docker login
-  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push -f ./frontend/prod.Dockerfile ./frontend
+  script: docker buildx build -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push ./frontend
   rules:
     - if: $VERSION
 
