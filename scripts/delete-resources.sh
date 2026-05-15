@@ -27,3 +27,4 @@ delete-resource service
 delete-resource secret
 delete-resource statefulset
 delete-resource jobs
+delete-resource ingress

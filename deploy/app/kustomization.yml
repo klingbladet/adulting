@@ -9,6 +9,7 @@ resources:
 - database-migration.yml
 - backend.yml
 - frontend.yml
+- ingress.yml
 images:
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base
   newTag: mr-42
