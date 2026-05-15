@@ -17,8 +17,12 @@ spec:
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base:latest
           command: ["pnpm", "db:migrate"]
           env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
             - name: DATABASE_URL
-              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@asdf-0-adulting-postgres-0.asdf-0-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-0-adulting-postgres-0.$(VERSION)-0-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
           envFrom:
             - secretRef: 
                 name: env-postgres

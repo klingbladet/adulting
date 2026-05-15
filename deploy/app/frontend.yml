@@ -17,11 +17,16 @@ spec:
       initContainers:
         - name: wait-backend
           image: alpine:latest
+          env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
           command: ["sh", "-c"]
           args:
             - |
-              echo "waiting for http://asdf-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health"
-              until wget --spider http://asdf-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
+              echo "waiting for http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health"
+              until wget --spider http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
                 sleep 1
               done
       containers:
@@ -29,12 +34,16 @@ spec:
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend:feature-linter
           imagePullPolicy: Always
           env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
             - name: BACKEND_URL
-              value: http://asdf-0-adulting-backend.doe25-group-1.svc.cluster.local:8080
+              value: http://$(VERSION)-0-adulting-backend.doe25-group-1.svc.cluster.local:8080
             - name: HOSTNAME
               value: 0.0.0.0
             - name: NEXT_PUBLIC_BACKEND_URL
-              value: https://asdf-adulting.cc.k3s.chas-lab.dev
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
           ports:
             - containerPort: 3000
               protocol: TCP
