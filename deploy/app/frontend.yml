@@ -26,7 +26,7 @@ spec:
           args:
             - |
               echo "waiting for http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health"
-              until wget --spider http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
+              until wget -T 1 --spider http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
                 sleep 1
               done
       containers:
