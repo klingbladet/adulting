@@ -17,14 +17,20 @@ export const tiptapContentSchema = z.object({
 export const insertBlockSchema = createInsertSchema(blocks, {
   title: z.string().min(5, "Titeln måste vara minst 5 tecken"),
   content: tiptapContentSchema,
-  orderIndex: z.number()
+  orderIndex: z.number(),
+}).omit({
+  id: true,
+  courseId: true,
+  userId: true
 });
 
 
 export const insertQuizSchema = createInsertSchema(quizzes, {
   questionText: z.string().min(10, "Frågan är för kort"),
 }).omit({
-  id: true
+  id: true,
+  blockId: true,
+  userId: true
 });
 
 export type insertCourse = z.infer<typeof insertCourseSchema>;

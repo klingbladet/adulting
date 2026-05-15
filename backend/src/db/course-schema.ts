@@ -24,6 +24,8 @@ export const courses = pgTable("courses", {
 
 export const blocks = pgTable("blocks", {
   id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "no action" }),
   courseId: integer("course_id")
     .notNull()
     .references(() => courses.id),
@@ -36,6 +38,8 @@ export const blocks = pgTable("blocks", {
 
 export const quizzes = pgTable("quizzes", {
   id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "no action" }),
   blockId: integer("block_id")
     .notNull()
     .references(() => blocks.id, { onDelete: "cascade" }),
@@ -120,11 +124,19 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
 }));
 
 export const blocksRelations = relations(blocks, ({ one, many }) => ({
+  creator: one(user, {
+    fields: [blocks.userId],
+    references: [user.id],
+  }),
   course: one(courses, { fields: [blocks.courseId], references: [courses.id] }),
   quizzes: many(quizzes),
 }));
 
 export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
+  creator: one(user, {
+    fields: [quizzes.userId],
+    references: [user.id],
+  }),
   block: one(blocks, { fields: [quizzes.blockId], references: [blocks.id] }),
   attempts: many(quizAttempts),
 }));
