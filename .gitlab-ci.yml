@@ -4,6 +4,7 @@ stages:
   - lint
   - build
   - deploy
+  - cleanup
 
 workflow:
   rules:
@@ -116,6 +117,10 @@ deploy app:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
+  environment:
+    name: adulting/$VERSION
+    url: $VERSION-adulting.cc.k3s.chas-lab.dev
+    on_stop: delete env
   rules:
     - if: $VERSION
   script:
@@ -129,3 +134,16 @@ deploy app:
     - sed -i "s/asdf/${VERSION}/g" *
     - cd -
     - kubectl apply -k deploy
+
+
+delete env:
+  stage: cleanup
+  image: $CI_REGISTRY_IMAGE/util:latest
+  extends: .kubeconfig setup
+  environment:
+    name: adulting/$VERSION
+    action: stop
+  rules:
+    - if: $VERSION
+      when: manual
+  script: ./scripts/delete-resources.sh
