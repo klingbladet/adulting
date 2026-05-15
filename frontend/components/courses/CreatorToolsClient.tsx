@@ -1,13 +1,14 @@
 'use client'
 import axios from 'axios'
 import { useState } from "react";
+import { useSearchParams } from 'next/navigation';
 import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
 import { JSONContent } from '@tiptap/core';
 
 export default function CreatorToolsClient() {
-
-  const url = ("www")
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('courseId')
   
   const [ saved, setSaved ] = useState(false);
   const [ loading, setLoading ] = useState(false);
@@ -42,6 +43,7 @@ export default function CreatorToolsClient() {
   const handleSave = async () => {
     setLoading(true);
     try {
+      const url = `/api/courses/${courseId}/blocks`
       await axios.post(url, { blocks })
         setSaved(true);
     } catch (error) {

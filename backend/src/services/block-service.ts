@@ -7,6 +7,24 @@ import { and, eq } from "drizzle-orm";
 type NewBlock = z.infer<typeof insertBlockSchema>;
 
 export const blockService = {
+  async saveBlocks(courseId: number, userId: string, blocksData: any[]) {
+    return await db.transaction(async (tx) => {
+      await tx.delete(blocks).where(
+        and(
+          eq(blocks.courseId, courseId),
+          eq(blocks.userId, userId)
+        )
+      );
+      const formattedBlocks = blocksData.map((b, index) => ({
+        courseId: courseId,
+        userId: userId,
+        orderIndex: index,
+        title: b.ttle || `Block ${index + 1}`,
+        content: b.content,
+      }));
+    })
+  },
+
   async getAllBlocks(courseId: number) {
 
     return await db.select().from(blocks).where(

@@ -57,6 +57,52 @@ router.get("/:courseId/blocks/:blockId", async (req, res) => {
   }
 });
 
+//PUT /:courseId/blocks - Sparar/uppdaterar alla block för en kurs
+router.put("/:courseId/blocks", checkRole(["admin", "creator"]), async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.courseId as string);
+    
+    // 1. Kontrollera att användaren är inloggad
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers)
+    });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Du måste vara inloggad." });
+      return;
+    }
+
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Ogiltigt kurs-ID." });
+      return;
+    }
+
+    // 2. Hämta blocken från body
+    const { blocks } = req.body; 
+
+    if (!Array.isArray(blocks)) {
+      res.status(400).json({ error: "Data måste vara en lista av block." });
+      return;
+    }
+
+    // 3. Anropa vår nya service-metod
+    const savedBlocks = await blockService.saveBlocks(
+      courseId, 
+      session.user.id, 
+      blocks
+    );
+
+    res.status(200).json({
+      message: "Alla block har sparats!",
+      blocks: savedBlocks
+    });
+
+  } catch (error) {
+    console.error("Fel vid batch-sparande av block:", error);
+    res.status(500).json({ error: "Kunde inte spara blocken." });
+  }
+});
+
 //POST /:courseId/blocks - Skapar ett block
 router.post("/:courseId/blocks", checkRole(["admin", "creator"]),async (req, res) => {
     const courseId = req.params.courseId;
