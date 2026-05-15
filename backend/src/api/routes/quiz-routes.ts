@@ -5,28 +5,27 @@ import { insertQuizSchema } from "../../db/validation";
 import { quizService } from "../../services/quiz-service";
 import { auth } from "../../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
-//import { userCourses } from "../../db/course-schema";
 
 const router = Router();
 
 
 /*CRUD quiz*/
-//GET /:courseId/blocks/:blockId/quiz - hämtar quiz som tillhör ett specifikt block
-router.get("/:courseId/blocks/:blockId/quiz", async (req, res) => {
+//GET /:courseId/quiz - hämtar quiz som tillhör ett specifikt block
+router.get("/:courseId/quiz", async (req, res) => {
   try {
-    const blockId = parseInt(req.params.blockId);
-    if (isNaN(blockId)) {
-      res.status(400).json({ error: "Invalid block ID" });
+    const courseId = parseInt(req.params.courseId);
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Invalid course ID" });
       return;
     }
-    const getQuizFromBlock = await quizService.getQuizByBlockId(blockId);
-    if (!getQuizFromBlock) {
+    const getQuizFromCourse = await quizService.getQuizByCourseId(courseId);
+    if (!getQuizFromCourse) {
       res.status(404).json({ error: "Quiz not found" });
       return;
     }
     res.status(200).json({
         message: "Quiz har hämtats",
-        quiz: getQuizFromBlock,
+        quizzes: getQuizFromCourse,
     });
   } catch (error) {
     console.error("Fel vid hämtningen av quiz", error);
@@ -34,15 +33,16 @@ router.get("/:courseId/blocks/:blockId/quiz", async (req, res) => {
   }
 });
 
-//GET /:courseId/blocks/:blockId/quiz/:id - hämtar ett specifikt quiz
-router.get("/:courseId/blocks/:blockId/quiz/:id", async (req, res) => {
+//GET /:courseId/quiz/:id - hämtar ett specifikt quiz
+router.get("/:courseId/quiz/:id", async (req, res) => {
   try {
+    const courseId = req.params.courseId;
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
       res.status(400).json({ error: "Invalid quiz ID" });
       return;
     }
-    const getQuizById = await quizService.getQuizById(id);
+    const getQuizById = await quizService.getQuizById(id, Number(courseId));
     if (!getQuizById) {
       res.status(404).json({ error: "Quiz not found" });
       return;
@@ -57,9 +57,9 @@ router.get("/:courseId/blocks/:blockId/quiz/:id", async (req, res) => {
   }
 });
 
-//POST /:courseId/blocks/:blockId/quiz - skapar quiz
-router.post("/:courseId/blocks/:blockId/quiz", checkRole(["admin", "creator"]), async (req, res) => {
-    const  blockId = req.params.blockId;
+//POST /:courseId/quiz - skapar quiz
+router.post("/:courseId/quiz", checkRole(["admin", "creator"]), async (req, res) => {
+    const courseId = req.params.courseId;
 
     try {
     const session = await auth.api.getSession({
@@ -72,11 +72,11 @@ router.post("/:courseId/blocks/:blockId/quiz", checkRole(["admin", "creator"]), 
     }
 
     const validatedData = insertQuizSchema.parse(req.body);
-    const userId = session.user.id;
+    const createdBy = session.user.id;
 
     const newQuiz = await quizService.createQuiz({
-        blockId: Number(blockId),
-        userId,
+        courseId: Number(courseId),
+        createdBy,
         ...validatedData,
     })
 
@@ -101,9 +101,9 @@ router.post("/:courseId/blocks/:blockId/quiz", checkRole(["admin", "creator"]), 
   }
 });
 
-//PATCH /:courseId/blocks/:blockId/quiz/:id - uppdaterar quiz
-router.patch("/:courseId/blocks/:blockId/quiz/:id", checkRole(["admin", "creator"]), async (req, res) => {
-    const { id, blockId } = req.params;
+//PATCH /:courseId/quiz/:id - uppdaterar quiz
+router.patch("/:courseId/quiz/:id", checkRole(["admin", "creator"]), async (req, res) => {
+    const { id, courseId} = req.params;
 
     try {
         const session = await auth.api.getSession({
@@ -118,7 +118,7 @@ router.patch("/:courseId/blocks/:blockId/quiz/:id", checkRole(["admin", "creator
         const validatedData = insertQuizSchema.partial().parse(req.body);
         const updateOneQuiz = await quizService.updateQuiz(
           Number(id),
-          Number(blockId),
+          Number(courseId),
           session.user.id,
           validatedData
         );
@@ -150,9 +150,9 @@ router.patch("/:courseId/blocks/:blockId/quiz/:id", checkRole(["admin", "creator
     }
 });
 
-//DELETE /:courseId/blocks/:blockId/quiz/:id - Tar bort quiz
-router.delete("/:courseId/blocks/:blockId/quiz/:id", checkRole(["admin", "creator"]),async (req, res) => {
-    const { id, blockId } = req.params;
+//DELETE /:courseId/quiz/:id - Tar bort quiz
+router.delete("/:courseId/quiz/:id", checkRole(["admin", "creator"]),async (req, res) => {
+    const { id, courseId } = req.params;
 
     try {
         const session = await auth.api.getSession({
@@ -166,7 +166,7 @@ router.delete("/:courseId/blocks/:blockId/quiz/:id", checkRole(["admin", "creato
 
         const deleteOneQuiz = await quizService.deleteQuiz(
           Number(id),
-          Number(blockId),
+          Number(courseId),
           session.user.id
         );
         res.status(200).json({
