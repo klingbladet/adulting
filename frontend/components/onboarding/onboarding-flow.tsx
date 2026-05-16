@@ -40,27 +40,45 @@ export default function OnboardingFlow() {
   });
 
   const categories = [
-  { id: "economy", label: "Ekonomi" },
-  { id: "housing", label: "Boende" },
-  { id: "work", label: "Jobb" },
-  { id: "health", label: "Hälsa" },
-  { id: "relationships", label: "Relationer" },
-  { id: "government", label: "Myndigheter" },
-  { id: "food", label: "Mat" },
-  { id: "studies", label: "Studier" },
-];
+    { id: "economy", label: "Ekonomi" },
+    { id: "housing", label: "Boende" },
+    { id: "work", label: "Jobb" },
+    { id: "health", label: "Hälsa" },
+    { id: "relationships", label: "Relationer" },
+    { id: "government", label: "Myndigheter" },
+    { id: "food", label: "Mat" },
+    { id: "studies", label: "Studier" },
+  ];
 
-function toggleCategory(categoryId: string) {
-  setStepOneData((current) => {
-    const alreadySelected = current.categories.includes(categoryId);
+  // NYTT
+  const experienceOptions = [
+    { id: "beginner", label: "Nybörjare" },
+    { id: "some", label: "Lite erfarenhet" },
+    { id: "confident", label: "Ganska trygg" },
+    { id: "experienced", label: "Erfaren" },
+  ];
 
-    return {
-      categories: alreadySelected
-        ? current.categories.filter((id) => id !== categoryId)
-        : [...current.categories, categoryId],
-    };
-  });
-}
+  // NYTT
+  const focusAreaOptions = [
+    { id: "budget", label: "Budget" },
+    { id: "rent", label: "Hyra" },
+    { id: "government", label: "Myndigheter" },
+    { id: "work", label: "Jobb" },
+    { id: "health", label: "Hälsa" },
+    { id: "studies", label: "Studier" },
+  ];
+
+  function toggleCategory(categoryId: string) {
+    setStepOneData((current) => {
+      const alreadySelected = current.categories.includes(categoryId);
+
+      return {
+        categories: alreadySelected
+          ? current.categories.filter((id) => id !== categoryId)
+          : [...current.categories, categoryId],
+      };
+    });
+  }
 
   useEffect(() => {
     async function loadOnboarding() {
@@ -82,12 +100,12 @@ function toggleCategory(categoryId: string) {
         );
 
         setStepOneData({
-            categories: Array.isArray(data.stepOneData.categories)
+          categories: Array.isArray(data.stepOneData.categories)
             ? data.stepOneData.categories.filter(
                 (category): category is string => typeof category === "string"
               )
             : [],
-          });
+        });
 
         setStepTwoData({
           experience:
@@ -113,34 +131,34 @@ function toggleCategory(categoryId: string) {
   }, [router]);
 
   const isNextDisabled =
-      saving || (step === 1 && stepOneData.categories.length === 0);
+    saving || (step === 1 && stepOneData.categories.length === 0);
 
   async function handleNext() {
-  if (step === 1 && stepOneData.categories.length === 0) {
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    const data =
-      step === 1 ? stepOneData : step === 2 ? stepTwoData : stepThreeData;
-
-    const result = await saveOnboardingStep(step, data);
-
-    if (step === 3) {
-      router.push(result.redirectTo);
-      router.refresh();
+    if (step === 1 && stepOneData.categories.length === 0) {
       return;
     }
 
-    setStep(result.currentStep);
-  } catch (error) {
-    console.error("Could not save onboarding step:", error);
-  } finally {
-    setSaving(false);
+    setSaving(true);
+
+    try {
+      const data =
+        step === 1 ? stepOneData : step === 2 ? stepTwoData : stepThreeData;
+
+      const result = await saveOnboardingStep(step, data);
+
+      if (step === 3) {
+        router.push(result.redirectTo);
+        router.refresh();
+        return;
+      }
+
+      setStep(result.currentStep);
+    } catch (error) {
+      console.error("Could not save onboarding step:", error);
+    } finally {
+      setSaving(false);
+    }
   }
-}
 
   async function handleSkip() {
     setSaving(true);
@@ -182,89 +200,106 @@ function toggleCategory(categoryId: string) {
       </div>
 
       {step === 1 ? (
-  <div className="space-y-5">
-    <div className="space-y-2 text-center">
-      <h1 className="text-2xl font-bold">
-        Vad vill du lära dig mer om?
-      </h1>
-
-      <p className="text-sm text-muted-foreground">
-        Välj en eller flera kategorier som känns relevanta för dig.
-      </p>
-    </div>
-
-    <div className="grid grid-cols-2 gap-3">
-      {categories.map((category) => {
-        const isSelected = stepOneData.categories.includes(category.id);
-
-        return (
-          <button
-            key={category.id}
-            type="button"
-            onClick={() => toggleCategory(category.id)}
-            className={`rounded-2xl border px-4 py-4 text-sm font-medium transition ${
-              isSelected
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-background text-foreground hover:bg-muted"
-            }`}
-          >
-            {category.label}
-          </button>
-        );
-      })}
-    </div>
-
-    {stepOneData.categories.length > 0 ? (
-      <p className="text-center text-xs text-muted-foreground">
-        {stepOneData.categories.length} valda
-      </p>
-    ) : null}
-  </div>
-) : null}
-
-      {step === 2 ? (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Hur van känner du dig?</h1>
+        <div className="space-y-5">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold">Vad vill du lära dig mer om?</h1>
             <p className="text-sm text-muted-foreground">
-              Välj eller skriv en nivå som passar dig.
+              Välj en eller flera kategorier som känns relevanta för dig.
             </p>
           </div>
 
-          <input
-            value={stepTwoData.experience}
-            onChange={(e) =>
-              setStepTwoData({
-                ...stepTwoData,
-                experience: e.target.value,
-              })
-            }
-            placeholder="Ex. nybörjare, lite erfaren, trygg..."
-            className="h-12 w-full rounded-xl border bg-background px-4 text-sm"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            {categories.map((category) => {
+              const isSelected = stepOneData.categories.includes(category.id);
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => toggleCategory(category.id)}
+                  className={`rounded-2xl border px-4 py-4 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {stepOneData.categories.length > 0 ? (
+            <p className="text-center text-xs text-muted-foreground">
+              {stepOneData.categories.length} valda
+            </p>
+          ) : null}
         </div>
       ) : null}
 
+      {/* NYTT: steg 2 med knappar precis som steg 1 */}
+      {step === 2 ? (
+        <div className="space-y-5">
+          <div className="space-y-2 text-center">
+            <h1 className="text-2xl font-bold">Hur van känner du dig?</h1>
+            <p className="text-sm text-muted-foreground">
+              Välj den nivå som passar dig bäst.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {experienceOptions.map((option) => {
+              const isSelected = stepTwoData.experience === option.id;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setStepTwoData({ experience: option.id })}
+                  className={`rounded-2xl border px-4 py-4 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* NYTT: steg 3 med knappar precis som steg 1 */}
       {step === 3 ? (
-        <div className="space-y-4">
-          <div className="space-y-2">
+        <div className="space-y-5">
+          <div className="space-y-2 text-center">
             <h1 className="text-2xl font-bold">Vad vill du fokusera på först?</h1>
             <p className="text-sm text-muted-foreground">
               Detta kan styra vad du ser först i Learn.
             </p>
           </div>
 
-          <input
-            value={stepThreeData.focusArea}
-            onChange={(e) =>
-              setStepThreeData({
-                ...stepThreeData,
-                focusArea: e.target.value,
-              })
-            }
-            placeholder="Ex. budget, hyra, myndigheter..."
-            className="h-12 w-full rounded-xl border bg-background px-4 text-sm"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            {focusAreaOptions.map((option) => {
+              const isSelected = stepThreeData.focusArea === option.id;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setStepThreeData({ focusArea: option.id })}
+                  className={`rounded-2xl border px-4 py-4 text-sm font-medium transition ${
+                    isSelected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : null}
 
