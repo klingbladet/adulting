@@ -1,158 +1,151 @@
-/*export default function UserDashboardPage() {
-  return (
-     <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
-          <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-            <h1 className="text-2xl font-bold">Profilsida</h1>
-            <p className="mt-2 text-muted-foreground">
-              Här är den vanliga appen som användare ser.
-            </p>
-          </section>
-         
-        </main>
-  );
-} */
+"use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
-  Briefcase,
-  Car,
   ChevronLeft,
-  GraduationCap,
-  HeartPulse,
-  Home,
-  Landmark,
-  MessageCircle,
   Settings,
   Trophy,
-  User,
-  Wallet,
 } from "lucide-react";
+import { BACKEND_URL } from "@/lib/backend-url";
 
-type CourseIconKey =
-  | "housing"
-  | "driving"
-  | "economy"
-  | "csn"
-  | "work"
-  | "study"
-  | "health";
+type ProfileUser = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+};
 
-type UserCourse = {
+type ProfileCourse = {
   id: string;
   title: string;
-  description: string;
-  iconKey: CourseIconKey;
+  description?: string;
   progress: number;
   totalSteps: number;
   completedSteps: number;
 };
 
-const iconMap = {
-  housing: Home,
-  driving: Car,
-  economy: Wallet,
-  csn: Landmark,
-  work: Briefcase,
-  study: GraduationCap,
-  health: HeartPulse,
+type ProfileResponse = {
+  user: ProfileUser;
+  stats: {
+    startedCourses: number;
+    completedCourses: number;
+  };
+  courses: ProfileCourse[];
+  badges: {
+    id: string;
+    title: string;
+  }[];
 };
 
-const userCourses: UserCourse[] = [
-  {
-    id: "housing",
-    title: "Bostadskurs",
-    description: "Hyra, bostadskö och flytta hemifrån",
-    iconKey: "housing",
-    progress: 60,
-    totalSteps: 5,
-    completedSteps: 3,
-  },
-  {
-    id: "driving",
-    title: "Körkort",
-    description: "Planera vägen till körkort",
-    iconKey: "driving",
-    progress: 25,
-    totalSteps: 4,
-    completedSteps: 1,
-  },
-  {
-    id: "economy",
-    title: "Ekonomi & skatt",
-    description: "Budget, bank och skatt",
-    iconKey: "economy",
-    progress: 0,
-    totalSteps: 6,
-    completedSteps: 0,
-  },
-  {
-    id: "work",
-    title: "Jobb & CV",
-    description: "Sök jobb och skriv CV",
-    iconKey: "work",
-    progress: 0,
-    totalSteps: 4,
-    completedSteps: 0,
-  },
-];
-
-const badges = [
-  { id: "first-course", label: "Första kurs", icon: BookOpen },
-  { id: "housing", label: "Boende", icon: Home },
-  { id: "budget", label: "Budget", icon: Wallet },
-];
-
-const visibleCourses = userCourses.slice(0, 3);
+function getFirstLetter(name?: string) {
+  return name?.trim()?.charAt(0)?.toUpperCase() || "U";
+}
 
 export default function UserProfilePage() {
+  const [profile, setProfile] = useState<ProfileResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/profile/me`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not fetch profile");
+        }
+
+        const data: ProfileResponse =
+          await response.json();
+
+        setProfile(data);
+      } catch (error) {
+        console.error("PROFILE ERROR:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC]">
+        <p className="text-sm text-gray-500">
+          Laddar profil...
+        </p>
+      </main>
+    );
+  }
+
+  const user = profile?.user;
+  const courses = profile?.courses ?? [];
+  const badges = profile?.badges ?? [];
+
   return (
     <main className="min-h-dvh bg-[#F8FAFC] text-gray-950">
-      <section className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-white md:max-w-4xl md:border-x">
-        <header className="bg-[#EAF7FF] px-5 pb-8 pt-5 md:px-8">
+      <section className="mx-auto min-h-dvh w-full max-w-[430px] bg-white">
+        
+        <header className="rounded-b-[34px] bg-[#EAF7FF] px-5 pb-7 pt-5">
           <div className="flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-gray-600"
             >
               <ChevronLeft size={22} />
             </Link>
 
             <Link
               href="/profile/settings"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-gray-600"
             >
               <Settings size={22} />
             </Link>
           </div>
 
-          <div className="mt-6 flex flex-col items-center text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#2563EB] text-3xl font-bold text-white">
-              O
+          <div className="mt-4 flex flex-col items-center text-center">
+            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[#2563EB] text-3xl font-bold text-white">
+              {user?.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                getFirstLetter(user?.name)
+              )}
             </div>
 
             <h1 className="mt-3 text-xl font-bold">
-              Ozz
+              {user?.name ?? "Användare"}
             </h1>
 
             <p className="text-sm text-gray-500">
-              o.jemal94@gmail.com
+              {user?.email ?? "Ingen e-post"}
             </p>
 
             <Link
               href="/profile/settings"
-              className="mt-2 text-sm font-semibold text-[#2563EB]"
+              className="mt-1 text-sm font-semibold text-[#2563EB]"
             >
               Ändra profil →
             </Link>
           </div>
         </header>
 
-        <div className="-mt-5 px-5 md:px-8">
-          <div className="grid grid-cols-2 rounded-3xl bg-white p-4 text-center shadow-sm">
+        
+        <div className="-mt-5 px-5">
+          <div className="grid grid-cols-2 rounded-[28px] bg-white px-6 py-4 text-center shadow-sm ring-1 ring-black/5">
             <div>
               <p className="text-2xl font-bold text-[#2563EB]">
-                {userCourses.filter((course) => course.progress > 0).length}
+                {profile?.stats.startedCourses ?? 0}
               </p>
 
               <p className="text-xs text-gray-500">
@@ -162,7 +155,7 @@ export default function UserProfilePage() {
 
             <div>
               <p className="text-2xl font-bold">
-                {userCourses.filter((course) => course.progress === 100).length}
+                {profile?.stats.completedCourses ?? 0}
               </p>
 
               <p className="text-xs text-gray-500">
@@ -172,8 +165,9 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <div className="flex-1 px-5 pb-24 pt-6 md:px-8">
-          <div className="mb-4 flex items-center justify-between">
+        
+        <section className="px-5 pt-6">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-bold">
               Mina kurser
             </h2>
@@ -186,36 +180,27 @@ export default function UserProfilePage() {
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {visibleCourses.map((course) => {
-              const Icon = iconMap[course.iconKey];
-
-              return (
+          {courses.length > 0 ? (
+            <div className="space-y-3">
+              {courses.map((course) => (
                 <Link
                   key={course.id}
                   href={`/courses/${course.id}`}
-                  className="block rounded-2xl bg-[#EAF7FF] p-4"
+                  className="block rounded-2xl bg-[#EAF7FF] p-4 shadow-sm"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#2563EB]">
-                      <Icon size={24} />
-                    </div>
-
-                    <div className="flex-1">
-                      <p className="font-bold">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">
                         {course.title}
-                      </p>
+                      </h3>
 
                       <p className="text-xs text-gray-500">
-                        {course.description}
-                      </p>
-
-                      <p className="mt-1 text-xs text-gray-500">
-                        {course.completedSteps} av {course.totalSteps} steg
+                        {course.completedSteps} av{" "}
+                        {course.totalSteps} steg
                       </p>
                     </div>
 
-                    <p className="text-sm font-bold">
+                    <p className="font-bold text-gray-800">
                       {course.progress}%
                     </p>
                   </div>
@@ -229,78 +214,78 @@ export default function UserProfilePage() {
                     />
                   </div>
                 </Link>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-[#EAF7FF] p-5 text-center">
+              <BookOpen
+                className="mx-auto text-[#2563EB]"
+                size={28}
+              />
 
-          <div className="mt-8">
-            <div className="mb-4 flex items-center justify-between">
+              <p className="mt-2 text-sm font-semibold">
+                Inga kurser ännu
+              </p>
+
+              <p className="mt-1 text-xs text-gray-500">
+                Dina kurser visas här när du
+                börjar en kurs.
+              </p>
+            </div>
+          )}
+        </section>
+
+        
+        <section className="px-5 pt-7 pb-24">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
               <h2 className="text-lg font-bold">
                 Mina badges
               </h2>
 
-              <Link
-                href="/profile/badges"
-                className="text-sm font-semibold text-[#2563EB]"
-              >
-                Se alla →
-              </Link>
+              <p className="text-xs text-gray-500">
+                Lås upp badges genom att
+                slutföra kurser
+              </p>
             </div>
 
-            <div className="flex gap-4">
-              {badges.map((badge) => {
-                const Icon = badge.icon;
-
-                return (
-                  <div
-                    key={badge.id}
-                    className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EAF7FF] text-[#2563EB]"
-                  >
-                    <Icon size={28} />
-                  </div>
-                );
-              })}
-
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#F1F5F9] text-gray-400">
-                <Trophy size={28} />
-              </div>
-            </div>
+            <Link
+              href="/profile/badges"
+              className="text-sm font-semibold text-[#2563EB]"
+            >
+              Se alla →
+            </Link>
           </div>
-        </div>
 
-        <nav className="fixed bottom-0 left-0 right-0 mx-auto grid h-20 max-w-md grid-cols-4 border-t bg-white px-4 text-xs text-gray-500 md:max-w-4xl">
-          <Link
-            href="/dashboard"
-            className="flex flex-col items-center justify-center gap-1"
-          >
-            <Home size={22} />
-            Hem
-          </Link>
+          {badges.length > 0 ? (
+            <div className="flex gap-4">
+              {badges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EAF7FF] text-[#2563EB]"
+                >
+                  <Trophy size={26} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-[#F8FAFC] p-5 text-center">
+              <Trophy
+                className="mx-auto text-gray-400"
+                size={28}
+              />
 
-          <Link
-            href="/courses"
-            className="flex flex-col items-center justify-center gap-1"
-          >
-            <BookOpen size={22} />
-            Utforska
-          </Link>
+              <p className="mt-2 text-sm font-semibold">
+                Inga badges ännu
+              </p>
 
-          <Link
-            href="/chat"
-            className="flex flex-col items-center justify-center gap-1"
-          >
-            <MessageCircle size={22} />
-            Chatt
-          </Link>
-
-          <Link
-            href="/profile"
-            className="flex flex-col items-center justify-center gap-1 font-bold text-[#2563EB]"
-          >
-            <User size={22} />
-            Profil
-          </Link>
-        </nav>
+              <p className="mt-1 text-xs text-gray-500">
+                Badges visas här när du gör
+                framsteg.
+              </p>
+            </div>
+          )}
+        </section>
       </section>
     </main>
   );

@@ -22,6 +22,7 @@ import blockRoutes from "./api/routes/block-routes";
 import quizRoutes from "./api/routes/quiz-routes";
 import quizQuestionsRoutes from "./api/routes/quiz-questions-routes";
 import quizAnswersRoutes from "./api/routes/quiz-answers-routes";
+import profileRoutes from "./api/routes/profile-routes";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -53,7 +54,7 @@ app.use((req, _res, next) => {
 });
 
 app.use("/api/users", userRoutes);
-
+app.use("/api/profile", profileRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/courses", blockRoutes);
 app.use("/api/courses", quizRoutes);
