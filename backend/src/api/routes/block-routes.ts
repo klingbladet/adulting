@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ZodError, ZodIssue } from "zod"; 
+import { ZodError, ZodIssue, z } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
 import { insertBlockSchema } from "../../db/validation";
 import { blockService } from "../../services/block-service";
@@ -85,11 +85,35 @@ router.put("/:courseId/blocks", checkRole(["admin", "creator"]), async (req, res
       return;
     }
 
-    // 3. Anropa vår nya service-metod
+    // 3. Validera formatet med Zod.
+    // Eftersom frontend skickar in Tiptap-innehåll (som är ett objekt) skapar vi ett
+    // anpassat schema som accepterar inkommande format, så löser 'blockService' databaskonverteringen.
+    const frontendBlockSchema = z.object({
+      id: z.number().optional(),
+      title: z.string().min(5, "Titeln måste vara minst 5 tecken"),
+      content: z.any(), // Tillåter Tiptaps JSON-objekt utan fel
+      type: z.string().optional(),
+      orderIndex: z.number().optional(),
+      courseId: z.number().optional(),
+      quizEligible: z.boolean().optional()
+    });
+
+    const blockArraySchema = z.array(frontendBlockSchema);
+    const parsedBlocks = blockArraySchema.safeParse(blocks);
+    
+    if (!parsedBlocks.success) {
+      console.error("Valideringsfel i payload:", parsedBlocks.error.issues);
+      return res.status(400).json({ 
+        error: "Ogiltigt block-format från frontend", 
+        details: parsedBlocks.error.issues 
+      });
+    }
+
+    // 4. Anropa vår nya service-metod med validerad data
     const savedBlocks = await blockService.saveBlocks(
       courseId, 
       session.user.id, 
-      blocks
+      parsedBlocks.data
     );
 
     res.status(200).json({
