@@ -1,12 +1,14 @@
 'use client'
 import axios from 'axios'
-import { useState } from "react";
-import { useParams, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
+import { Course } from '@/types/types';
 import { JSONContent } from '@tiptap/core';
 
 export default function CreatorToolsClient() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   
@@ -16,6 +18,8 @@ export default function CreatorToolsClient() {
   const [ saved, setSaved ] = useState(false);
   const [ loading, setLoading ] = useState(false);
   const [ error, setError ] = useState('');
+  const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
+  const [ courseTitle, setCourseTitle ] = useState('');
   const [ blocks, setBlocks ] = useState<Block[]>([
     {
       id: Date.now(), 
@@ -30,6 +34,46 @@ export default function CreatorToolsClient() {
       }
     }
   ]);
+
+  useEffect(() => {
+    // Denna effekt körs om ett courseId finns i URL:en när komponenten laddas.
+    // Den hämtar då befintlig kursdata så att du kan redigera en existerande kurs.
+    const fetchCourseData = async (id: string | number) => {
+        setLoading(true);
+        setError('');
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+            
+            // Hämta kursinformation (titel etc.) - OBS: Antar att GET /api/courses/:id finns.
+            const coursePromise = axios.get(`${baseUrl}/api/courses/${id}`, { withCredentials: true });
+            // Hämta alla block för kursen (innehåll)
+            const blocksPromise = axios.get(`${baseUrl}/api/courses/${id}/blocks`, { withCredentials: true });
+
+            const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
+
+            const courseData: Course = courseResponse.data.course; 
+            const blocksData: Block[] = blocksResponse.data.blocks;
+            
+            if (courseData) {
+                setCourseTitle(courseData.title);
+                setBlocks(blocksData || []); 
+                setActiveCourseId(courseData.id);
+            }
+        } catch (err) {
+            console.error("Failed to fetch course data", err);
+            setError("Kunde inte ladda kursdata. Kursen kanske inte finns eller så är du inte inloggad.");
+            router.replace('/create/creator-tools/create-course'); // Återställ URL om kursen inte hittas
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (courseId) {
+        // Säkerställ att vi bara skickar en sträng, även om `useParams` skulle ge en array (vid catch-all routes)
+        const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
+        fetchCourseData(idToFetch);
+    }
+  }, [courseId, router]);
 
   const addBlock = () => {
     const newBlock: Block = {
@@ -54,8 +98,8 @@ export default function CreatorToolsClient() {
   }
 
   const handleSave = async () => {
-    if (!courseId) {
-      setError('Kunde inte spara: courseId saknas i URL:en.');
+    if (!courseTitle || courseTitle.trim().length < 3) {
+      setError('Kursen måste ha en titel på minst 3 tecken.');
       return;
     }
 
@@ -69,32 +113,50 @@ export default function CreatorToolsClient() {
     setLoading(true);
     setError('');
 
-    // 1. Formatera blocken innan de skickas till backend
-    const blocksToSave = blocks.map((block, index) => {
-      // Om id är en jättestor tidsstämpel är blocket nyskapat i frontend.
-      // Då MÅSTE vi ta bort id:t så databasen vet att den ska göra en INSERT, inte en UPDATE.
-      const isNewBlock = block.id > 1000000000000;
-      
-      // Konstruera den slutgiltiga payloaden. Här lägger vi till 'type' för backend 
-      // utan att det bråkar med det strikta 'Block'-interfacet i React-state.
-      const blockPayload = { 
-        ...block, 
-        courseId: Number(courseId), 
-        type: 'text',
-        quizEligible: true
-      };
-
-      if (isNewBlock) {
-        const { id, ...rest } = blockPayload;
-        return rest;
-      }
-      
-      return blockPayload;
-    });
-
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
-      const url = `${baseUrl}/api/courses/${courseId}/blocks`
+      let targetCourseId = activeCourseId;
+
+      // 1. Skapa kursen först om vi inte redan har ett activeCourseId
+      if (!targetCourseId) {
+        const courseRes = await axios.post(`${baseUrl}/api/courses`, {
+          title: courseTitle,
+          status: 'draft', // Status är '.notNull()' i schema, defaultar till draft.
+        }, {
+          withCredentials: true
+        });
+        
+        targetCourseId = courseRes.data.id || courseRes.data.course?.id;
+        if (!targetCourseId) throw new Error("Kunde inte hämta ID för den nya kursen");
+        
+        setActiveCourseId(targetCourseId);
+
+        // Uppdatera URL:en med det nya kurs-ID:t. Detta gör att om du laddar om sidan,
+        // kommer den att ladda in den nyskapade kursen för redigering istället för att starta om från noll.
+        router.replace(`/create/creator-tools/create-course?courseId=${targetCourseId}`, { scroll: false });
+      }
+
+      // 2. Formatera blocken med rätt targetCourseId
+      const blocksToSave = blocks.map((block) => {
+        const isNewBlock = block.id > 1000000000000;
+        
+        const blockPayload = { 
+          ...block, 
+          courseId: Number(targetCourseId), 
+          type: 'text', // Typ krävs normalt enligt schema för blocks
+          quizEligible: true
+        };
+  
+        if (isNewBlock) {
+          const { id, ...rest } = blockPayload;
+          return rest;
+        }
+        
+        return blockPayload;
+      });
+
+      // 3. Spara blocken (uppdaterar / skapar nya)
+      const url = `${baseUrl}/api/courses/${targetCourseId}/blocks`
       await axios.put(url, { blocks: blocksToSave }, {
         withCredentials: true // Detta är nyckeln! Säger åt axios att skicka med better-auth cookies.
       });
@@ -124,7 +186,18 @@ export default function CreatorToolsClient() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Skapa en kurs</h1>
-      
+      <div>
+        <input
+          type="text"
+          value={courseTitle}
+          onChange={(e) => {
+            setCourseTitle(e.target.value);
+            setSaved(false);
+          }}
+          placeholder='Kursnamn'
+          className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+        />
+      </div>
       {blocks.map((block, index) => (
         <div key={block.id} className="border p-4 rounded-lg relative bg-white shadow-sm">
           <div className="flex justify-between items-center mb-2">
