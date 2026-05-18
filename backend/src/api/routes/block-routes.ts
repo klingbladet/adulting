@@ -5,6 +5,9 @@ import { insertBlockSchema } from "../../db/validation";
 import { blockService } from "../../services/block-service";
 import { auth } from "../../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
+import { db } from "../../db";
+import { courses } from "../../db/course-schema";
+import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -116,6 +119,11 @@ router.put("/:courseId/blocks", checkRole(["admin", "creator"]), async (req, res
       parsedBlocks.data
     );
 
+    // Uppdatera antal blocks i kursen per automatik
+    await db.update(courses)
+      .set({ blocks: savedBlocks.length })
+      .where(eq(courses.id, courseId));
+
     res.status(200).json({
       message: "Alla block har sparats!",
       blocks: savedBlocks
@@ -145,6 +153,11 @@ router.post("/:courseId/blocks", checkRole(["admin", "creator"]),async (req, res
         const data = { courseId: Number(courseId), userId, ...validatedData };
         
         const createOneBlock = await blockService.createBlock(data);
+
+        // Öka antal blocks med 1 i kursen atomärt
+        await db.update(courses)
+          .set({ blocks: sql`${courses.blocks} + 1` })
+          .where(eq(courses.id, Number(courseId)));
 
         res.status(201).json({ message: "Blocket har skapats!", block: createOneBlock});
     } catch (error) {
@@ -222,6 +235,12 @@ router.delete("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]),asyn
           Number(courseId),
           session.user.id
         );
+        
+        // Minska antal blocks med 1 i kursen atomärt
+        await db.update(courses)
+          .set({ blocks: sql`${courses.blocks} - 1` })
+          .where(eq(courses.id, Number(courseId)));
+
         res.status(200).json({
           message : "Blocket har tagits bort!", 
           block: deleteOneBlock

@@ -8,6 +8,7 @@ import { Course } from '@/types/types';
 import { JSONContent } from '@tiptap/core';
 import Link from 'next/link';
 import CourseButton from './course-buttons';
+import CreatorStepper from './creator-stepper';
 
 export default function CreatorToolsClient() {
   const params = useParams();
@@ -107,6 +108,7 @@ export default function CreatorToolsClient() {
 
   return (
     <div className="space-y-6">
+      <CreatorStepper currentStep={2} />
       <h1 className="text-2xl font-bold">{courseTitle || 'Laddar kurs...'}</h1>
       <p className="text-gray-500">Lägg till innehåll i de block du skapade.</p>
 

@@ -8,6 +8,7 @@ interface BlockCardProps {
   icon: React.ReactNode;
   title: string;
   time?: string | number | null;
+  steps?: number | null;
   description?: string;
   isClickable?: boolean;
   onClick?: () => void;
@@ -17,6 +18,7 @@ const BlockCard = ({
   icon,
   title,
   time,
+  steps,
   description,
   isClickable = true,
   onClick
@@ -25,7 +27,11 @@ const BlockCard = ({
   ? "cursor-pointer hover:border-primary hover:shadow-md transition-all active:scale-[0.98]"
   : "";
 
-  const displaySubtitle = description || (typeof time === 'number' ? `${time} min` : time);
+  const details = [];
+  if (time) details.push(typeof time === 'number' ? `${time} min` : time);
+  if (steps !== undefined && steps !== null) details.push(`${steps} steg`);
+
+  const displaySubtitle = description || details.join(' • ');
 
   return(
     <div

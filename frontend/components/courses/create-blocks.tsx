@@ -7,6 +7,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { Block } from '@/types/types';
 import { Course } from '@/types/types';
 import { Category } from '@/types/types';
+import CreatorStepper from './creator-stepper';
 
 export default function CreateBlocks() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function CreateBlocks() {
   const [ error, setError ] = useState('');
   const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
   const [ courseTitle, setCourseTitle ] = useState('');
+  const [ courseTime, setCourseTime ] = useState('');
   const [ categoryId, setCategoryId ] = useState<string>('');
   const [ categories, setCategories ] = useState<Category[]>([]);
   const [ blocks, setBlocks ] = useState<Block[]>([
@@ -74,8 +76,9 @@ export default function CreateBlocks() {
             if (courseData) {
                 setCourseTitle(courseData.title);
                 // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
-                const extendedCourse = courseData as Course & { categoryId?: string | number | null };
+                const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
                 if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
+                if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
                 setBlocks(blocksData || []); 
                 setActiveCourseId(courseData.id);
             }
@@ -128,6 +131,11 @@ export default function CreateBlocks() {
       return;
     }
 
+    if (!courseTime || Number(courseTime) <= 0) {
+      setError('Du måste ange en giltig uppskattad tid (i minuter).');
+      return;
+    }
+
     // Frontend-validering så att redigeraren direkt förstår vad som är fel
     const invalidBlock = blocks.find(b => !b.title || b.title.trim().length < 5);
     if (invalidBlock) {
@@ -147,6 +155,7 @@ export default function CreateBlocks() {
         const courseRes = await axios.post(`${baseUrl}/api/courses`, {
           title: courseTitle,
           categoryId: categoryId, // Är nu garanterat en UUID-sträng från databasen
+          time: Number(courseTime),
           status: 'draft', // Status är '.notNull()' i schema, defaultar till draft.
         }, {
           withCredentials: true
@@ -165,6 +174,7 @@ export default function CreateBlocks() {
         await axios.patch(`${baseUrl}/api/courses/${targetCourseId}`, {
           title: courseTitle,
           categoryId: categoryId, // Är nu garanterat en UUID-sträng från databasen
+          time: Number(courseTime),
         }, {
           withCredentials: true
         }).catch(err => console.warn("Update course details failed", err));
@@ -212,6 +222,7 @@ export default function CreateBlocks() {
 
   return (
     <div className="space-y-6">
+      <CreatorStepper currentStep={1} />
       <h1 className="text-2xl font-bold">Skapa en kurs</h1>
       <div>
         <input
@@ -225,20 +236,32 @@ export default function CreateBlocks() {
           className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
         />
       </div>
-      <div>
+      <div className="flex flex-col sm:flex-row gap-4">
         <select
           value={categoryId}
           onChange={(e) => {
             setCategoryId(e.target.value);
             setSaved(false);
           }}
-          className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
         >
           <option value="" disabled>Välj kategori</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
+
+        <input
+          type="number"
+          value={courseTime}
+          onChange={(e) => {
+            setCourseTime(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Uppskattad tid (minuter)"
+          min="1"
+          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+        />
       </div>  
       {blocks.map((block, index) => (
         <div key={block.id} className="border p-4 rounded-lg relative bg-white shadow-sm">
