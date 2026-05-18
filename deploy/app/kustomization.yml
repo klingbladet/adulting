@@ -17,5 +17,7 @@ images:
   newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
   newTag: mr42
-commonLabels:
-  env: asdf
+labels:
+- includeSelectors: true
+  pairs:
+    env: asdf
