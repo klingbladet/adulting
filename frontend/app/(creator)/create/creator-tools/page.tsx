@@ -10,7 +10,7 @@ export default async function CreatorToolsPage() {
   return(
     <div className="mb-10">
       <h1 className="text-3xl mb-10">Mina kurser</h1>
-      <Link href={`/create/creator-tools/create-course`}>
+      <Link href={`/create/creator-tools/create-blocks`}>
         <CourseButton 
           className="" 
           variant="secondary">

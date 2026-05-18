@@ -31,10 +31,20 @@ const extensions = [
 export default function RichTextEditor ({ content, onChange }:RichTextEditorProps) {
   const [ preview, setPreview ] = useState(false);
 
+  // Säkerställ att vi hanterar strängifierad JSON korrekt (samma fix som i TipTapViewer)
+  let parsedContent = content;
+  if (typeof content === 'string') {
+    try {
+      parsedContent = JSON.parse(content);
+    } catch (e) {
+      // Fallback till att behålla strängen om det inte är valid JSON
+    }
+  }
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions,
-    content: content || '<p>Börja skriva...</p>',
+    content: parsedContent || '<p>Börja skriva...</p>',
     onUpdate: ({ editor }) => {
       onChange(editor.getJSON());
     },
@@ -42,7 +52,7 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
     editorProps: {
       attributes: {
         spellcheck: 'false',
-        class: '[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400',
+        class: 'min-h-[150px] w-full p-4 border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400',
       },
     },
   })
