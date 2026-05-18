@@ -1,13 +1,15 @@
 'use client'
 import axios from 'axios'
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import CourseButton from "@/components/courses/course-buttons";
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
 import { Course } from '@/types/types';
-import { JSONContent } from '@tiptap/core';
+import { Category } from '@/types/types';
+import CreatorStepper from './creator-stepper';
 
-export default function CreatorToolsClient() {
+export default function CreateBlocks() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -20,6 +22,9 @@ export default function CreatorToolsClient() {
   const [ error, setError ] = useState('');
   const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
   const [ courseTitle, setCourseTitle ] = useState('');
+  const [ courseTime, setCourseTime ] = useState('');
+  const [ categoryId, setCategoryId ] = useState<string>('');
+  const [ categories, setCategories ] = useState<Category[]>([]);
   const [ blocks, setBlocks ] = useState<Block[]>([
     {
       id: Date.now(), 
@@ -34,6 +39,20 @@ export default function CreatorToolsClient() {
       }
     }
   ]);
+
+  useEffect(() => {
+    // Hämtar dina kategorier från databasen så att vi får riktiga UUID:n
+    const fetchCategories = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+        const res = await axios.get(`${baseUrl}/api/courses/categories`, { withCredentials: true });
+        setCategories(res.data?.categories || res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     // Denna effekt körs om ett courseId finns i URL:en när komponenten laddas.
@@ -56,13 +75,17 @@ export default function CreatorToolsClient() {
             
             if (courseData) {
                 setCourseTitle(courseData.title);
+                // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
+                const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
+                if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
+                if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
                 setBlocks(blocksData || []); 
                 setActiveCourseId(courseData.id);
             }
         } catch (err) {
             console.error("Failed to fetch course data", err);
             setError("Kunde inte ladda kursdata. Kursen kanske inte finns eller så är du inte inloggad.");
-            router.replace('/create/creator-tools/create-course'); // Återställ URL om kursen inte hittas
+            router.replace('/create/creator-tools/create-blocks'); // Återställ URL om kursen inte hittas
         } finally {
             setLoading(false);
         }
@@ -80,7 +103,7 @@ export default function CreatorToolsClient() {
       id: Date.now(), 
       courseId: 0, 
       orderIndex: blocks.length,
-      title: 'Nytt block',
+      title: '',
       content: {
         type: 'doc',
         content: [
@@ -103,6 +126,16 @@ export default function CreatorToolsClient() {
       return;
     }
 
+    if (!categoryId) {
+      setError('Du måste välja en kategori för kursen.');
+      return;
+    }
+
+    if (!courseTime || Number(courseTime) <= 0) {
+      setError('Du måste ange en giltig uppskattad tid (i minuter).');
+      return;
+    }
+
     // Frontend-validering så att redigeraren direkt förstår vad som är fel
     const invalidBlock = blocks.find(b => !b.title || b.title.trim().length < 5);
     if (invalidBlock) {
@@ -121,6 +154,8 @@ export default function CreatorToolsClient() {
       if (!targetCourseId) {
         const courseRes = await axios.post(`${baseUrl}/api/courses`, {
           title: courseTitle,
+          categoryId: categoryId, // Är nu garanterat en UUID-sträng från databasen
+          time: Number(courseTime),
           status: 'draft', // Status är '.notNull()' i schema, defaultar till draft.
         }, {
           withCredentials: true
@@ -133,7 +168,16 @@ export default function CreatorToolsClient() {
 
         // Uppdatera URL:en med det nya kurs-ID:t. Detta gör att om du laddar om sidan,
         // kommer den att ladda in den nyskapade kursen för redigering istället för att starta om från noll.
-        router.replace(`/create/creator-tools/create-course?courseId=${targetCourseId}`, { scroll: false });
+        router.replace(`/create/creator-tools/create-blocks?courseId=${targetCourseId}`, { scroll: false });
+      } else {
+        // Om vi redan har targetCourseId bör vi uppdatera kursen med eventuellt nytt namn och kategori.
+        await axios.patch(`${baseUrl}/api/courses/${targetCourseId}`, {
+          title: courseTitle,
+          categoryId: categoryId, // Är nu garanterat en UUID-sträng från databasen
+          time: Number(courseTime),
+        }, {
+          withCredentials: true
+        }).catch(err => console.warn("Update course details failed", err));
       }
 
       // 2. Formatera blocken med rätt targetCourseId
@@ -169,13 +213,6 @@ export default function CreatorToolsClient() {
     }
   }
 
-  const updateBlockContent = (id: number, newContent: JSONContent) => {
-    setBlocks(blocks.map(block => 
-      block.id === id ? { ...block, content: newContent } : block
-    ));
-    setSaved(false)
-  }
-
   const updateBlockTitle = (id: number, newTitle: string) => {
     setBlocks(blocks.map(block => 
       block.id === id ? { ...block, title: newTitle } : block
@@ -185,6 +222,7 @@ export default function CreatorToolsClient() {
 
   return (
     <div className="space-y-6">
+      <CreatorStepper currentStep={1} />
       <h1 className="text-2xl font-bold">Skapa en kurs</h1>
       <div>
         <input
@@ -198,6 +236,33 @@ export default function CreatorToolsClient() {
           className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
         />
       </div>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <select
+          value={categoryId}
+          onChange={(e) => {
+            setCategoryId(e.target.value);
+            setSaved(false);
+          }}
+          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+        >
+          <option value="" disabled>Välj kategori</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          value={courseTime}
+          onChange={(e) => {
+            setCourseTime(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Uppskattad tid (minuter)"
+          min="1"
+          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+        />
+      </div>  
       {blocks.map((block, index) => (
         <div key={block.id} className="border p-4 rounded-lg relative bg-white shadow-sm">
           <div className="flex justify-between items-center mb-2">
@@ -221,11 +286,6 @@ export default function CreatorToolsClient() {
               </button>
             )}
           </div>
-
-          <RichTextEditor
-            content={block.content}
-            onChange={(newContent) => updateBlockContent(block.id, newContent)}
-          />
         </div>
       ))}
 
@@ -246,6 +306,21 @@ export default function CreatorToolsClient() {
       </div>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
+
+      <div className="flex flex-row justify-between mt-10">
+        <Link href="/create/creator-tools">
+          <CourseButton variant="secondary">Tillbaka</CourseButton>
+        </Link>
+        {activeCourseId ? (
+          <Link href={`/create/creator-tools/create-content?courseId=${activeCourseId}`}>
+            <CourseButton>Nästa</CourseButton>
+          </Link>
+        ) : (
+          <div className="opacity-50 cursor-not-allowed">
+            <CourseButton disabled>Nästa</CourseButton>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

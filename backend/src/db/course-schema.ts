@@ -23,7 +23,7 @@ export const courses = pgTable("courses", {
   title: varchar("title", { length: 255 }).notNull(),
   textContent: text("text_content"),
   time: integer("time"),
-  blocks: integer("blocks"),
+  blocks: integer("blocks").default(0),
   status: varchar("status", { length: 255 }).notNull(),
   isPublished: boolean("is_published").notNull().default(false),
 });
@@ -173,7 +173,7 @@ export const coursesRelations = relations(courses, ({ one, many }) => ({
     fields: [courses.categoryId],
     references: [categories.id],
   }),
-  blocks: many(blocks),
+  courseBlocks: many(blocks),
   enrollments: many(userCourses),
 }));
 

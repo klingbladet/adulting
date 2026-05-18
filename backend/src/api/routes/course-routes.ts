@@ -6,10 +6,23 @@ import { courseService } from "../../services/course-service";
 import { auth } from "../../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
 import { db } from "../../db";
-import { userCourses } from "../../db/course-schema";
+import { userCourses, categories } from "../../db/course-schema";
 import { eq, and } from "drizzle-orm";
 
 const router = Router();
+
+const enrollSchema = z.object({
+  knowledgeLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+});
+
+router.get("/categories", async (req, res) => { 
+  try {
+    const allCategories = await db.select().from(categories);
+    res.json(allCategories);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch categories" })
+  }
+})
 
 router.get("", async (req, res) => {
   try {
@@ -212,10 +225,6 @@ router.delete("/:id", checkRole(["admin", "creator"]),async (req, res) => {
         console.error("Fel vid borttagning av course:", error);
         res.status(500).json({ error: "Kunde inte ta bort course" });
     }
-});
-
-const enrollSchema = z.object({
-  knowledgeLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
 });
 
 export default router;

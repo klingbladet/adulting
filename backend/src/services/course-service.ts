@@ -19,11 +19,11 @@ export const courseService = {
       // Steg 2: hämta kurser med det categoryId
       return await db.query.courses.findMany({
         where: eq(courses.categoryId, category.id),
-        with: { category: true }
+        with: { category: true, courseBlocks: true }
       });
     }
     // Inga filter – returnera alla
-    return await db.query.courses.findMany({ with: { category: true } });
+    return await db.query.courses.findMany({ with: { category: true, courseBlocks: true } });
   },
 
 
@@ -32,7 +32,8 @@ export const courseService = {
     return await db.query.courses.findFirst({
       where: eq(courses.id, id),
       with: {
-        category: true
+        category: true,
+        courseBlocks: true
       }
     });
   },
@@ -67,4 +68,3 @@ export const courseService = {
   },
   
 }
-
