@@ -100,7 +100,7 @@ export default function CreateBlocks() {
       id: Date.now(), 
       courseId: 0, 
       orderIndex: blocks.length,
-      title: 'Nytt block',
+      title: '',
       content: {
         type: 'doc',
         content: [

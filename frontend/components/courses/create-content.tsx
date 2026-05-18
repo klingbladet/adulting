@@ -159,7 +159,7 @@ export default function CreatorToolsClient() {
         <Link href={`/create/creator-tools/create-blocks?courseId=${activeCourseId}`}>
           <CourseButton variant="secondary">Tillbaka</CourseButton>
         </Link>
-        <Link href={`/create/creator-tools/create-content?courseId=${activeCourseId}`}>
+        <Link href={`/create/creator-tools/create-quiz`}>
           <CourseButton>Nästa</CourseButton>
         </Link>
       </div>

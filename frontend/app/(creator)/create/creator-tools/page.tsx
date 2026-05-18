@@ -8,15 +8,17 @@ export default async function CreatorToolsPage() {
   const courses = await getCourses();
 
   return(
-    <div className="mb-10">
-      <h1 className="text-3xl mb-10">Mina kurser</h1>
-      <Link href={`/create/creator-tools/create-blocks`}>
-        <CourseButton 
-          className="" 
-          variant="secondary">
-            Skapa ny kurs
-        </CourseButton>
-      </Link>
+    <div className="mb-10 max-w-250">
+      <div className="flex flex-row justify-between items-center mb-10">
+        <h1 className="text-3xl">Mina kurser</h1>
+        <Link href={`/create/creator-tools/create-blocks`}>
+          <CourseButton 
+            variant="secondary"
+            fullWidth={false}>
+              Skapa ny kurs
+          </CourseButton>
+        </Link>
+      </div>
       <div className="flex flex-col gap-4">
         {courses.length > 0 ? (
           courses.map((course) => (
