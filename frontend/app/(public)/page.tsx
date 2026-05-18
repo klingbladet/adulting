@@ -18,22 +18,18 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-background px-4 text-foreground md:min-h-screen md:py-8">
-      <div className="flex items-center justify-center py-4 text-center text-sm text-muted-foreground">
+      <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-4 text-foreground md:min-h-screen md:bg-background md:py-8">
+<div className="absolute inset-0 z-0 bg-[url('/images/frontpage-mobile.gif')] bg-size-cover  bg-[position:30%_center] bg-no-repeat md:hidden" />
+  <div className="flex items-center justify-center z-10 py-4 text-center text-sm text-muted-foreground">
         <p className="text-sm font-medium text-muted-foreground">
           Select language
         </p>
       </div>
 
-      <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-        <div className="rounded-3xl border bg-card p-6 shadow-sm">
+      <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center z-10">
           <div className="mb-8 space-y-3 text-center">
-            <p className="text-sm font-medium text-muted-foreground">
-              Välkommen till Adulting
-            </p>
-
-            <h1 className="text-3xl font-bold tracking-tight">
-              Ta kontroll över vuxenlivet
+            <h1 className="text-3xl font-bold font-heading tracking-tight">
+              ADULTING            
             </h1>
 
             <p className="text-base text-muted-foreground">
@@ -61,9 +57,12 @@ export default async function HomePage() {
             >
               Logga in
             </Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+          </div>  
+        </section>
+</main>
+    
+      );
 }
+
+
+
