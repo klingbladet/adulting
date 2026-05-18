@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --font-sans: var(--font-geist-sans), Arial, sans-serif;
-  --font-heading: var(--font-geist-sans), Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+  --font-sans: var(--font-hind), Arial, sans-serif;
+  --font-heading: var(--font-montserrat), Arial, sans-serif;
+  --font-mono: monospace;
 
   --background: #ffffff;
   --foreground: #111827;
@@ -58,6 +58,7 @@
 
 @theme {
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
 
   --color-background: var(--background);
