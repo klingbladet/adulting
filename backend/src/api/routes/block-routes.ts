@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ZodError, ZodIssue } from "zod"; 
+import { ZodError, ZodIssue, z } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
 import { insertBlockSchema } from "../../db/validation";
 import { blockService } from "../../services/block-service";
@@ -54,6 +54,76 @@ router.get("/:courseId/blocks/:blockId", async (req, res) => {
   } catch (error) {
     console.error("Fel vid hämtningen av block", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//PUT /:courseId/blocks - Sparar/uppdaterar alla block för en kurs
+router.put("/:courseId/blocks", checkRole(["admin", "creator"]), async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.courseId as string);
+    
+    // 1. Kontrollera att användaren är inloggad
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers)
+    });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Du måste vara inloggad." });
+      return;
+    }
+
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Ogiltigt kurs-ID." });
+      return;
+    }
+
+    // 2. Hämta blocken från body
+    const { blocks } = req.body; 
+
+    if (!Array.isArray(blocks)) {
+      res.status(400).json({ error: "Data måste vara en lista av block." });
+      return;
+    }
+
+    // 3. Validera formatet med Zod.
+    // Eftersom frontend skickar in Tiptap-innehåll (som är ett objekt) skapar vi ett
+    // anpassat schema som accepterar inkommande format, så löser 'blockService' databaskonverteringen.
+    const frontendBlockSchema = z.object({
+      id: z.number().optional(),
+      title: z.string().min(5, "Titeln måste vara minst 5 tecken"),
+      content: z.any(), // Tillåter Tiptaps JSON-objekt utan fel
+      type: z.string().optional(),
+      orderIndex: z.number().optional(),
+      courseId: z.number().optional(),
+      quizEligible: z.boolean().optional()
+    });
+
+    const blockArraySchema = z.array(frontendBlockSchema);
+    const parsedBlocks = blockArraySchema.safeParse(blocks);
+    
+    if (!parsedBlocks.success) {
+      console.error("Valideringsfel i payload:", parsedBlocks.error.issues);
+      return res.status(400).json({ 
+        error: "Ogiltigt block-format från frontend", 
+        details: parsedBlocks.error.issues 
+      });
+    }
+
+    // 4. Anropa vår nya service-metod med validerad data
+    const savedBlocks = await blockService.saveBlocks(
+      courseId, 
+      session.user.id, 
+      parsedBlocks.data
+    );
+
+    res.status(200).json({
+      message: "Alla block har sparats!",
+      blocks: savedBlocks
+    });
+
+  } catch (error) {
+    console.error("Fel vid batch-sparande av block:", error);
+    res.status(500).json({ error: "Kunde inte spara blocken." });
   }
 });
 
