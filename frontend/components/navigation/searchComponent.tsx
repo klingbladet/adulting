@@ -25,11 +25,27 @@ export default function SearchComponent({
         if (initialCourses) return;
         let mounted = true;
         setLoading(true);
+
         fetch("/api/courses")
             .then((res) => res.json())
-            .then((data) => {
+            .then(async (data) => {
                 if (!mounted) return;
-                if (Array.isArray(data)) setCourses(data);
+                if (!Array.isArray(data)) return;
+
+                const coursesWithBlocks = await Promise.all(
+                    data.map(async (course) => {
+                        try {
+                            const blockRes = await fetch(`/api/courses/${course.id}/blocks`);
+                            const blockData = await blockRes.json();
+                            const blocks = blockData.blocks ?? blockData;
+                            return { ...course, blocksList: blocks };
+                        } catch {
+                            return course;
+                        }
+                    })
+                );
+
+                if (mounted) setCourses(coursesWithBlocks);
             })
             .catch(() => {})
             .finally(() => mounted && setLoading(false));
@@ -39,7 +55,6 @@ export default function SearchComponent({
         };
     }, [initialCourses]);
 
-    // Debounce the query to avoid too many recalculations
     useEffect(() => {
         const id = setTimeout(() => setDebouncedQuery(query.trim()), 200);
         return () => clearTimeout(id);
@@ -47,13 +62,11 @@ export default function SearchComponent({
 
     const fuse = useMemo(() => {
         return new Fuse(courses as any, {
-            // Include block titles returned either as `courseBlocks` from backend
-            // or `blocksList` in frontend types so searching a block title
-            // matches the parent course.
             keys: ["title", "category.name", "textContent", "courseBlocks.title", "blocksList.title"],
-            threshold: 0.35,
+            threshold: 0.2,
             ignoreLocation: true,
             includeScore: true,
+            minMatchCharLength: 3,
         });
     }, [courses]);
 
