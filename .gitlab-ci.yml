@@ -114,7 +114,7 @@ build frontend:
     NEXT_PUBLIC_API_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/api
   script:
     - echo "client URL will be '$NEXT_PUBLIC_API_URL'" 
-    - docker buildx build --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL -t $CI_REGISTRY_IMAGE/frontend-base:$VERSION --push ./frontend
+    - docker buildx build --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push ./frontend
   rules:
     - if: $VERSION
 
