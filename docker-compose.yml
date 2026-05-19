@@ -82,7 +82,7 @@ services:
       MCP_HOST: 0.0.0.0
       MCP_INTERNAL_TOKEN: ${MCP_INTERNAL_TOKEN:-}
 
-      LEARNING_LESSON_PROVIDER: mock
+      LEARNING_LESSON_PROVIDER: database
       LEARNING_PROFILE_PROVIDER: mock
 
     depends_on:

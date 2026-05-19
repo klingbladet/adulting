@@ -1,7 +1,7 @@
 'use client'
 import axios from 'axios'
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
 import { Course } from '@/types/types';
@@ -11,9 +11,9 @@ import CourseButton from './course-buttons';
 import CreatorStepper from './creator-stepper';
 
 export default function CreatorToolsClient() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  
   // Hämtar courseId från antingen sökvägen (/courses/123) eller query-parametern (?courseId=123)
   const courseId = params?.courseId || searchParams.get('courseId');
   
@@ -63,8 +63,7 @@ export default function CreatorToolsClient() {
         fetchCourseData(idToFetch);
     }
   }, [courseId]);
-
-  const handleSave = async () => {
+const handleSave = async (): Promise<number | null> => {
     setLoading(true);
     setError('');
 
@@ -72,9 +71,13 @@ export default function CreatorToolsClient() {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
       
       if (!activeCourseId) {
-        setError('Ingen kurs vald för att spara innehåll.');
-        return;
-      }
+  setError('Ingen kurs vald för att spara innehåll.');
+  return null;
+}
+if (!activeCourseId) {
+  setError('Ingen kurs vald för att spara innehåll.');
+  return null;
+}
 
       // Formatera blocken för att bara uppdatera innehållet
       const blocksToSave = blocks.map((block) => ({ 
@@ -89,13 +92,31 @@ export default function CreatorToolsClient() {
         withCredentials: true
       });
       setSaved(true);
+      return Number(activeCourseId);
     } catch (error) {
       console.error('Det gick ej att spara innehållet pga servern', error)
       setError('Det gick inte att spara innehållet!')
+      return null;
     } finally {
       setLoading (false);
     }
   }
+
+  const handleNext = async () => {
+  if (loading) return;
+
+  let courseIdForNext = activeCourseId;
+
+  if (!saved || !courseIdForNext) {
+    courseIdForNext = await handleSave();
+  }
+
+  if (!courseIdForNext) {
+    return;
+  }
+
+  router.push(`/create/creator-tools/create-quiz?courseId=${courseIdForNext}`);
+};
 
   const updateBlockContent = (id: number, newContent: JSONContent) => {
     setBlocks(blocks.map(block => 
@@ -139,7 +160,7 @@ export default function CreatorToolsClient() {
 
           <RichTextEditor
             content={activeBlock.content}
-            onChange={(newContent) => updateBlockContent(activeBlock.id, newContent)}
+            onChange={(json) => updateBlockContent(activeBlock.id, json)}
           />
         </div>
       ) : (
@@ -161,9 +182,14 @@ export default function CreatorToolsClient() {
         <Link href={`/create/creator-tools/create-blocks?courseId=${activeCourseId}`}>
           <CourseButton variant="secondary">Tillbaka</CourseButton>
         </Link>
-        <Link href={`/create/creator-tools/create-quiz`}>
-          <CourseButton>Nästa</CourseButton>
-        </Link>
+        <CourseButton
+          type="button"
+          onClick={handleNext}
+          disabled={loading}
+          className="disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? "Sparar..." : "Nästa"}
+        </CourseButton>
       </div>
     </div>
   );
