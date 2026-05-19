@@ -157,14 +157,6 @@ export default function CreatorToolsClient() {
       </div>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
-      <div className="flex flex-row justify-between mt-10">
-        <Link href={`/create/creator-tools/create-blocks?courseId=${activeCourseId}`}>
-          <CourseButton variant="secondary">Tillbaka</CourseButton>
-        </Link>
-        <Link href={`/create/creator-tools/create-quiz`}>
-          <CourseButton>Nästa</CourseButton>
-        </Link>
-      </div>
     </div>
   );
 }

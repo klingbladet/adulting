@@ -1,23 +1,31 @@
 import CreatorStepper from "@/components/courses/creator-stepper"
-import CourseButton from "@/components/courses/course-buttons"
-import Link from "next/link"
-import { getCourseById } from "@/lib/api"
+import StepNavigation from "@/components/courses/step-navigation";
+import { getCourseById } from "@/lib/api";
+
+// Skapa en typ för att inkludera databas-relationerna utan att använda "any"
+type CourseWithRelations = {
+  title: string;
+  time?: number | null;
+  blocks?: number | null;
+  courseBlocks?: unknown[];
+  category?: { name: string };
+};
 
 export default async function SummaryPage({ searchParams }: { searchParams: Promise<{ courseId?: string }> }) {
   const resolvedParams = await searchParams;
   const courseId = resolvedParams?.courseId;
 
-  let course = null;
+  let course: CourseWithRelations | null = null;
   if (courseId) {
     try {
-      course = await getCourseById(courseId);
+      course = (await getCourseById(courseId)) as unknown as CourseWithRelations;
     } catch (e) {
       console.error(e);
     }
   }
 
   // Räkna ut antalet steg på ett säkert sätt utifrån datan
-  const steps = (course as any)?.courseBlocks?.length || (typeof course?.blocks === 'number' ? course.blocks : 0);
+  const steps = course?.courseBlocks?.length || (typeof course?.blocks === 'number' ? course.blocks : 0);
 
   return(
     <>
@@ -36,7 +44,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
             <div className="flex justify-between border-b pb-4">
               <span className="text-gray-500 font-medium">Kategori</span>
               <span className="font-semibold text-gray-800">
-                {(course as any).category?.name || "Ingen kategori"}
+                {course.category?.name || "Ingen kategori"}
               </span>
             </div>
             
@@ -49,14 +57,11 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
           <p className="text-red-500 mb-8 italic">Ingen kurs hittades att publicera. Saknas courseId i URL:en?</p>
         )}
 
-        <div className="flex flex-row justify-between mt-10">
-          <Link href={`/create/creator-tools/create-quiz${courseId ? `?courseId=${courseId}` : ''}`}>
-            <CourseButton variant="secondary">Tillbaka</CourseButton>
-          </Link>
-          <Link href="/create/creator-tools">
-            <CourseButton>Publicera kurs</CourseButton>
-          </Link>
-        </div>
+        <StepNavigation 
+          backPath="/create/creator-tools/create-quiz"
+          nextPath="/create/creator-tools"
+          nextLabel="Publicera kurs"
+        />
       </div>
     </>
   )
