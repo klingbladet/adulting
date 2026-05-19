@@ -1,6 +1,6 @@
 import CreatorStepper from "@/components/courses/creator-stepper"
-import StepNavigation from "@/components/courses/step-navigation";
 import { getCourseById } from "@/lib/api";
+import PublishActions from "@/components/courses/publish-actions";
 
 // Skapa en typ för att inkludera databas-relationerna utan att använda "any"
 type CourseWithRelations = {
@@ -57,11 +57,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
           <p className="text-red-500 mb-8 italic">Ingen kurs hittades att publicera. Saknas courseId i URL:en?</p>
         )}
 
-        <StepNavigation 
-          backPath="/create/creator-tools/preview"
-          nextPath="/create/creator-tools"
-          nextLabel="Publicera kurs"
-        />
+        {courseId && <PublishActions courseId={courseId} />}
       </div>
     </>
   )

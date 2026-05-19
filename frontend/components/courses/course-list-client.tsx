@@ -14,7 +14,7 @@ interface DraftData {
   blocks?: unknown[];
 }
 
-type CourseWithDraft = Course & { hasDraft?: boolean };
+type CourseWithDraft = Course & { hasDraft?: boolean, isPublished?: boolean };
 
 export default function CourseListClient({ initialCourses }: { initialCourses: Course[] }) {
   const [courses, setCourses] = useState<CourseWithDraft[]>(initialCourses);
@@ -148,7 +148,11 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
                   title={course.title}
                   time={course.time}
                   steps={getSteps(course.blocks)}
-                  description={course.hasDraft ? "Har osparade ändringar lokalt" : undefined}
+                  description={
+                    course.hasDraft 
+                      ? "Har osparade ändringar lokalt" 
+                      : (course.isPublished ? "✅ Publicerad" : "📝 Draft (Utkast)")
+                  }
                 />
               </Link>
               <button
