@@ -1,3 +1,5 @@
+import { JSONContent } from "@tiptap/core";
+
 export interface Category {
   id: string;
   name: string;
@@ -25,7 +27,7 @@ export interface Block {
   courseId: number;
   orderIndex: number;
   title: string | null;
-  content: string;
+  content: JSONContent;
   createdAt?: string | null;
   updatedAt?: string | null;
   quizzes?: Quiz[];

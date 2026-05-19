@@ -3,12 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
+  ArrowLeft,
   BookOpen,
-  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Mail,
   Settings,
-  Trophy,
+  User,
+  X,
 } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
+import { authClient } from "@/lib/auth-client";
 
 type ProfileUser = {
   id: string;
@@ -20,273 +25,402 @@ type ProfileUser = {
 type ProfileCourse = {
   id: string;
   title: string;
-  description?: string;
   progress: number;
   totalSteps: number;
   completedSteps: number;
+  image?: string | null;
+};
+
+type ProfileBadge = {
+  id: string;
+  title: string;
+  image?: string | null;
+  unlocked?: boolean;
 };
 
 type ProfileResponse = {
-  user: ProfileUser;
+  user: ProfileUser | null;
   stats: {
     startedCourses: number;
     completedCourses: number;
   };
   courses: ProfileCourse[];
-  badges: {
-    id: string;
-    title: string;
-  }[];
+  badges: ProfileBadge[];
 };
 
 function getFirstLetter(name?: string) {
-  return name?.trim()?.charAt(0)?.toUpperCase() || "U";
+  return name?.trim().charAt(0).toUpperCase() || "O";
 }
 
-export default function UserProfilePage() {
+function safeProgress(progress: number) {
+  return Math.min(Math.max(progress, 0), 100);
+}
+
+export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
-    async function fetchProfile() {
+    async function getProfile() {
       try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/profile/me`,
-          {
-            credentials: "include",
-          }
-        );
+        const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
+          credentials: "include",
+        });
 
         if (!response.ok) {
-          throw new Error("Could not fetch profile");
+          setProfile(null);
+          return;
         }
 
-        const data: ProfileResponse =
-          await response.json();
-
+        const data: ProfileResponse = await response.json();
         setProfile(data);
       } catch (error) {
         console.error("PROFILE ERROR:", error);
+        setProfile(null);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchProfile();
+    getProfile();
   }, []);
+
+  async function handleGoogleLogin() {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/profile",
+    });
+  }
 
   if (loading) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC]">
-        <p className="text-sm text-gray-500">
-          Laddar profil...
-        </p>
+        <p className="text-sm text-gray-500">Laddar profil...</p>
       </main>
     );
   }
 
-  const user = profile?.user;
-  const courses = profile?.courses ?? [];
-  const badges = profile?.badges ?? [];
+  const isLoggedIn = Boolean(profile?.user);
 
   return (
-    <main className="min-h-dvh bg-[#F8FAFC] text-gray-950">
-      <section className="mx-auto min-h-dvh w-full max-w-[430px] bg-white">
-        
-        <header className="rounded-b-[34px] bg-[#EAF7FF] px-5 pb-7 pt-5">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-gray-600"
-            >
-              <ChevronLeft size={22} />
-            </Link>
+    <>
+      <main className="min-h-dvh overflow-hidden bg-[#F8FAFC] text-gray-950">
+        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-white">
+          <header className="bg-[#EAF7FF] px-5 pb-5 pt-4">
+            <div className="flex items-center justify-between">
+              <Link
+                href="/dashboard"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-[#2563EB]"
+                aria-label="Tillbaka"
+              >
+                <ArrowLeft size={20} />
+              </Link>
 
-            <Link
-              href="/profile/settings"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-gray-600"
-            >
-              <Settings size={22} />
-            </Link>
-          </div>
-
-          <div className="mt-4 flex flex-col items-center text-center">
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-[#2563EB] text-3xl font-bold text-white">
-              {user?.image ? (
-                <img
-                  src={user.image}
-                  alt={user.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                getFirstLetter(user?.name)
-              )}
+              <Link
+                href="/profile/settings"
+                className="flex flex-col items-center text-[#2563EB]"
+              >
+                <Settings size={25} />
+                <span className="mt-0.5 text-[11px] font-semibold">
+                  Inställningar
+                </span>
+              </Link>
             </div>
 
-            <h1 className="mt-3 text-xl font-bold">
-              {user?.name ?? "Användare"}
-            </h1>
+            {isLoggedIn && profile?.user ? (
+              <LoggedInHeader profile={profile} />
+            ) : (
+              <GuestHeader />
+            )}
+          </header>
 
-            <p className="text-sm text-gray-500">
-              {user?.email ?? "Ingen e-post"}
-            </p>
+          {isLoggedIn && profile ? (
+            <ProfileContent
+              courses={profile.courses ?? []}
+              badges={profile.badges ?? []}
+            />
+          ) : (
+            <GuestContent onLoginClick={() => setShowLogin(true)} />
+          )}
+        </section>
+      </main>
 
-            <Link
-              href="/profile/settings"
-              className="mt-1 text-sm font-semibold text-[#2563EB]"
-            >
-              Ändra profil →
-            </Link>
-          </div>
-        </header>
+      {showLogin && (
+        <LoginBottomSheet
+          onClose={() => setShowLogin(false)}
+          onGoogle={handleGoogleLogin}
+        />
+      )}
+    </>
+  );
+}
 
-        
-        <div className="-mt-5 px-5">
-          <div className="grid grid-cols-2 rounded-[28px] bg-white px-6 py-4 text-center shadow-sm ring-1 ring-black/5">
-            <div>
-              <p className="text-2xl font-bold text-[#2563EB]">
-                {profile?.stats.startedCourses ?? 0}
-              </p>
+function LoggedInHeader({ profile }: { profile: ProfileResponse }) {
+  const user = profile.user;
 
-              <p className="text-xs text-gray-500">
-                Påbörjade
-              </p>
-            </div>
+  if (!user) return null;
 
-            <div>
-              <p className="text-2xl font-bold">
-                {profile?.stats.completedCourses ?? 0}
-              </p>
+  return (
+    <div className="mt-3 text-center">
+      <div className="mx-auto flex h-[92px] w-[92px] items-center justify-center overflow-hidden rounded-full border-[5px] border-white bg-[#2563EB] text-3xl font-bold text-white shadow-sm">
+        {user.image ? (
+          <img
+            src={user.image}
+            alt={user.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          getFirstLetter(user.name)
+        )}
+      </div>
 
-              <p className="text-xs text-gray-500">
-                Klara
-              </p>
-            </div>
-          </div>
+      <h1 className="mt-3 text-2xl font-bold">{user.name}</h1>
+
+      <p className="text-xs text-gray-500">{user.email}</p>
+
+      <div className="mx-auto mt-5 flex w-[230px] items-center justify-between text-center">
+        <div className="flex-1">
+          <p className="text-2xl font-bold text-[#2563EB]">
+            {profile.stats.startedCourses}
+          </p>
+          <p className="text-xs text-gray-500">Pågående</p>
         </div>
 
-        
-        <section className="px-5 pt-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-bold">
-              Mina kurser
-            </h2>
+        <div className="h-12 w-px bg-gray-300" />
 
-            <Link
-              href="/courses"
-              className="text-sm font-semibold text-[#2563EB]"
-            >
-              Se alla →
-            </Link>
+        <div className="flex-1">
+          <p className="text-2xl font-bold text-[#7C8A22]">
+            {profile.stats.completedCourses}
+          </p>
+          <p className="text-xs text-gray-500">Klara</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuestHeader() {
+  return (
+    <div className="mt-7 flex flex-col items-center text-center">
+      <div className="flex h-[92px] w-[92px] items-center justify-center rounded-full bg-white shadow-sm ring-4 ring-white">
+        <User size={50} className="text-[#2563EB]" />
+      </div>
+
+      <h1 className="mt-4 text-2xl font-bold">Hej!</h1>
+
+      <p className="mt-1 text-lg font-bold">Logga in för att komma igång</p>
+    </div>
+  );
+}
+
+function ProfileContent({
+  courses,
+  badges,
+}: {
+  courses: ProfileCourse[];
+  badges: ProfileBadge[];
+}) {
+  return (
+    <div className="flex-1 px-5 pt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-lg font-bold">Mina kurser</h2>
+
+        <Link
+          href="/courses"
+          className="flex items-center gap-1 text-sm font-bold text-[#2563EB]"
+        >
+          Se alla <ChevronRight size={16} />
+        </Link>
+      </div>
+
+      {courses.length > 0 ? (
+        <div className="space-y-2.5">
+          {courses.slice(0, 3).map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl bg-[#EAF7FF] p-4 text-center">
+          <BookOpen className="mx-auto text-[#2563EB]" size={26} />
+          <p className="mt-2 text-sm font-bold">Inga kurser ännu</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Dina kurser visas här när du börjar.
+          </p>
+        </div>
+      )}
+
+      <section className="mt-6">
+        <h2 className="text-lg font-bold">Mina badges</h2>
+        <p className="text-xs text-gray-500">
+          Lås upp badges genom att slutföra kurser
+        </p>
+
+        {badges.length > 0 ? (
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            {badges.slice(0, 3).map((badge) => (
+              <BadgeItem key={badge.id} badge={badge} />
+            ))}
           </div>
-
-          {courses.length > 0 ? (
-            <div className="space-y-3">
-              {courses.map((course) => (
-                <Link
-                  key={course.id}
-                  href={`/courses/${course.id}`}
-                  className="block rounded-2xl bg-[#EAF7FF] p-4 shadow-sm"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">
-                        {course.title}
-                      </h3>
-
-                      <p className="text-xs text-gray-500">
-                        {course.completedSteps} av{" "}
-                        {course.totalSteps} steg
-                      </p>
-                    </div>
-
-                    <p className="font-bold text-gray-800">
-                      {course.progress}%
-                    </p>
-                  </div>
-
-                  <div className="mt-3 h-2 rounded-full bg-white">
-                    <div
-                      className="h-2 rounded-full bg-[#2563EB]"
-                      style={{
-                        width: `${course.progress}%`,
-                      }}
-                    />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-[#EAF7FF] p-5 text-center">
-              <BookOpen
-                className="mx-auto text-[#2563EB]"
-                size={28}
-              />
-
-              <p className="mt-2 text-sm font-semibold">
-                Inga kurser ännu
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Dina kurser visas här när du
-                börjar en kurs.
-              </p>
-            </div>
-          )}
-        </section>
-
-        
-        <section className="px-5 pt-7 pb-24">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold">
-                Mina badges
-              </h2>
-
-              <p className="text-xs text-gray-500">
-                Lås upp badges genom att
-                slutföra kurser
-              </p>
-            </div>
-
-            <Link
-              href="/profile/badges"
-              className="text-sm font-semibold text-[#2563EB]"
-            >
-              Se alla →
-            </Link>
+        ) : (
+          <div className="mt-3 grid grid-cols-2 gap-5">
+            <LockedBadge title="Boende" />
+            <LockedBadge title="Körkort" />
           </div>
-
-          {badges.length > 0 ? (
-            <div className="flex gap-4">
-              {badges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-[#EAF7FF] text-[#2563EB]"
-                >
-                  <Trophy size={26} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-[#F8FAFC] p-5 text-center">
-              <Trophy
-                className="mx-auto text-gray-400"
-                size={28}
-              />
-
-              <p className="mt-2 text-sm font-semibold">
-                Inga badges ännu
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Badges visas här när du gör
-                framsteg.
-              </p>
-            </div>
-          )}
-        </section>
+        )}
       </section>
-    </main>
+    </div>
+  );
+}
+
+function GuestContent({ onLoginClick }: { onLoginClick: () => void }) {
+  return (
+    <div className="flex flex-1 flex-col justify-center px-7 pb-24">
+      <button
+        type="button"
+        onClick={onLoginClick}
+        className="h-14 rounded-2xl bg-[#2563EB] text-base font-bold text-white shadow-sm"
+      >
+        Skapa konto / Logga in
+      </button>
+
+      <ul className="mx-auto mt-12 space-y-2 text-sm font-semibold">
+        <li>• Spara dina framsteg</li>
+        <li>• Fortsätta där du slutade</li>
+        <li>• Få personliga rekommendationer</li>
+      </ul>
+    </div>
+  );
+}
+
+function CourseCard({ course }: { course: ProfileCourse }) {
+  const progress = safeProgress(course.progress);
+
+  return (
+    <Link
+      href={`/courses/${course.id}`}
+      className="flex min-h-[76px] items-center gap-3 rounded-3xl bg-[#EAF7FF] px-3 py-2.5 shadow-sm"
+    >
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-300 bg-white">
+        {course.image ? (
+          <img
+            src={course.image}
+            alt={course.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <BookOpen className="text-[#2563EB]" size={26} />
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="truncate text-sm font-bold">{course.title}</h3>
+          <p className="text-xs font-bold">{progress}%</p>
+        </div>
+
+        <p className="mt-0.5 text-[11px] text-gray-500">
+          {course.completedSteps} av {course.totalSteps} steg
+        </p>
+
+        <div className="mt-2 h-1.5 rounded-full bg-white">
+          <div
+            className="h-1.5 rounded-full bg-[#2563EB]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function BadgeItem({ badge }: { badge: ProfileBadge }) {
+  const unlocked = badge.unlocked ?? true;
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div
+        className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white ${
+          unlocked ? "border-[#7C8A22]" : "border-gray-300 opacity-50 grayscale"
+        }`}
+      >
+        {badge.image ? (
+          <img
+            src={badge.image}
+            alt={badge.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Lock className="text-gray-400" size={26} />
+        )}
+      </div>
+
+      <p className="mt-2 text-sm font-bold">{badge.title}</p>
+    </div>
+  );
+}
+
+function LockedBadge({ title }: { title: string }) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full border border-gray-300 bg-gray-100 opacity-60">
+        <Lock className="text-gray-400" size={30} />
+      </div>
+
+      <p className="mt-2 text-sm font-bold text-gray-500">{title}</p>
+    </div>
+  );
+}
+
+function LoginBottomSheet({
+  onClose,
+  onGoogle,
+}: {
+  onClose: () => void;
+  onGoogle: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
+      <div className="w-full max-w-[430px] rounded-t-[34px] bg-white px-6 pb-7 pt-5 shadow-xl">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-xl font-bold">Välj hur du vill fortsätta</h2>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F1F5F9]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={onGoogle}
+            className="flex w-full items-center gap-4 rounded-2xl bg-[#F8FAFC] px-4 py-4 text-left text-sm font-bold shadow-sm"
+          >
+            <span className="text-xl">G</span>
+            Fortsätt med Google
+          </button>
+
+          <Link
+            href="/auth"
+            className="flex w-full items-center gap-4 rounded-2xl bg-[#F8FAFC] px-4 py-4 text-left text-sm font-bold shadow-sm"
+          >
+            <span className="text-xl"></span>
+            Fortsätt med Apple
+          </Link>
+
+          <Link
+            href="/sign-in"
+            className="flex w-full items-center gap-4 rounded-2xl bg-[#F8FAFC] px-4 py-4 text-left text-sm font-bold shadow-sm"
+          >
+            <Mail size={20} />
+            Fortsätt med e-post
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

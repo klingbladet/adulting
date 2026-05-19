@@ -4,16 +4,16 @@ import { eq } from "drizzle-orm";
 
 import { auth } from "../../utils/auth";
 import { db } from "../../db";
-import { user } from "../../db/auth-schema";
+import { user, session, account, userOnboarding } from "../../db/auth-schema";
 
 const router = Router();
 
 async function requireSession(req: Request, res: Response) {
-  const session = await auth.api.getSession({
+  const currentSession = await auth.api.getSession({
     headers: fromNodeHeaders(req.headers),
   });
 
-  if (!session?.user?.id) {
+  if (!currentSession?.user?.id) {
     res.status(401).json({
       error: "Du måste vara inloggad.",
     });
@@ -21,13 +21,13 @@ async function requireSession(req: Request, res: Response) {
     return null;
   }
 
-  return session;
+  return currentSession;
 }
 
 router.get("/me", async (req, res) => {
   try {
-    const session = await requireSession(req, res);
-    if (!session) return;
+    const currentSession = await requireSession(req, res);
+    if (!currentSession) return;
 
     const [currentUser] = await db
       .select({
@@ -40,7 +40,7 @@ router.get("/me", async (req, res) => {
         createdAt: user.createdAt,
       })
       .from(user)
-      .where(eq(user.id, session.user.id))
+      .where(eq(user.id, currentSession.user.id))
       .limit(1);
 
     if (!currentUser) {
@@ -51,6 +51,15 @@ router.get("/me", async (req, res) => {
 
     return res.json({
       user: currentUser,
+      settings: {
+        language: "sv",
+        birthdate: null,
+        notifications: {
+          push: true,
+          email: false,
+          progress: true,
+        },
+      },
       stats: {
         startedCourses: 0,
         completedCourses: 0,
@@ -63,6 +72,110 @@ router.get("/me", async (req, res) => {
 
     return res.status(500).json({
       error: "Kunde inte hämta profil.",
+    });
+  }
+});
+
+router.patch("/me", async (req, res) => {
+  try {
+    const currentSession = await requireSession(req, res);
+    if (!currentSession) return;
+
+    const name =
+      typeof req.body?.name === "string" ? req.body.name.trim() : "";
+
+    if (name.length < 2) {
+      return res.status(400).json({
+        error: "Namnet måste vara minst 2 tecken.",
+      });
+    }
+
+    const [updatedUser] = await db
+      .update(user)
+      .set({
+        name,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, currentSession.user.id))
+      .returning({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        role: user.role,
+        onboardingStatus: user.onboardingStatus,
+      });
+
+    return res.json({
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("PATCH PROFILE ME ERROR:", error);
+
+    return res.status(500).json({
+      error: "Kunde inte uppdatera profil.",
+    });
+  }
+});
+
+router.patch("/settings", async (req, res) => {
+  try {
+    const currentSession = await requireSession(req, res);
+    if (!currentSession) return;
+
+    const language =
+      typeof req.body?.language === "string" ? req.body.language : "sv";
+
+    const birthdate =
+      typeof req.body?.birthdate === "string" ? req.body.birthdate : null;
+
+    const notifications =
+      typeof req.body?.notifications === "object" && req.body.notifications
+        ? req.body.notifications
+        : {
+            push: true,
+            email: false,
+            progress: true,
+          };
+
+    return res.json({
+      ok: true,
+      settings: {
+        language,
+        birthdate,
+        notifications,
+      },
+    });
+  } catch (error) {
+    console.error("PATCH PROFILE SETTINGS ERROR:", error);
+
+    return res.status(500).json({
+      error: "Kunde inte spara inställningar.",
+    });
+  }
+});
+
+router.delete("/me", async (req, res) => {
+  try {
+    const currentSession = await requireSession(req, res);
+    if (!currentSession) return;
+
+    const userId = currentSession.user.id;
+
+    await db.delete(userOnboarding).where(eq(userOnboarding.userId, userId));
+    await db.delete(account).where(eq(account.userId, userId));
+    await db.delete(session).where(eq(session.userId, userId));
+    await db.delete(user).where(eq(user.id, userId));
+
+    return res.json({
+      ok: true,
+      message: "Kontot har raderat.",
+    });
+  } catch (error) {
+    console.error("DELETE PROFILE ME ERROR:", error);
+
+    return res.status(500).json({
+      error: "Kunde inte radera konto.",
     });
   }
 });
