@@ -83,7 +83,7 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
           {preview && 
             <button 
               onClick={togglePreview}
-              className='border rounded-sm border-gray-300 py-1 px-2 text-gray-600 hover:bg-gray-300 hover:text-white/80 transition duration-300'
+              className='mt-5 border rounded-sm border-gray-300 py-1 px-2 text-gray-600 hover:bg-gray-300 hover:text-white/80 transition duration-300'
             >
               Sluta förhandsgranska
             </button>
@@ -91,7 +91,7 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
           {!preview && 
             <button 
               onClick={togglePreview}
-              className='border rounded-sm border-gray-300 py-1 px-2 text-gray-600 hover:bg-gray-300 hover:text-white/80 transition duration-300'
+              className='mt-5 border rounded-sm border-gray-300 py-1 px-2 text-gray-600 hover:bg-gray-300 hover:text-white/80 transition duration-300'
             >
               Förhandsgranska
             </button>
