@@ -67,7 +67,7 @@ type GenerateQuizPanelProps = {
 };
 
 const DEFAULT_BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3008";
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
 
 export function GenerateQuizPanel({
   lessonId,

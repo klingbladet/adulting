@@ -20,7 +20,7 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
   },
-  baseURL: "http://localhost:3010",
+  baseURL: "http://localhost:3001",
   trustedOrigins: ["http://localhost:3000"],
   secret: process.env.BETTER_AUTH_SECRET,
 });

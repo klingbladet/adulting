@@ -60,7 +60,7 @@ type LearningAssistantDemoPanelProps = {
 };
 
 const DEFAULT_BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3007";
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
 
 const demoLessons: Array<{
   id: DemoLessonId;
