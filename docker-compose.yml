@@ -39,7 +39,7 @@ services:
       OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-http://localhost:3000}
       OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-Adulting Learning App}
 
-      LEARNING_LESSON_PROVIDER: mock
+      LEARNING_LESSON_PROVIDER: database
       LEARNING_PROFILE_PROVIDER: mock
 
     depends_on:
