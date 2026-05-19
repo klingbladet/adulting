@@ -27,7 +27,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.labels['env']
             - name: BETTER_AUTH_URL
-              value: http://localhost:3001
+              value: http://localhost:3009
             - name: DATABASE_URL
               value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-0-adulting-postgres-0.$(VERSION)-0-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
           envFrom:

@@ -17,7 +17,7 @@ import { useSession } from "@/lib/auth-client";
 import type { AiLearningContext } from "@/lib/learning-context";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3005";
 
 type Thread = {
   id: string;

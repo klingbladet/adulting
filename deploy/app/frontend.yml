@@ -44,11 +44,11 @@ spec:
               value: http://$(VERSION)-0-adulting-backend.doe25-group-1.svc.cluster.local:8080
 
             - name: NEXT_PUBLIC_BACKEND_URL
-              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev/api
             - name: NEXT_PUBLIC_API_URL
-              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev/api
             - name: NEXT_PUBLIC_API_BASE_URL
-              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev/api
           ports:
             - containerPort: 3000
               protocol: TCP
