@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -34,7 +35,6 @@ export default function SignInForm() {
             } catch (error) {
               console.error("Could not get onboarding status:", error);
 
-             
               router.push("/onboarding");
               router.refresh();
             }
@@ -56,34 +56,51 @@ export default function SignInForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid max-w-md gap-3">
+    <form onSubmit={handleSubmit} className="grid w-full max-w-md gap-3">
       <input
-        className="rounded-md border border-border bg-background p-2 text-foreground"
+        className="h-12 rounded-2xl border border-transparent bg-gray-100 px-4 text-sm text-gray-900 outline-none placeholder:text-gray-500 focus:border-[#2563EB]"
         type="email"
-        placeholder="Email"
+        placeholder="E-post"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
 
       <input
-        className="rounded-md border border-border bg-background p-2 text-foreground"
+        className="h-12 rounded-2xl border border-transparent bg-gray-100 px-4 text-sm text-gray-900 outline-none placeholder:text-gray-500 focus:border-[#2563EB]"
         type="password"
-        placeholder="Password"
+        placeholder="Lösenord"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
 
       <button
-        className="rounded-md bg-primary p-2 text-primary-foreground disabled:opacity-50"
+        className="mt-1 h-12 rounded-2xl bg-[#2563EB] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
         type="submit"
         disabled={loading}
       >
-        {loading ? "Signing in..." : "Sign in"}
+        {loading ? "Loggar in..." : "Logga in"}
       </button>
 
-      {errorMsg ? <p className="text-sm text-red-500">{errorMsg}</p> : null}
+      <div className="mt-5 flex flex-col items-center gap-3 md:hidden">
+        <p className="text-sm text-gray-600">
+          Har du inget konto?{" "}
+          <Link href="/sign-up" className="font-bold text-[#2563EB]">
+            Skapa konto
+          </Link>
+        </p>
+
+        <Link href="/auth" className="text-sm font-semibold text-gray-500">
+          Tillbaka
+        </Link>
+      </div>
+
+      {errorMsg ? (
+        <p className="mt-2 text-center text-sm text-red-500">
+          {errorMsg}
+        </p>
+      ) : null}
     </form>
   );
 }

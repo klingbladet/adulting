@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { ZodError, ZodIssue } from "zod"; 
+import { ZodError, ZodIssue, z } from "zod"; 
 import { checkRole } from "./middlewares/role-middleware";
 import { insertBlockSchema } from "../../db/validation";
 import { blockService } from "../../services/block-service";
 import { auth } from "../../utils/auth"; 
 import { fromNodeHeaders } from "better-auth/node";
+import { db } from "../../db";
+import { courses } from "../../db/course-schema";
+import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -12,25 +15,149 @@ const router = Router();
 /*CRUD blocks*/
 //GET /:courseId/blocks - hämtar alla block i en specifik kurs
 router.get("/:courseId/blocks", async (req, res) => {
-  const courseId = req.params.courseId;
-
   try {
-    const allBlocks = await blockService.getAllBlocks(Number(courseId))
-    res.status(200).json({message: "Hämtade alla block i kursen", blocks: allBlocks}) 
+    const courseId = parseInt(req.params.courseId);
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Invalid course ID" });
+      return;
+    }
+    const allBlocks = await blockService.getAllBlocks(courseId);
+    if (!allBlocks) {
+      res.status(404).json({ error: "Blocks not found" });
+      return;
+    }
+    res.status(200).json({
+      message: "Hämtade alla block i kursen", 
+      blocks: allBlocks
+    }) 
   } catch (error) {
     console.error("Fel vid hämtningen av block", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-//POST /:courseId/blocks - Skapar ett block
-router.post("/:courseId/blocks", async (req, res) => {
-    const { title, content, orderIndex } : { title: string, content: { type: string; content: any[]; }, orderIndex: number } = req.body;
+//GET /:courseId/blocks/:blockId - hämtar alla block i en specifik kurs
+router.get("/:courseId/blocks/:blockId", async (req, res) => {
+  try {
     const courseId = req.params.courseId;
-    const data = { courseId: Number(courseId), title, content, orderIndex };
+    const blockId = parseInt(req.params.blockId);
+    if (isNaN(blockId)) {
+      res.status(400).json({ error: "Invalid block ID" });
+      return;
+    }
+    const oneBlock = await blockService.getOneBlock(blockId, Number(courseId));
+    if (!oneBlock) {
+      res.status(404).json({ error: "Block not found" });
+      return;
+    }
+    res.status(200).json({
+      message: "Hämtade blocket från kursen", 
+      block: oneBlock
+    }) 
+  } catch (error) {
+    console.error("Fel vid hämtningen av block", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//PUT /:courseId/blocks - Sparar/uppdaterar alla block för en kurs
+router.put("/:courseId/blocks", checkRole(["admin", "creator"]), async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.courseId as string);
+    
+    // 1. Kontrollera att användaren är inloggad
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers)
+    });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Du måste vara inloggad." });
+      return;
+    }
+
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Ogiltigt kurs-ID." });
+      return;
+    }
+
+    // 2. Hämta blocken från body
+    const { blocks } = req.body; 
+
+    if (!Array.isArray(blocks)) {
+      res.status(400).json({ error: "Data måste vara en lista av block." });
+      return;
+    }
+
+    // 3. Validera formatet med Zod.
+    // Eftersom frontend skickar in Tiptap-innehåll (som är ett objekt) skapar vi ett
+    // anpassat schema som accepterar inkommande format, så löser 'blockService' databaskonverteringen.
+    const frontendBlockSchema = z.object({
+      id: z.number().optional(),
+      title: z.string().min(5, "Titeln måste vara minst 5 tecken"),
+      content: z.any(), // Tillåter Tiptaps JSON-objekt utan fel
+      type: z.string().optional(),
+      orderIndex: z.number().optional(),
+      courseId: z.number().optional(),
+      quizEligible: z.boolean().optional()
+    });
+
+    const blockArraySchema = z.array(frontendBlockSchema);
+    const parsedBlocks = blockArraySchema.safeParse(blocks);
+    
+    if (!parsedBlocks.success) {
+      console.error("Valideringsfel i payload:", parsedBlocks.error.issues);
+      return res.status(400).json({ 
+        error: "Ogiltigt block-format från frontend", 
+        details: parsedBlocks.error.issues 
+      });
+    }
+
+    // 4. Anropa vår nya service-metod med validerad data
+    const savedBlocks = await blockService.saveBlocks(
+      courseId, 
+      session.user.id, 
+      parsedBlocks.data
+    );
+
+    // Uppdatera antal blocks i kursen per automatik
+    await db.update(courses)
+      .set({ blocks: savedBlocks.length })
+      .where(eq(courses.id, courseId));
+
+    res.status(200).json({
+      message: "Alla block har sparats!",
+      blocks: savedBlocks
+    });
+
+  } catch (error) {
+    console.error("Fel vid batch-sparande av block:", error);
+    res.status(500).json({ error: "Kunde inte spara blocken." });
+  }
+});
+
+//POST /:courseId/blocks - Skapar ett block
+router.post("/:courseId/blocks", checkRole(["admin", "creator"]),async (req, res) => {
+    const courseId = req.params.courseId;
 
     try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers)
+        });
+        // Lägg till kontroll för session och userId
+        if (!session || !session.user || !session.user.id) {
+          res.status(401).json({ error: "Unauthorized - User session not found" });
+          return;
+        }
+        const validatedData = insertBlockSchema.parse(req.body);
+        const userId = session.user.id;
+        const data = { courseId: Number(courseId), userId, ...validatedData };
+        
         const createOneBlock = await blockService.createBlock(data);
+
+        // Öka antal blocks med 1 i kursen atomärt
+        await db.update(courses)
+          .set({ blocks: sql`${courses.blocks} + 1` })
+          .where(eq(courses.id, Number(courseId)));
 
         res.status(201).json({ message: "Blocket har skapats!", block: createOneBlock});
     } catch (error) {
@@ -58,6 +185,7 @@ router.patch("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]), asyn
         const updateOneBlock = await blockService.updateBlock(
           data.blockId,
           data.courseId,
+          session.user.id,
           validatedData
         );
 
@@ -89,12 +217,34 @@ router.patch("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]), asyn
 });
 
 //DELETE /:courseId/blocks/:blockId - Tar bort ett block
-router.delete("/:courseId/blocks/:blockId", async (req, res) => {
+router.delete("/:courseId/blocks/:blockId", checkRole(["admin", "creator"]),async (req, res) => {
     const { blockId, courseId } = req.params;
 
     try {
-        const deleteOneBlock = await blockService.deleteBlock(Number(blockId), Number(courseId));
-        res.status(200).json({message : "Blocket har tagits bort!", block: deleteOneBlock});
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers)
+        });
+        // Lägg till kontroll för session och userId
+        if (!session || !session.user || !session.user.id) {
+          res.status(401).json({ error: "Unauthorized - User session not found" });
+          return;
+        }
+
+        const deleteOneBlock = await blockService.deleteBlock(
+          Number(blockId), 
+          Number(courseId),
+          session.user.id
+        );
+        
+        // Minska antal blocks med 1 i kursen atomärt
+        await db.update(courses)
+          .set({ blocks: sql`${courses.blocks} - 1` })
+          .where(eq(courses.id, Number(courseId)));
+
+        res.status(200).json({
+          message : "Blocket har tagits bort!", 
+          block: deleteOneBlock
+        });
     } catch (error) {
         console.error("Fel vid borttagning av ett block:", error);
         res.status(500).json({ error: "Kunde inte ta bort blocket" });
