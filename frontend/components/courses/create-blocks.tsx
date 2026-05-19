@@ -20,6 +20,7 @@ export default function CreateBlocks() {
   const [ saved, setSaved ] = useState(false);
   const [ loading, setLoading ] = useState(false);
   const [ error, setError ] = useState('');
+  const [ isLoaded, setIsLoaded ] = useState(false);
   const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
   const [ courseTitle, setCourseTitle ] = useState('');
   const [ courseTime, setCourseTime ] = useState('');
@@ -70,16 +71,37 @@ export default function CreateBlocks() {
 
             const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
 
-            const courseData: Course = courseResponse.data.course; 
-            const blocksData: Block[] = blocksResponse.data.blocks;
+            // Lägg till fallbacks ifall backend returnerar datan direkt på .data 
+            // istället för inkapslat i .data.course / .data.blocks
+            const courseData: Course = courseResponse.data?.course || courseResponse.data; 
+            const blocksData: Block[] = blocksResponse.data?.blocks || blocksResponse.data || [];
             
             if (courseData) {
-                setCourseTitle(courseData.title);
-                // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
-                const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
-                if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
-                if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
-                setBlocks(blocksData || []); 
+                let useLocal = false;
+                const localDraft = localStorage.getItem(`course-draft-${courseData.id}`);
+                if (localDraft) {
+                    try {
+                        const parsed = JSON.parse(localDraft);
+                        setCourseTitle(parsed.courseTitle || courseData.title);
+                        const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
+                        setCategoryId(parsed.categoryId || String(extendedCourse.categoryId || ''));
+                        setCourseTime(parsed.courseTime || String(extendedCourse.time || ''));
+                        setBlocks(parsed.blocks || blocksData || []);
+                        useLocal = true;
+                    } catch (e) {
+                        console.error("Kunde inte läsa från localStorage", e);
+                    }
+                }
+                
+                if (!useLocal) {
+                    setCourseTitle(courseData.title);
+                    // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
+                    const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
+                    if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
+                    if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
+                    setBlocks(blocksData || []); 
+                    setSaved(true);
+                }
                 setActiveCourseId(courseData.id);
             }
         } catch (err) {
@@ -88,6 +110,7 @@ export default function CreateBlocks() {
             router.replace('/create/creator-tools/create-blocks'); // Återställ URL om kursen inte hittas
         } finally {
             setLoading(false);
+            setIsLoaded(true);
         }
     };
 
@@ -95,8 +118,38 @@ export default function CreateBlocks() {
         // Säkerställ att vi bara skickar en sträng, även om `useParams` skulle ge en array (vid catch-all routes)
         const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
         fetchCourseData(idToFetch);
+    } else {
+        // Ladda utkast för ny kurs
+        const localDraft = localStorage.getItem('course-draft-new');
+        if (localDraft) {
+            try {
+                const parsed = JSON.parse(localDraft);
+                if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
+                if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
+                if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
+                if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
+            } catch (e) {
+                console.error("Kunde inte läsa utkast från localStorage", e);
+            }
+        } else {
+            setSaved(true);
+        }
+        setIsLoaded(true);
     }
   }, [courseId, router]);
+
+  // Spara ändringar till localStorage varje gång de uppdateras
+  useEffect(() => {
+    if (isLoaded && !saved) {
+      const draftKey = activeCourseId ? `course-draft-${activeCourseId}` : 'course-draft-new';
+      localStorage.setItem(draftKey, JSON.stringify({
+        courseTitle,
+        courseTime,
+        categoryId,
+        blocks
+      }));
+    }
+  }, [courseTitle, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
 
   const addBlock = () => {
     const newBlock: Block = {
@@ -165,10 +218,6 @@ export default function CreateBlocks() {
         if (!targetCourseId) throw new Error("Kunde inte hämta ID för den nya kursen");
         
         setActiveCourseId(targetCourseId);
-
-        // Uppdatera URL:en med det nya kurs-ID:t. Detta gör att om du laddar om sidan,
-        // kommer den att ladda in den nyskapade kursen för redigering istället för att starta om från noll.
-        router.replace(`/create/creator-tools/create-blocks?courseId=${targetCourseId}`, { scroll: false });
       } else {
         // Om vi redan har targetCourseId bör vi uppdatera kursen med eventuellt nytt namn och kategori.
         await axios.patch(`${baseUrl}/api/courses/${targetCourseId}`, {
@@ -205,6 +254,16 @@ export default function CreateBlocks() {
         withCredentials: true // Detta är nyckeln! Säger åt axios att skicka med better-auth cookies.
       });
       setSaved(true);
+      
+      // Rensa draft nu när det är sparat i databasen
+      localStorage.removeItem(`course-draft-${targetCourseId}`);
+      if (!activeCourseId) {
+        localStorage.removeItem('course-draft-new');
+        
+        // Uppdatera URL:en med det nya kurs-ID:t EFTER att alla block sparats,
+        // så att den inte råkar hämta gamla block via useEffecten under tiden den sparar.
+        router.replace(`/create/creator-tools/create-blocks?courseId=${targetCourseId}`, { scroll: false });
+      }
     } catch (error) {
       console.error('Det gick ej att spara lektionen pga servern', error)
       setError('Det gick inte att spara!')

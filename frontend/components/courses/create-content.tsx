@@ -6,8 +6,6 @@ import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
 import { Course } from '@/types/types';
 import { JSONContent } from '@tiptap/core';
-import Link from 'next/link';
-import CourseButton from './course-buttons';
 import CreatorStepper from './creator-stepper';
 
 export default function CreatorToolsClient() {
@@ -20,6 +18,7 @@ export default function CreatorToolsClient() {
   const [ saved, setSaved ] = useState(false);
   const [ loading, setLoading ] = useState(false);
   const [ error, setError ] = useState('');
+  const [ isLoaded, setIsLoaded ] = useState(false);
   const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
   const [ courseTitle, setCourseTitle ] = useState('');
   const [ blocks, setBlocks ] = useState<Block[]>([]);
@@ -44,7 +43,26 @@ export default function CreatorToolsClient() {
             
             if (courseData) {
                 setCourseTitle(courseData.title);
-                setBlocks(blocksData); 
+                
+                let useLocal = false;
+                const localDraft = localStorage.getItem(`course-content-draft-${courseData.id}`);
+                if (localDraft) {
+                    try {
+                        const parsed = JSON.parse(localDraft);
+                        if (parsed.blocks && parsed.blocks.length > 0) {
+                            setBlocks(parsed.blocks);
+                            useLocal = true;
+                        }
+                    } catch (e) {
+                        console.error("Kunde inte läsa från localStorage", e);
+                    }
+                }
+                
+                if (!useLocal) {
+                    setBlocks(blocksData); 
+                    setSaved(true);
+                }
+                
                 if (blocksData.length > 0 && !selectedBlockId) {
                   setSelectedBlockId(blocksData[0].id);
                 }
@@ -55,6 +73,7 @@ export default function CreatorToolsClient() {
             setError("Kunde inte ladda kursdata. Kursen kanske inte finns.");
         } finally {
             setLoading(false);
+            setIsLoaded(true);
         }
     };
 
@@ -63,6 +82,15 @@ export default function CreatorToolsClient() {
         fetchCourseData(idToFetch);
     }
   }, [courseId]);
+
+  // Spara till localStorage vid varje ändring
+  useEffect(() => {
+    if (isLoaded && activeCourseId && !saved) {
+      localStorage.setItem(`course-content-draft-${activeCourseId}`, JSON.stringify({
+        blocks
+      }));
+    }
+  }, [blocks, activeCourseId, isLoaded, saved]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -89,6 +117,9 @@ export default function CreatorToolsClient() {
         withCredentials: true
       });
       setSaved(true);
+      
+      // Rensa utkastet efter sparande
+      localStorage.removeItem(`course-content-draft-${activeCourseId}`);
     } catch (error) {
       console.error('Det gick ej att spara innehållet pga servern', error)
       setError('Det gick inte att spara innehållet!')

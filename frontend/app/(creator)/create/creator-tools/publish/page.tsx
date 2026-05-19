@@ -58,7 +58,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
         )}
 
         <StepNavigation 
-          backPath="/create/creator-tools/create-quiz"
+          backPath="/create/creator-tools/preview"
           nextPath="/create/creator-tools"
           nextLabel="Publicera kurs"
         />

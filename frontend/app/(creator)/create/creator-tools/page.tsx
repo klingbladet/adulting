@@ -1,14 +1,7 @@
 import CourseButton from "@/components/courses/course-buttons"
 import Link from "next/link"
-import BlockCard from "@/components/courses/course-layout";
 import { getCourses } from "@/lib/api";
-import getCourseIcon from "@/components/courses/course-dynamic-icon";
-
-const getSteps = (blocks: unknown) => {
-  if (typeof blocks === 'number') return blocks;
-  if (Array.isArray(blocks)) return blocks.length;
-  return undefined;
-};
+import CourseListClient from "@/components/courses/course-list-client";
 
 export default async function CreatorToolsPage() {
   const courses = await getCourses();
@@ -25,23 +18,7 @@ export default async function CreatorToolsPage() {
           </CourseButton>
         </Link>
       </div>
-      <div className="flex flex-col gap-4">
-        {courses.length > 0 ? (
-          courses.map((course) => (
-            <Link key={course.id} href={`/create/creator-tools/create-blocks?courseId=${course.id}`}>
-              <BlockCard
-                  icon={getCourseIcon(course)}
-                  title={course.title}
-                  time={course.time}
-                  steps={getSteps(course.blocks)}
-              />
-            </Link>
-          ))
-        ) : (
-          <p className="text-sm text-muted-foreground italic">Inga kurser hittades ännu.</p>
-        )}
-      </div>
-
+      <CourseListClient initialCourses={courses} />
 
     </div>
   )
