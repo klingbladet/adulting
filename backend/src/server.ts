@@ -129,14 +129,11 @@ app.get("/health", async (_req, res) => {
 app.get("/metrics", async (_req, res) => {
   res.setHeader("Content-Type", register.contentType);
   res.send(await register.metrics());
-<<<<<<< HEAD
-=======
 });
 
 app.post("/sign-in", (req, res) => {
   console.log(req.body);
   res.json({ ok: true });
->>>>>>> acd8f061fd48dd4d292bdeb1ef41330447b1b3a3
 });
 
 app.post("/sign-in", (req, res) => {
