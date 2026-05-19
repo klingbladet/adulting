@@ -8,6 +8,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+
   user: {
     additionalFields: {
       role: {
@@ -16,11 +17,20 @@ export const auth = betterAuth({
       },
     },
   },
+
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
   },
-  baseURL: "http://localhost:3001",
+
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
+
+  baseURL: "http://localhost:3001/api/auth",
   trustedOrigins: ["http://localhost:3000"],
   secret: process.env.BETTER_AUTH_SECRET,
 });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe2, Hand } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "@/lib/session";
 import { getServerOnboarding } from "@/lib/server-onboarding";
@@ -32,30 +32,23 @@ export default async function HomePage() {
               ADULTING            
             </h1>
 
-            <p className="text-base text-muted-foreground">
-              Logga in eller skapa ett konto för att komma igång med ditt
-              personliga flöde.
+            <p className="mt-3 text-base leading-7 text-gray-600">
+              Lär dig vuxenlivet steg för steg
             </p>
-          </div>
 
-          <div className="space-y-3">
             <Link
-              href="/sign-up"
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border bg-background px-4 text-sm font-semibold transition hover:bg-muted"
+              href="/auth"
+              className="mt-16 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#2563EB] text-base font-bold text-white shadow-sm transition hover:bg-[#1D4ED8]"
             >
-              Kom igång
-              <ArrowRight className="h-4 w-4" />
+              Skapa konto / Sign in
+              <ArrowRight size={20} />
             </Link>
 
-            <p className="text-center text-sm text-muted-foreground">
-              Har du redan ett konto?
-            </p>
-
             <Link
-              href="/sign-in"
-              className="flex w-full items-center justify-center text-sm font-semibold text-primary transition hover:opacity-90"
+              href="/chat"
+              className="mt-7 block text-center text-sm font-bold text-gray-900"
             >
-              Logga in
+              Eller utforska som gäst
             </Link>
           </div>  
         </section>
