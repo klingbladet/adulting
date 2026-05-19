@@ -1,16 +1,20 @@
 import "dotenv/config";
 console.log("--- SERVER STARTING ---");
+
 import express from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
+import { Server } from "socket.io";
+
 import { db } from "./db";
 import { auth } from "./utils/auth";
+
 import aiRoutes from "./api/routes/ai";
 import sessionRoutes from "./api/routes/session";
 import adminRoutes from "./api/routes/admin";
 import courseRoutes from "./api/routes/course-routes";
-import userRoutes from "./api/routes/users"
+import userRoutes from "./api/routes/users";
 import onboardingRouter from "./api/routes/onboarding";
 import learningRoutes from "./api/routes/learning-routes";
 import learningAssistantRoutes from "./api/routes/learning-assistant-routes";
@@ -18,7 +22,7 @@ import blockRoutes from "./api/routes/block-routes";
 import quizRoutes from "./api/routes/quiz-routes";
 import quizQuestionsRoutes from "./api/routes/quiz-questions-routes";
 import quizAnswersRoutes from "./api/routes/quiz-answers-routes";
-
+import profileRoutes from "./api/routes/profile-routes";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -37,16 +41,20 @@ app.use(
   })
 );
 
-app.use("/api/users", userRoutes);
+/*
+  i think better Auth måste ligga före express.json()
+*/
+app.use("/api/auth", toNodeHandler(auth));
 
 app.use(express.json());
 
-// Lägg till denna för att debugga 404
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
 
+app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/courses", blockRoutes);
 app.use("/api/courses", quizRoutes);
@@ -54,12 +62,14 @@ app.use("/api/courses", quizQuestionsRoutes);
 app.use("/api/courses", quizAnswersRoutes);
 app.use("/api", sessionRoutes);
 app.use("/api", adminRoutes);
-app.use("/api/auth", toNodeHandler(auth));
-app.use("/api/ai", aiRoutes)
-app.use("/api/onboarding", onboardingRouter);
-app.use("/api/learning", learningRoutes);
-app.use("/api/learning-assistant", learningAssistantRoutes);
 
+app.use("/api/ai", aiRoutes);
+
+app.use("/api/onboarding", onboardingRouter);
+
+app.use("/api/learning", learningRoutes);
+
+app.use("/api/learning-assistant", learningAssistantRoutes);
 
 app.get("/health", async (_req, res) => {
   try {
@@ -85,22 +95,20 @@ app.get("/health", async (_req, res) => {
 
 app.post("/sign-in", (req, res) => {
   console.log(req.body);
-  res.json({ ok: true });
-});
 
-app.use("/api/auth", toNodeHandler(auth));
-
-// --- NYTT: Fånga alla 404 för att debugga ---
-app.use((req, res) => {
-  console.log(`404 på: ${req.method} ${req.url}`);
-  res.status(404).json({
-    error: "Route not found",
-    tried: `${req.method} ${req.url}`,
-    hint: "Kolla att du använder http://localhost:3001/api/courses"
+  res.json({
+    ok: true,
   });
 });
 
-import { Server } from "socket.io";
+app.use((req, res) => {
+  console.log(`404 på: ${req.method} ${req.url}`);
+
+  res.status(404).json({
+    error: "Route not found",
+    tried: `${req.method} ${req.url}`,
+  });
+});
 
 const io = new Server(3002, {
   cors: {
@@ -124,7 +132,6 @@ io.on("connection", (socket) => {
     console.log("User disconnected");
   });
 });
-
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Backend running on http://localhost:${port}`);
