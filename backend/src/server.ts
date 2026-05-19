@@ -2,6 +2,7 @@ import "dotenv/config";
 console.log("--- SERVER STARTING ---");
 import express from "express";
 import cors from "cors";
+import promClient from "prom-client";
 import { toNodeHandler } from "better-auth/node";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -19,6 +20,16 @@ import quizRoutes from "./api/routes/quiz-routes";
 import quizQuestionsRoutes from "./api/routes/quiz-questions-routes";
 import quizAnswersRoutes from "./api/routes/quiz-answers-routes";
 
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register });
+
+const httpRequestDurationMilliseconds = new promClient.Histogram({
+  name: "http_request_duration_ms",
+  help: "HTTP request duration in ms",
+  labelNames: ["method", "route", "status_code"],
+  buckets: [50, 100, 200, 300, 500, 1000],
+});
+register.registerMetric(httpRequestDurationMilliseconds);
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -40,6 +51,18 @@ app.use(
 app.use("/api/users", userRoutes);
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const end = httpRequestDurationMilliseconds.startTimer();
+  res.on("finish", () => {
+    end({
+      method: req.method,
+      route: req.route?.path ?? req.path,
+      status_code: res.statusCode,
+    });
+  });
+  next();
+});
 
 // Lägg till denna för att debugga 404
 app.use((req, res, next) => {
@@ -81,6 +104,11 @@ app.get("/health", async (_req, res) => {
       error: message,
     });
   }
+});
+
+app.get("/metrics", async (_req, res) => {
+  res.setHeader("Content-Type", register.contentType);
+  res.send(await register.metrics());
 });
 
 app.post("/sign-in", (req, res) => {
