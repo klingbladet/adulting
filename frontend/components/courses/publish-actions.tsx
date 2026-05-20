@@ -27,8 +27,8 @@ export default function PublishActions({ courseId }: { courseId: string | number
       localStorage.removeItem(`course-draft-${courseId}`);
       localStorage.removeItem(`course-content-draft-${courseId}`);
 
-      // Återgå till kurslistan för skaparen
-      router.push('/create/creator-tools');
+      // Gå till sammanfattningssidan med rätt status
+      router.push(`/create/creator-tools/summary?status=${isPublished ? 'review' : 'draft'}`);
       router.refresh();
     } catch (err) {
       console.error(err);

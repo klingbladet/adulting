@@ -48,9 +48,19 @@ export default async function AdminReviewDetailPage({
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <div className="mb-8">
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold uppercase tracking-wider">
-            Väntar på granskning
-          </span>
+          {course.status === 'published' && course.isPublished ? (
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">
+              Publicerad
+            </span>
+          ) : course.status === 'rejected' ? (
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold uppercase tracking-wider">
+              Nekad
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold uppercase tracking-wider">
+              Väntar på granskning
+            </span>
+          )}
           <h1 className="text-3xl font-bold mt-4 text-gray-900">{course.title}</h1>
           <p className="text-gray-600 mt-2 text-lg">{course.textContent}</p>
         </div>
@@ -71,7 +81,7 @@ export default async function AdminReviewDetailPage({
           <p className="text-red-500 italic mt-8">Ingen kurs hittades att förhandsgranska. Saknas courseId i URL:en?</p>
         )}
 
-        <ReviewActions courseId={courseId} />
+        <ReviewActions courseId={courseId} courseStatus={course.status ?? undefined} courseTitle={course.title ?? undefined} />
       </div>
     </div>
   );
