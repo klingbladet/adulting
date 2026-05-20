@@ -27,7 +27,7 @@ export default async function CreatorToolsPage({
       </div>
 
       <div className="flex flex-row justify-between">
-        <Link href={`/create/creator-tools/create-blocks?courseId=${courseId}`}>
+        <Link href={`/create/creator-tools/create-content`}>
           <CourseButton variant="secondary">Tillbaka</CourseButton>
         </Link>
 

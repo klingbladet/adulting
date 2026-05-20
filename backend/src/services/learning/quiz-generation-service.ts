@@ -20,34 +20,6 @@ import {
   type LessonWithBlocks,
 } from "./types";
 
-/**
- * Quiz generation service.
- *
- * Detta är kärnan för:
- * - MCP tool: generate_quiz_from_lesson_blocks
- * - framtida admin route: POST /api/lessons/:lessonId/generate-quiz
- * - framtida creator-panel knapp: "Generera quiz"
- *
- * Viktigt:
- * Den här filen ska INTE bry sig om ifall lesson-datan kommer från mock eller databas.
- * Den använder LessonProvider för det.
- *
- * Just nu:
- * - genererar quiz som preview
- *
- * Senare:
- * - om saveAsDraft === true ska quizet sparas i quiz-tabellerna
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - Byt från MockLessonProvider till DatabaseLessonProvider via env:
- *   LEARNING_LESSON_PROVIDER=database
- *
- * TODO när quiz-tabellerna är klara:
- * - Lägg till QuizRepository eller QuizDraftService
- * - Spara quiz och questions i DB när input.saveAsDraft === true
- * - Returnera riktigt quizId och status: "draft"
- */
-
 export type QuizGenerationServiceDeps = {
   lessonProvider: LessonProvider;
   aiClient: AiClient;
@@ -63,19 +35,8 @@ export class QuizGenerationError extends Error {
   }
 }
 
-export function createQuizGenerationService(
-  deps: QuizGenerationServiceDeps,
-) {
+export function createQuizGenerationService(deps: QuizGenerationServiceDeps) {
   return {
-    /**
-     * Genererar quizfrågor från en lessons quizbara blocks.
-     *
-     * Första MVP-regel:
-     * - exakt questionCountPerBlock frågor per quizbart block
-     * - varje fråga måste ha blockId
-     * - endast multiple choice
-     * - fyra svarsalternativ
-     */
     async generateFromLessonBlocks(
       rawInput: GenerateQuizInput,
     ): Promise<GenerateQuizResult> {
@@ -126,28 +87,13 @@ export function createQuizGenerationService(
         expectedQuestionCountPerBlock: input.questionCountPerBlock,
       });
 
-      /**
-       * Just nu returnerar vi preview.
-       *
-       * TODO när quiz-tabellerna är klara:
-       *
-       * if (input.saveAsDraft) {
-       *   const savedQuiz = await quizRepository.createDraftQuiz(validatedQuiz);
-       *
-       *   return {
-       *     lessonId: input.lessonId,
-       *     quizId: savedQuiz.id,
-       *     status: "draft",
-       *     questionsCreated: savedQuiz.questions.length,
-       *     quiz: savedQuiz.quiz,
-       *   };
-       * }
-       */
+      const randomizedQuiz = randomizeQuizOptionOrder(validatedQuiz);
+
       return generateQuizResultSchema.parse({
         lessonId: input.lessonId,
         status: "preview",
-        questionsCreated: validatedQuiz.questions.length,
-        quiz: validatedQuiz,
+        questionsCreated: randomizedQuiz.questions.length,
+        quiz: randomizedQuiz,
       });
     },
   };
@@ -162,11 +108,6 @@ export const defaultQuizGenerationService = createQuizGenerationService({
   aiClient: defaultAiClient,
 });
 
-/**
- * Systemprompt för quizgeneratorn.
- *
- * Den ska vara strikt eftersom vi behöver pålitlig JSON.
- */
 function buildQuizSystemPrompt(): string {
   return [
     "Du är en pedagogisk quizgenerator för unga vuxna som lär sig life skills.",
@@ -280,17 +221,6 @@ function buildQuizGenerationPrompt(input: {
     .join("\n");
 }
 
-/**
- * Extra validering ovanpå Zod.
- *
- * Zod kontrollerar struktur.
- * Här kontrollerar vi domänregler:
- *
- * - lessonId måste matcha
- * - varje fråga måste peka på ett quizbart block
- * - varje quizbart block ska ha exakt N frågor
- * - option IDs ska vara A, B, C, D
- */
 export function validateGeneratedQuiz(input: {
   generatedQuiz: GeneratedQuiz;
   lessonWithBlocks: LessonWithBlocks;
@@ -407,6 +337,66 @@ function validateQuestionOptions(question: GeneratedQuizQuestion): void {
   }
 }
 
+function randomizeQuizOptionOrder(quiz: GeneratedQuiz): GeneratedQuiz {
+  return generatedQuizSchema.parse({
+    ...quiz,
+    questions: quiz.questions.map((question) =>
+      randomizeQuestionOptionOrder(question),
+    ),
+  });
+}
+
+function randomizeQuestionOptionOrder(
+  question: GeneratedQuizQuestion,
+): GeneratedQuizQuestion {
+  const originalCorrectOption = question.options.find(
+    (option) => option.id === question.correctOptionId,
+  );
+
+  if (!originalCorrectOption) {
+    throw new QuizGenerationError(
+      `Kunde inte hitta korrekt svar för frågan: ${question.question}`,
+    );
+  }
+
+  const shuffledOptions = shuffleArray(question.options);
+  const newIds = ["A", "B", "C", "D"] as const;
+
+  const remappedOptions = shuffledOptions.map((option, index) => ({
+    id: newIds[index],
+    text: option.text,
+  }));
+
+  const correctOptionAfterShuffle = remappedOptions.find(
+    (option) => option.text === originalCorrectOption.text,
+  );
+
+  if (!correctOptionAfterShuffle) {
+    throw new QuizGenerationError(
+      `Kunde inte mappa om korrekt svar för frågan: ${question.question}`,
+    );
+  }
+
+  return {
+    ...question,
+    options: remappedOptions,
+    correctOptionId: correctOptionAfterShuffle.id,
+  };
+}
+
+function shuffleArray<T>(items: T[]): T[] {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const current = result[index];
+    result[index] = result[randomIndex];
+    result[randomIndex] = current;
+  }
+
+  return result;
+}
+
 function countQuestionsByBlock(
   questions: GeneratedQuizQuestion[],
 ): Map<string, number> {
@@ -422,14 +412,6 @@ function countQuestionsByBlock(
   return countByBlock;
 }
 
-/**
- * Liten helper för debug/demo.
- *
- * Kan användas i en route eller script för att snabbt se om quiz-generation fungerar.
- *
- * TODO senare:
- * Flytta gärna demo/test helpers till egen testfil när flödet är stabilt.
- */
 export async function generateMockBolaneQuizPreview() {
   return defaultQuizGenerationService.generateFromLessonBlocks({
     lessonId: "lesson_bolan_001",
@@ -440,23 +422,10 @@ export async function generateMockBolaneQuizPreview() {
   });
 }
 
-/**
- * Exporterat schema för eventuella API-routes/MCP-tools.
- *
- * Bra om ni vill validera input innan ni anropar servicen.
- */
 export const quizGenerationRequestSchema = generateQuizInputSchema;
 
-/**
- * Exporterat response-schema.
- *
- * Bra om ni vill validera response i tester.
- */
 export const quizGenerationResponseSchema = generateQuizResultSchema;
 
-/**
- * Enkel typ för request body i framtida API-route.
- */
 export type QuizGenerationRequest = z.infer<
   typeof quizGenerationRequestSchema
 >;
