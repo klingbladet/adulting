@@ -8,7 +8,7 @@ export default function SummaryPage() {
   return(
     <>
       <CreatorStepper currentStep={5} />
-      <Link href={`/create/creator-tools/create-content`}>
+      <Link href={`/create/creator-tools`}>
             <CourseButton variant="secondary">Publicera</CourseButton>
       </Link>
       
