@@ -3,46 +3,18 @@ import {
   lessonWithBlocksSchema,
   type LessonWithBlocks,
 } from "./types";
+import { asc, eq } from "drizzle-orm";
+import { db } from "../../db";
+import { blocks, courses } from "../../db/course-schema";
 
-/**
- * LessonProvider
- *
- * Detta är adapter-kontraktet mellan learning/AI/MCP-lagret och lesson-datan.
- *
- * Quiz-generatorn, MCP:n och AI-assistenten ska använda detta interface
- * i stället för att hämta direkt från databasen.
- *
- * Varför?
- *
- * Just nu:
- * - Vi kan använda mockade lessons.
- *
- * Senare:
- * - Vi byter till DatabaseLessonProvider.
- *
- * Då slipper vi skriva om:
- * - quiz-generation-service
- * - MCP-tools
- * - AI-assistentens context-service
- */
 export interface LessonProvider {
   getLessonWithBlocks(lessonId: string): Promise<LessonWithBlocks>;
 
-  /**
-   * Inte obligatorisk för alla providers,
-   * men praktisk för demo, debug och MCP-tools senare.
-   */
+ 
   listLessons?(): Promise<LessonWithBlocks[]>;
 }
 
-/**
- * Custom error så services och API-routes kan skilja på:
- *
- * - lesson saknas
- * - AI failade
- * - databas failade
- * - validering failade
- */
+
 export class LessonNotFoundError extends Error {
   constructor(lessonId: string) {
     super(`Lesson not found: ${lessonId}`);
@@ -50,20 +22,6 @@ export class LessonNotFoundError extends Error {
   }
 }
 
-/**
- * Normaliserar och validerar en lesson.
- *
- * Detta ger oss ett säkert format oavsett om datan kommer från:
- * - mockLessons
- * - Drizzle/Postgres
- * - annan framtida CMS/lessonbuilder
- *
- * Den sorterar också blocks efter order.
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * Om deras block-format skiljer sig från LessonWithBlocks
- * ska mappningen ske INNAN denna funktion anropas.
- */
 export function normalizeLessonWithBlocks(
   lessonWithBlocks: LessonWithBlocks,
 ): LessonWithBlocks {
@@ -81,14 +39,6 @@ export function normalizeLessonWithBlocks(
       .sort((a, b) => a.order - b.order),
   };
 
-  /**
-   * Safety check.
-   *
-   * Om detta kastas betyder det nästan alltid att:
-   * - lessonWithBlocksSchema inte exporteras korrekt från types.ts
-   * - importen i denna fil pekar fel
-   * - eller att dev-servern kör gammal cache
-   */
   if (!lessonWithBlocksSchema) {
     throw new Error(
       "lessonWithBlocksSchema is undefined. Check exports/imports in backend/src/services/learning/types.ts",
@@ -98,21 +48,6 @@ export function normalizeLessonWithBlocks(
   return lessonWithBlocksSchema.parse(normalized);
 }
 
-/**
- * MockLessonProvider
- *
- * Används nu medan lessonbuildern byggs klart.
- *
- * Den returnerar mockade life skills-lektioner från mock-lessons.ts.
- *
- * Detta gör att vi kan bygga klart:
- * - quiz-generator
- * - MCP-server
- * - MCP-tools
- * - AI-assistent context
- *
- * innan riktig lesson/block-data finns i databasen.
- */
 export class MockLessonProvider implements LessonProvider {
   async getLessonWithBlocks(lessonId: string): Promise<LessonWithBlocks> {
     const lessonWithBlocks = getMockLessonWithBlocks(lessonId);
@@ -131,68 +66,68 @@ export class MockLessonProvider implements LessonProvider {
   }
 }
 
-/**
- * DatabaseLessonProvider
- *
- * Placeholder för den riktiga implementationen.
- *
- * Den här ska användas när lessonbuilder-teamet har:
- * - lessons-tabell
- * - lesson_blocks-tabell
- * - stabila block IDs
- * - endpoint eller service för att hämta lesson med blocks
- *
- * Viktigt:
- * Quiz/MCP-lagret ska fortfarande få tillbaka exakt LessonWithBlocks-formatet.
- *
- * TODO när lessonbuilder-teamet är ikapp:
- *
- * Implementera ungefär:
- *
- * const lesson = await db.query.lessons.findFirst(...)
- * const blocks = await db.query.lessonBlocks.findMany(...)
- *
- * return normalizeLessonWithBlocks({
- *   lesson: {
- *     id: lesson.id,
- *     courseId: lesson.courseId,
- *     title: lesson.title,
- *     description: lesson.description ?? undefined,
- *   },
- *   blocks: blocks.map((block) => ({
- *     id: block.id,
- *     lessonId: block.lessonId,
- *     type: block.type,
- *     order: block.order,
- *     content: block.content,
- *     quizEligible: block.quizEligible,
- *   })),
- * });
- */
 export class DatabaseLessonProvider implements LessonProvider {
   async getLessonWithBlocks(lessonId: string): Promise<LessonWithBlocks> {
-    /**
-     * Detta är avsiktligt inte implementerat ännu.
-     *
-     * Vi vill inte gissa hur lessonbuilder-teamets tabeller exakt kommer se ut.
-     * När deras schema är klart implementerar vi denna provider.
-     */
-    throw new Error(
-      [
-        "DatabaseLessonProvider is not implemented yet.",
-        `Tried to load lessonId: ${lessonId}`,
-        "Use MockLessonProvider until lesson/block database schema is ready.",
-      ].join(" "),
-    );
+    const courseId = Number(lessonId);
+
+    if (!Number.isInteger(courseId)) {
+      throw new LessonNotFoundError(lessonId);
+    }
+
+    const [course] = await db
+      .select()
+      .from(courses)
+      .where(eq(courses.id, courseId));
+
+    if (!course) {
+      throw new LessonNotFoundError(lessonId);
+    }
+
+    const courseBlocks = await db
+      .select()
+      .from(blocks)
+      .where(eq(blocks.courseId, courseId))
+      .orderBy(asc(blocks.orderIndex));
+
+    return normalizeLessonWithBlocks({
+      lesson: {
+        id: String(course.id),
+
+        courseId: String(course.id),
+
+        title: course.title,
+        description: course.textContent ?? undefined,
+      },
+
+      blocks: courseBlocks.map((block) => ({
+        id: String(block.id),
+        lessonId: String(course.id),
+
+        
+        type: "text",
+
+        order: block.orderIndex,
+
+        content: normalizeDatabaseBlockContent(block.content, block.title),
+
+        quizEligible: block.quizEligible ?? true,
+      })),
+    });
   }
 
   async listLessons(): Promise<LessonWithBlocks[]> {
-    throw new Error(
-      [
-        "DatabaseLessonProvider.listLessons is not implemented yet.",
-        "Use MockLessonProvider until lesson/block database schema is ready.",
-      ].join(" "),
-    );
+    const allCourses = await db
+      .select()
+      .from(courses)
+      .orderBy(asc(courses.id));
+
+    const result: LessonWithBlocks[] = [];
+
+    for (const course of allCourses) {
+      result.push(await this.getLessonWithBlocks(String(course.id)));
+    }
+
+    return result;
   }
 }
 
@@ -231,4 +166,63 @@ export function createLessonProvider(): LessonProvider {
  * Senare, om ni vill dependency-injecta providers i tester,
  * använd createLessonProvider() direkt i stället.
  */
+
+
 export const defaultLessonProvider = createLessonProvider();
+
+function normalizeDatabaseBlockContent(
+  rawContent: unknown,
+  title?: string | null,
+): LessonWithBlocks["blocks"][number]["content"] {
+  if (typeof rawContent === "string") {
+    try {
+      const parsed = JSON.parse(rawContent);
+      return normalizeDatabaseBlockContent(parsed, title);
+    } catch {
+      return {
+        text: [title, rawContent].filter(Boolean).join("\n\n"),
+      };
+    }
+  }
+
+  if (
+    typeof rawContent === "object" &&
+    rawContent !== null &&
+    "text" in rawContent &&
+    typeof rawContent.text === "string"
+  ) {
+    return {
+      text: [title, rawContent.text].filter(Boolean).join("\n\n"),
+    };
+  }
+
+  const extractedText = extractTextFromRichContent(rawContent);
+
+  return {
+    text: [title, extractedText].filter(Boolean).join("\n\n"),
+  };
+}
+
+function extractTextFromRichContent(value: unknown): string {
+  const parts: string[] = [];
+
+  function walk(node: unknown) {
+    if (!node || typeof node !== "object") {
+      return;
+    }
+
+    if ("text" in node && typeof node.text === "string") {
+      parts.push(node.text);
+    }
+
+    if ("content" in node && Array.isArray(node.content)) {
+      for (const child of node.content) {
+        walk(child);
+      }
+    }
+  }
+
+  walk(value);
+
+  return parts.join(" ").trim();
+}
