@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { z } from "zod";
 import { fromNodeHeaders } from "better-auth/node";
+import { and, desc, eq, inArray } from "drizzle-orm";
+
 import { auth } from "../../utils/auth";
+import { db } from "../../db";
+
 import {
   getLatestQuizDraftForCourse,
   saveGeneratedQuizAsDraft,
@@ -21,17 +25,14 @@ import {
 import {
   buildLessonFocusSummary,
   calculateBlockPrioritiesForLesson,
-  createDemoAnswersForLesson,
 } from "../../services/learning/priority-service";
 import { defaultQuizGenerationService } from "../../services/learning/quiz-generation-service";
-import { db } from "../../db";
 
-import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   quizAttempts,
   quizAnswers,
   quizQuestions,
-  quizzes
+  quizzes,
 } from "../../db/schema";
 
 const router = Router();
@@ -75,6 +76,91 @@ const assistantContextBodySchema = z.object({
   quizAnswers: z.array(priorityAnswerSchema).optional(),
 });
 
+type QuizOption = {
+  id: string;
+  text: string;
+};
+
+function normalizeQuizOptions(options: unknown): QuizOption[] {
+  if (!Array.isArray(options)) {
+    return [];
+  }
+
+  return options
+    .map((option) => {
+      if (
+        typeof option === "object" &&
+        option !== null &&
+        "id" in option &&
+        "text" in option
+      ) {
+        return {
+          id: String(option.id),
+          text: String(option.text),
+        };
+      }
+
+      return null;
+    })
+    .filter((option): option is QuizOption => option !== null);
+}
+
+function buildBlockPriorities(
+  answers: {
+    blockId: number;
+    isCorrect: boolean;
+  }[],
+) {
+  const blockStats = new Map<
+    number,
+    {
+      blockId: number;
+      correctCount: number;
+      incorrectCount: number;
+    }
+  >();
+
+  for (const answer of answers) {
+    const current = blockStats.get(answer.blockId) ?? {
+      blockId: answer.blockId,
+      correctCount: 0,
+      incorrectCount: 0,
+    };
+
+    if (answer.isCorrect) {
+      current.correctCount += 1;
+    } else {
+      current.incorrectCount += 1;
+    }
+
+    blockStats.set(answer.blockId, current);
+  }
+
+  return Array.from(blockStats.values()).map((block) => {
+    let priority: "high" | "medium" | "low";
+    let label: string;
+
+    if (block.correctCount === 0) {
+      priority = "high";
+      label = "Läs extra noggrant";
+    } else if (block.incorrectCount > 0) {
+      priority = "medium";
+      label = "Repetera gärna";
+    } else {
+      priority = "low";
+      label = "Det här verkar du kunna";
+    }
+
+    return {
+      blockId: block.blockId,
+      correctCount: block.correctCount,
+      incorrectCount: block.incorrectCount,
+      priority,
+      label,
+    };
+  });
+}
+
 router.get("/health", (_req, res) => {
   res.status(200).json({
     ok: true,
@@ -99,9 +185,9 @@ router.get("/lessons", async (_req, res) => {
       lessons: lessons.map((lessonWithBlocks) => ({
         lesson: lessonWithBlocks.lesson,
         blockCount: lessonWithBlocks.blocks.length,
-        quizEligibleBlockCount: buildAiReadableBlocks(
-          lessonWithBlocks,
-        ).filter((block) => block.shouldGenerateQuestions).length,
+        quizEligibleBlockCount: buildAiReadableBlocks(lessonWithBlocks).filter(
+          (block) => block.shouldGenerateQuestions,
+        ).length,
       })),
     });
   } catch (error) {
@@ -193,6 +279,57 @@ router.get("/lessons/:lessonId/quiz", async (req, res) => {
   }
 });
 
+router.get("/courses/:courseId/quiz", async (req, res) => {
+  try {
+    const courseId = Number(req.params.courseId);
+
+    if (!Number.isInteger(courseId)) {
+      res.status(400).json({
+        error: "Ogiltigt courseId.",
+      });
+      return;
+    }
+
+    const [quiz] = await db
+      .select()
+      .from(quizzes)
+      .where(eq(quizzes.courseId, courseId))
+      .limit(1);
+
+    if (!quiz) {
+      res.status(404).json({
+        error: "Quiz hittades inte för denna kurs.",
+      });
+      return;
+    }
+
+    const questions = await db
+      .select()
+      .from(quizQuestions)
+      .where(eq(quizQuestions.quizId, quiz.id));
+
+    const formattedQuestions = questions.map((question) => ({
+      id: question.id,
+      quizId: question.quizId,
+      courseId: question.courseId,
+      blockId: question.blockId,
+      question: question.question,
+      options: normalizeQuizOptions(question.options),
+    }));
+
+    res.status(200).json({
+      quiz: {
+        id: quiz.id,
+        courseId: quiz.courseId,
+        title: quiz.title,
+        questions: formattedQuestions,
+      },
+    });
+  } catch (error) {
+    sendRouteError(res, error);
+  }
+});
+
 router.patch("/quizzes/:quizId/publish", async (req, res) => {
   try {
     const quizId = Number(req.params.quizId);
@@ -252,12 +389,11 @@ router.post("/quizzes/:quizId/attempts", async (req, res) => {
 
     const body = submitQuizAttemptBodySchema.parse(req.body ?? {});
 
-    const quiz = await db.query.quizzes.findFirst({
-      where: and(
-        eq(quizzes.id, quizId),
-        eq(quizzes.courseId, body.courseId),
-      ),
-    });
+    const [quiz] = await db
+      .select()
+      .from(quizzes)
+      .where(and(eq(quizzes.id, quizId), eq(quizzes.courseId, body.courseId)))
+      .limit(1);
 
     if (!quiz) {
       res.status(404).json({
@@ -347,54 +483,7 @@ router.post("/quizzes/:quizId/attempts", async (req, res) => {
       };
     });
 
-    const blockStats = new Map<
-      number,
-      {
-        blockId: number;
-        correctCount: number;
-        incorrectCount: number;
-      }
-    >();
-
-    for (const answer of checkedAnswers) {
-      const current = blockStats.get(answer.blockId) ?? {
-        blockId: answer.blockId,
-        correctCount: 0,
-        incorrectCount: 0,
-      };
-
-      if (answer.isCorrect) {
-        current.correctCount += 1;
-      } else {
-        current.incorrectCount += 1;
-      }
-
-      blockStats.set(answer.blockId, current);
-    }
-
-    const blockPriorities = Array.from(blockStats.values()).map((block) => {
-      let priority: "high" | "medium" | "low";
-      let label: string;
-
-      if (block.correctCount === 0) {
-        priority = "high";
-        label = "Läs extra noggrant";
-      } else if (block.incorrectCount > 0) {
-        priority = "medium";
-        label = "Repetera gärna";
-      } else {
-        priority = "low";
-        label = "Det här verkar du kunna";
-      }
-
-      return {
-        blockId: block.blockId,
-        correctCount: block.correctCount,
-        incorrectCount: block.incorrectCount,
-        priority,
-        label,
-      };
-    });
+    const blockPriorities = buildBlockPriorities(checkedAnswers);
 
     res.status(201).json({
       message: "Quiz attempt har sparats.",
@@ -530,54 +619,7 @@ router.get("/courses/:courseId/personalization", async (req, res) => {
       .from(quizAnswers)
       .where(eq(quizAnswers.attemptId, latestAttempt.id));
 
-    const blockStats = new Map<
-      number,
-      {
-        blockId: number;
-        correctCount: number;
-        incorrectCount: number;
-      }
-    >();
-
-    for (const answer of answers) {
-      const current = blockStats.get(answer.blockId) ?? {
-        blockId: answer.blockId,
-        correctCount: 0,
-        incorrectCount: 0,
-      };
-
-      if (answer.isCorrect) {
-        current.correctCount += 1;
-      } else {
-        current.incorrectCount += 1;
-      }
-
-      blockStats.set(answer.blockId, current);
-    }
-
-    const blockPriorities = Array.from(blockStats.values()).map((block) => {
-      let priority: "high" | "medium" | "low";
-      let label: string;
-
-      if (block.correctCount === 0) {
-        priority = "high";
-        label = "Läs extra noggrant";
-      } else if (block.incorrectCount > 0) {
-        priority = "medium";
-        label = "Repetera gärna";
-      } else {
-        priority = "low";
-        label = "Det här verkar du kunna";
-      }
-
-      return {
-        blockId: block.blockId,
-        correctCount: block.correctCount,
-        incorrectCount: block.incorrectCount,
-        priority,
-        label,
-      };
-    });
+    const blockPriorities = buildBlockPriorities(answers);
 
     res.status(200).json({
       courseId,
@@ -595,25 +637,21 @@ router.get("/courses/:courseId/personalization", async (req, res) => {
   }
 });
 
-
 router.post("/assistant/context", async (req, res) => {
   try {
     const body = assistantContextBodySchema.parse(req.body ?? {});
 
-    const context =
-      await defaultAssistantContextService.buildAssistantContext({
-        userId: body.userId,
-        courseId: body.courseId,
-        lessonId: body.lessonId,
-        mode: body.mode ?? "general",
-        quizAnswers: body.quizAnswers,
-      });
+    const context = await defaultAssistantContextService.buildAssistantContext({
+      userId: body.userId,
+      courseId: body.courseId,
+      lessonId: body.lessonId,
+      mode: body.mode ?? "general",
+      quizAnswers: body.quizAnswers,
+    });
 
     res.status(200).json({
       context,
-      systemPromptPreview: buildAssistantSystemPrompt(
-        context.promptContext,
-      ),
+      systemPromptPreview: buildAssistantSystemPrompt(context.promptContext),
     });
   } catch (error) {
     sendRouteError(res, error);
