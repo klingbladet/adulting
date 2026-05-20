@@ -1,7 +1,7 @@
 import { Block, Course, UserCourse } from "@/types/types";
-import { BACKEND_URL } from "./backend-url";
+import { SERVER_BACKEND_URL } from "./backend-url";
 
-const BASE_URL = `${BACKEND_URL}/api`;
+const BASE_URL = `${SERVER_BACKEND_URL}/api`;
 
 export async function getCourses(): Promise<Course[]> {
   const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store' });

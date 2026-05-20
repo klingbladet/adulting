@@ -18,7 +18,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { BACKEND_URL } from "@/lib/backend-url";
+import { SERVER_BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
 
 type ProfileUser = {
@@ -76,7 +76,7 @@ export default function ProfileSettingsPage() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
+        const response = await fetch(`${SERVER_BACKEND_URL}/api/profile/me`, {
           credentials: "include",
         });
 

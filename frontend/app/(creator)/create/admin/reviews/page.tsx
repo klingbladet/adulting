@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/guards";
 import { cookies } from "next/headers";
-import { BACKEND_URL } from "@/lib/backend-url";
+import { SERVER_BACKEND_URL } from "@/lib/backend-url";
 import { Course } from "@/types/types";
 import AdminReviewsClient from "@/components/admin/admin-reviews-client";
 
@@ -15,7 +15,7 @@ async function getAllAdminCourses(): Promise<CourseWithTimestamps[]> {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const url = new URL(`${BACKEND_URL}/api/courses`);
+  const url = new URL(`${SERVER_BACKEND_URL}/api/courses`);
 
   const res = await fetch(url.toString(), {
     cache: "no-store",
