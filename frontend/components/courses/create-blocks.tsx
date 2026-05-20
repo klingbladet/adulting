@@ -176,7 +176,7 @@ export default function CreateBlocks() {
     setSaved(false);
   };
 
-  const handleSave = async (): Promise<number | null> => {
+  const handleSave = async () => {
     if (!courseTitle || courseTitle.trim().length < 3) {
       setError("Kursen måste ha en titel på minst 3 tecken.");
       return null;
@@ -289,6 +289,7 @@ export default function CreateBlocks() {
         // så att den inte råkar hämta gamla block via useEffecten under tiden den sparar.
         router.replace(`/create/creator-tools/create-blocks?courseId=${targetCourseId}`, { scroll: false });
       }
+      return targetCourseId;
     } catch (error) {
       console.error("Det gick ej att spara lektionen pga servern", error);
       setError("Det gick inte att spara!");
@@ -301,7 +302,7 @@ export default function CreateBlocks() {
   const handleNext = async () => {
     if (loading) return;
 
-    let courseIdForNext = activeCourseId;
+    let courseIdForNext: number | null = activeCourseId;
 
     if (!saved || !courseIdForNext) {
       courseIdForNext = await handleSave();
