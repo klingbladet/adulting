@@ -1,25 +1,24 @@
 'use client'
 import axios from 'axios'
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import RichTextEditor from './rich-text-editor';
 import { Block } from '@/types/types';
 import { Course } from '@/types/types';
 import { JSONContent } from '@tiptap/core';
-import Link from 'next/link';
-import CourseButton from './course-buttons';
 import CreatorStepper from './creator-stepper';
 
 export default function CreatorToolsClient() {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  
   // Hämtar courseId från antingen sökvägen (/courses/123) eller query-parametern (?courseId=123)
   const courseId = params?.courseId || searchParams.get('courseId');
   
   const [ saved, setSaved ] = useState(false);
   const [ loading, setLoading ] = useState(false);
   const [ error, setError ] = useState('');
+  const [ isLoaded, setIsLoaded ] = useState(false);
   const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
   const [ courseTitle, setCourseTitle ] = useState('');
   const [ blocks, setBlocks ] = useState<Block[]>([]);
@@ -44,7 +43,26 @@ export default function CreatorToolsClient() {
             
             if (courseData) {
                 setCourseTitle(courseData.title);
-                setBlocks(blocksData); 
+                
+                let useLocal = false;
+                const localDraft = localStorage.getItem(`course-content-draft-${courseData.id}`);
+                if (localDraft) {
+                    try {
+                        const parsed = JSON.parse(localDraft);
+                        if (parsed.blocks && parsed.blocks.length > 0) {
+                            setBlocks(parsed.blocks);
+                            useLocal = true;
+                        }
+                    } catch (e) {
+                        console.error("Kunde inte läsa från localStorage", e);
+                    }
+                }
+                
+                if (!useLocal) {
+                    setBlocks(blocksData); 
+                    setSaved(true);
+                }
+                
                 if (blocksData.length > 0 && !selectedBlockId) {
                   setSelectedBlockId(blocksData[0].id);
                 }
@@ -55,6 +73,7 @@ export default function CreatorToolsClient() {
             setError("Kunde inte ladda kursdata. Kursen kanske inte finns.");
         } finally {
             setLoading(false);
+            setIsLoaded(true);
         }
     };
 
@@ -64,18 +83,27 @@ export default function CreatorToolsClient() {
     }
   }, [courseId]);
 
+  // Spara till localStorage vid varje ändring
+  useEffect(() => {
+    if (isLoaded && activeCourseId && !saved) {
+      localStorage.setItem(`course-content-draft-${activeCourseId}`, JSON.stringify({
+        blocks
+      }));
+    }
+  }, [blocks, activeCourseId, isLoaded, saved]);
+
   const handleSave = async () => {
+    if (!activeCourseId) {
+      setError('Ingen kurs vald för att spara innehåll.');
+      return null;
+    }
+
     setLoading(true);
     setError('');
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
       
-      if (!activeCourseId) {
-        setError('Ingen kurs vald för att spara innehåll.');
-        return;
-      }
-
       // Formatera blocken för att bara uppdatera innehållet
       const blocksToSave = blocks.map((block) => ({ 
         ...block, 
@@ -89,9 +117,14 @@ export default function CreatorToolsClient() {
         withCredentials: true
       });
       setSaved(true);
+      
+      // Rensa utkastet efter sparande
+      localStorage.removeItem(`course-content-draft-${activeCourseId}`);
+      return activeCourseId;
     } catch (error) {
       console.error('Det gick ej att spara innehållet pga servern', error)
       setError('Det gick inte att spara innehållet!')
+      return null;
     } finally {
       setLoading (false);
     }
@@ -139,7 +172,7 @@ export default function CreatorToolsClient() {
 
           <RichTextEditor
             content={activeBlock.content}
-            onChange={(newContent) => updateBlockContent(activeBlock.id, newContent)}
+            onChange={(json) => updateBlockContent(activeBlock.id, json)}
           />
         </div>
       ) : (
@@ -157,14 +190,6 @@ export default function CreatorToolsClient() {
       </div>
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
-      <div className="flex flex-row justify-between mt-10">
-        <Link href={`/create/creator-tools/create-blocks?courseId=${activeCourseId}`}>
-          <CourseButton variant="secondary">Tillbaka</CourseButton>
-        </Link>
-        <Link href={`/create/creator-tools/create-quiz`}>
-          <CourseButton>Nästa</CourseButton>
-        </Link>
-      </div>
     </div>
   );
 }

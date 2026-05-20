@@ -31,6 +31,15 @@ export default async function StaffSidebar() {
           </Link>
         )}
 
+        {isAdmin && (
+          <Link
+            href={`/create/admin/reviews`}
+            className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+          >
+            Godkänna
+          </Link>
+        )}
+
         {canAccessCreatorTools && (
           <Link
             href="/create/creator-tools"

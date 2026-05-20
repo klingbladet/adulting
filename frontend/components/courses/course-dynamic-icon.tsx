@@ -1,28 +1,22 @@
-import { House, Wallet, Briefcase, GraduationCap, HeartPulse, BookOpen, Car } from 'lucide-react';
+import Image from 'next/image';
 import { Course } from '@/types/types';
+import { BookOpen } from 'lucide-react'; // Fallback-ikon om ingen bild matchar
 
-
-const ICON_MAP: Record<string, React.ElementType> = {
-  House,
-  Wallet,
-  Briefcase,
-  GraduationCap,
-  HeartPulse,
-  BookOpen,
-  Car
-};
 
 export default function getCourseIcon(course: Course) {
+  // 1. Leta i databasen ifall du angett ett exakt filnamn där (t.ex. "icon_name": "house.jpg")
   const iconName = course.category?.iconName;
-  const IconComponent = iconName ? ICON_MAP[iconName] : null;
-  
-  if (IconComponent) return <IconComponent className="w-full h-full"/>;
+  if (iconName && (iconName.endsWith('.jpg') || iconName.endsWith('.png'))) {
+    return <Image src={`/images/${iconName}`} alt={iconName} width={24} height={24} className="w-full h-full object-contain" />;
+  }
 
   const categoryName = course.category?.name.toLowerCase() || "";
-  if (categoryName.includes("ekonomi")) return <Wallet />;
-  if (categoryName.includes("bostad")) return <House />;
-  if (categoryName.includes("jobb")) return <Briefcase />;
-  if (categoryName.includes("körkort")) return <Car />
+  
+  // 2. Mappa kategorinamn till dina lokala JPG-filer (byt ut namnen så de matchar filerna i din images-mapp)
+  if (categoryName.includes("ekonomi")) return <Image src="/images/icons/ekonomi.jpg" alt="Ekonomi" width={24} height={24} className="w-full h-full object-contain" />;
+  if (categoryName.includes("bostad")) return <Image src="/images/icons/bostad.jpg" alt="Bostad" width={24} height={24} className="w-full h-full object-contain" />;
+  if (categoryName.includes("jobb")) return <Image src="/images/icons/jobb.jpg" alt="Jobb" width={24} height={24} className="w-full h-full object-contain" />;
+  if (categoryName.includes("körkort")) return <Image src="/images/icons/korkort.jpg" alt="Körkort" width={24} height={24} className="w-full h-full object-contain" />;
 
-  return <BookOpen />;
+  return <BookOpen className="w-full h-full text-gray-400" />;
 }

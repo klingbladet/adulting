@@ -32,6 +32,11 @@ export default function menuBarStateSelector (ctx: EditorStateSnapshot<Editor | 
     isHeading5: ctx.editor.isActive('heading', { level: 5 }) ?? false,
     isHeading6: ctx.editor.isActive('heading', { level: 6 }) ?? false,
 
+    // Alignment
+    isAlignLeft: ctx.editor.isActive({ textAlign: 'left' }) ?? false,
+    isAlignCenter: ctx.editor.isActive({ textAlign: 'center' }) ?? false,
+    isAlignRight: ctx.editor.isActive({ textAlign: 'right' }) ?? false,
+
     // Lists and blocks
     isBulletList: ctx.editor.isActive('bulletList') ?? false,
     isOrderedList: ctx.editor.isActive('orderedList') ?? false,

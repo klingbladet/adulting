@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react';
 import { EditorContent, JSONContent, useEditor } from '@tiptap/react'
 import { TextStyleKit } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
@@ -44,9 +45,16 @@ export default function TipTapViewer({ content }: TipTapViewerProps) {
     content: parsedContent || '<p></p>',
   })
 
+  // Uppdatera innehållet dynamiskt när prop 'content' ändras
+  useEffect(() => {
+    if (editor && parsedContent) {
+      editor.commands.setContent(parsedContent);
+    }
+  }, [parsedContent, editor]);
+
   if (!editor) {
     return null
   }
 
   return <EditorContent editor={editor} />
-}
+}

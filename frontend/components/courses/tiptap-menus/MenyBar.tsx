@@ -2,8 +2,41 @@ import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import { useCallback } from 'react'
 import React from 'react'
+import { 
+    Bold, Italic, Strikethrough, Code, AlignLeft, AlignCenter, AlignRight, 
+    Eraser, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, 
+    Pilcrow, List, ListOrdered, Quote, FileCode, Minus, CornerDownLeft, 
+    Image as ImageIcon, Video, Undo, Redo, X, Maximize, Check, Lock, Unlock
+} from 'lucide-react'
 
 import menuBarStateSelector from './menyBarState'
+
+interface ToolbarBtnProps {
+    active?: boolean;
+    disabled?: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+    title?: string;
+    testId?: string;
+}
+
+const ToolbarBtn = ({ active, disabled, onClick, children, title, testId }: ToolbarBtnProps) => (
+    <button
+        onClick={(e) => { e.preventDefault(); onClick(); }}
+        disabled={disabled}
+        title={title}
+        data-test-id={testId}
+        className={`p-1.5 rounded-md transition-colors flex items-center justify-center shrink-0 ${
+            disabled ? 'opacity-30 cursor-not-allowed' :
+            active ? 'bg-blue-100 text-blue-700 shadow-sm' :
+            'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+        }`}
+    >
+        {children}
+    </button>
+)
+
+const Divider = () => <div className="w-px h-5 bg-gray-300 mx-1 shrink-0" />
 
 export default function MenuBar ({ editor } : { editor: Editor | null }) {
     const [height, setHeight] = React.useState(180)
@@ -71,227 +104,84 @@ export default function MenuBar ({ editor } : { editor: Editor | null }) {
     }
 
     return (
-        <div className="bg-gray-200 p-2 rounded-t-sm">
-            <div className="button-group text-sm flex items-center gap-1 flex-wrap">
-                <button
-                    onClick={() => editor.chain().focus().setFontSize('28px').run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '28px' }) ? 'is-active bg-gray-400' : ''}`}
-                    data-test-id="28px"
-                >
-                    Font size 28px
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setFontSize('32px').run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editor.isActive('textStyle', { fontSize: '32px' }) ? 'is-active bg-gray-400' : ''}`}
-                    data-test-id="32px"
-                >
-                    Font size 32px
-                </button>
-                <button 
-                onClick={() => editor.chain().focus().unsetFontSize().run()} data-test-id="unsetFontSize"
-                className='bg-red-300 px-2 rounded-sm'
-                >
-                    Unset font size
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    disabled={!editorState.canBold}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isBold ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Bold
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    disabled={!editorState.canItalic}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isItalic ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Italic
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleStrike().run()}
-                    disabled={!editorState.canStrike}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isStrike ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Strike
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleCode().run()}
-                    disabled={!editorState.canCode}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isCode ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Code
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                    className={editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}
-                >
-                    Left
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                    className={editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}
-                >
-                    Center
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                    className={editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}
-                >
-                    Right
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().unsetAllMarks().run()}
-                    className='bg-amber-300 px-2 rounded-sm'
-                >
-                    Clear marks
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().clearNodes().run()}
-                    className='bg-amber-300 px-2 rounded-sm'
-                >
-                    Clear nodes
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().setParagraph().run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isParagraph ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Paragraph
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading1 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H1
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading2 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H2
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading3 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H3
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading4 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H4
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading5 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H5
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isHeading6 ? 'is-active bg-gray-400' : ''}`}
-                >
-                    H6
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isBulletList ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Bullet list
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isOrderedList ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Ordered list
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isCodeBlock ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Code block
-                </button>
-                <button
-                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                    className={`bg-gray-300 px-2 rounded-sm ${editorState.isBlockquote ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Blockquote
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                    className='bg-blue-300 px-2 rounded-sm'
-                >
-                    Horizontal rule
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().setHardBreak().run()}
-                    className='bg-purple-300 px-2 rounded-sm'
-                >
-                    Hard break
-                </button>
-                <button 
-                    onClick={addImage}
-                    className='bg-gray-300 px-2 rounded-sm hover:bg-gray-400'
-                >
-                    Set image
-                </button>
-                <button 
-                    id="add" 
-                    onClick={addYoutubeVideo}
-                    className='bg-gray-300 px-2 rounded-sm hover:bg-gray-400'
-                >
-                    Add YouTube video
-                </button>
-                <div
-                    className='flex justify-center gap-1 bg-gray-300 px-2 rounded-sm'
-                >
-                    <input
-                        id="width"
-                        type="number"
-                        min="320"
-                        max="1024"
-                        placeholder="width"
-                        value={width}
-                        onChange={event => setWidth(Number(event.target.value))}
-                        className='bg-gray-300 px-2 rounded-sm'
-                    />
-                    <input
-                        id="height"
-                        type="number"
-                        min="180"
-                        max="720"
-                        placeholder="height"
-                        value={height}
-                        onChange={event => setHeight(Number(event.target.value))}
-                        className='bg-gray-300 px-2 rounded-sm'
-                    />
-                    <button 
-                        onClick={updateMediaSize}
-                        className='bg-gray-200 border border-gray-300 px-2 rounded-sm hover:bg-gray-400'
-                    >
-                        Update video/image size
-                    </button>
-                </div>
-
-                <button 
-                    onClick={toggleEditable}
-                    className={`bg-gray-300 px-2 rounded-sm ${isEditable ? 'is-active bg-gray-400' : ''}`}
-                >
-                    Toggle editable
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().undo().run()} disabled={!editorState.canUndo}
-                    className='bg-red-300 px-2 rounded-sm'
-                >
-                    Undo
-                </button>
-                <button 
-                    onClick={() => editor.chain().focus().redo().run()} disabled={!editorState.canRedo}
-                    className='bg-green-300 px-2 rounded-sm'
-                >
-                    Redo
+        <div className="flex flex-wrap items-center gap-1 w-full text-gray-700">
+            <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editorState.canUndo} title="Ångra"><Undo size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editorState.canRedo} title="Gör om"><Redo size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().setFontSize('28px').run()} active={editor.isActive('textStyle', { fontSize: '28px' })} testId="28px"><span className="text-[11px] font-bold px-0.5">28</span></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().setFontSize('32px').run()} active={editor.isActive('textStyle', { fontSize: '32px' })} testId="32px"><span className="text-[11px] font-bold px-0.5">32</span></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().unsetFontSize().run()} title="Återställ textstorlek" testId="unsetFontSize"><X size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editorState.isHeading1} title="Rubrik 1"><Heading1 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editorState.isHeading2} title="Rubrik 2"><Heading2 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editorState.isHeading3} title="Rubrik 3"><Heading3 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} active={editorState.isHeading4} title="Rubrik 4"><Heading4 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} active={editorState.isHeading5} title="Rubrik 5"><Heading5 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()} active={editorState.isHeading6} title="Rubrik 6"><Heading6 size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().setParagraph().run()} active={editorState.isParagraph} title="Brödtext"><Pilcrow size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editorState.isBold} disabled={!editorState.canBold} title="Fet"><Bold size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editorState.isItalic} disabled={!editorState.canItalic} title="Kursiv"><Italic size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editorState.isStrike} disabled={!editorState.canStrike} title="Genomstruken"><Strikethrough size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editorState.isCode} disabled={!editorState.canCode} title="Kod"><Code size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editorState.isAlignLeft} title="Vänsterjustera"><AlignLeft size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editorState.isAlignCenter} title="Centrera"><AlignCenter size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editorState.isAlignRight} title="Högerjustera"><AlignRight size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editorState.isBulletList} title="Punktlista"><List size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editorState.isOrderedList} title="Numrerad lista"><ListOrdered size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editorState.isBlockquote} title="Citat"><Quote size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editorState.isCodeBlock} title="Kodblock"><FileCode size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Linje"><Minus size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().setHardBreak().run()} title="Radbrytning"><CornerDownLeft size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={() => { editor.chain().focus().unsetAllMarks().run(); editor.chain().focus().clearNodes().run(); }} title="Rensa formatering"><Eraser size={16} /></ToolbarBtn>
+            
+            <Divider />
+            
+            <ToolbarBtn onClick={addImage} title="Infoga bild"><ImageIcon size={16} /></ToolbarBtn>
+            <ToolbarBtn onClick={addYoutubeVideo} testId="add" title="Infoga YouTube-video"><Video size={16} /></ToolbarBtn>
+            
+            <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2 py-1 rounded-md text-xs ml-1 shadow-sm">
+                <Maximize size={14} className="text-gray-400" />
+                <input
+                    id="width"
+                    type="number" min="320" max="1024" placeholder="W" value={width}
+                    onChange={event => setWidth(Number(event.target.value))}
+                    className="w-10 bg-transparent text-center focus:outline-none text-gray-700 font-medium"
+                    title="Bredd"
+                />
+                <span className="text-gray-400">x</span>
+                <input
+                    id="height"
+                    type="number" min="180" max="720" placeholder="H" value={height}
+                    onChange={event => setHeight(Number(event.target.value))}
+                    className="w-10 bg-transparent text-center focus:outline-none text-gray-700 font-medium"
+                    title="Höjd"
+                />
+                <button onClick={(e) => { e.preventDefault(); updateMediaSize(); }} className="ml-1 text-gray-400 hover:text-blue-600 transition-colors" title="Uppdatera mediestorlek">
+                    <Check size={14} />
                 </button>
             </div>
+            
+            <div className="flex-grow" />
+            
+            <ToolbarBtn onClick={toggleEditable} active={!isEditable} title={isEditable ? 'Lås redigering' : 'Lås upp redigering'}>
+                {isEditable ? <Unlock size={16} /> : <Lock size={16} />}
+            </ToolbarBtn>
         </div>
     )
 }
