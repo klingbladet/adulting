@@ -5,7 +5,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 3
+  backoffLimit: 5
   ttlSecondsAfterFinished: 60
   template:
     spec:
@@ -15,7 +15,10 @@ spec:
       containers:
         - name: postgres-migration
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base:latest
-          command: ["pnpm", "db:migrate"]
+          command: ["sh", "-c"]
+          args: |
+            sleep 10
+            pnpm db:migrate
           env:
             - name: VERSION
               valueFrom:
