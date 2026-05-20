@@ -111,7 +111,7 @@ build frontend:
   image: docker:29
   extends: .docker login
   variables:
-    NEXT_PUBLIC_API_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/api
+    NEXT_PUBLIC_API_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/backend
   script:
     - echo "client URL will be '$NEXT_PUBLIC_API_URL'" 
     - docker buildx build --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL -t $CI_REGISTRY_IMAGE/frontend:$VERSION --push ./frontend
