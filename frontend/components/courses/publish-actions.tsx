@@ -17,8 +17,8 @@ export default function PublishActions({ courseId }: { courseId: string | number
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
       await axios.patch(`${baseUrl}/api/courses/${courseId}`, {
-        isPublished,
-        status: isPublished ? 'published' : 'draft'
+        isPublished: false, // Alltid false tills en admin godkänner!
+        status: isPublished ? 'pending_approval' : 'draft'
       }, {
         withCredentials: true
       });
@@ -49,7 +49,7 @@ export default function PublishActions({ courseId }: { courseId: string | number
             {loading ? 'Sparar...' : 'Spara som draft'}
           </CourseButton>
           <CourseButton onClick={() => handlePublish(true)} disabled={loading} fullWidth={false}>
-            {loading ? 'Sparar...' : 'Publicera publikt'}
+          {loading ? 'Sparar...' : 'Skicka in för granskning'}
           </CourseButton>
         </div>
       </div>
