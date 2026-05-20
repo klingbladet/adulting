@@ -16,9 +16,9 @@ spec:
         - name: postgres-migration
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base:latest
           command: ["sh", "-c"]
-          args: |
-            sleep 10
-            pnpm db:migrate
+          args:
+            - sleep 10
+              pnpm db:migrate
           env:
             - name: VERSION
               valueFrom:
