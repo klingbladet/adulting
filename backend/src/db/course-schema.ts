@@ -34,7 +34,7 @@ export const blocks = pgTable("blocks", {
     .references(() => user.id, { onDelete: "no action" }),
   courseId: integer("course_id")
     .notNull()
-    .references(() => courses.id),
+    .references(() => courses.id, { onDelete: "cascade" }),
   orderIndex: integer("order_index").notNull(),
   title: varchar("title", { length: 255 }),
   content: jsonb("content"),
@@ -132,7 +132,7 @@ export const userCourses = pgTable("user_courses", {
     .references(() => user.id),
   courseId: integer("course_id")
     .notNull()
-    .references(() => courses.id),
+    .references(() => courses.id, { onDelete: "cascade" }),
   // status: "not_started" | "in_progress" | "completed"
   status: varchar("status", { length: 255 }).notNull(),
   enrolledAt: timestamp("enrolled_at").notNull(),

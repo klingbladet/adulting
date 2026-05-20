@@ -4,6 +4,36 @@ import { getCourseById, getBlocksByCourseId } from '@/lib/api';
 import { Block } from '@/types/types';
 import BlockCard from '@/components/courses/course-layout';
 
+interface TipTapNode {
+  type?: string;
+  text?: string;
+  content?: TipTapNode[];
+}
+
+// Hjälpfunktion för att extrahera ren text från TipTap JSON
+function extractPlainText(content: unknown): string {
+  if (!content) return 'Innehåll saknas';
+  
+  let parsed = content;
+  if (typeof content === 'string') {
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      return content; // Det var redan en vanlig sträng
+    }
+  }
+
+  function parseNode(node: TipTapNode): string {
+    if (!node) return '';
+    if (node.type === 'text' && node.text) return node.text;
+    if (Array.isArray(node.content)) return node.content.map(parseNode).join(' ');
+    return '';
+  }
+
+  const text = parseNode(parsed as TipTapNode).replace(/\s+/g, ' ').trim();
+  return text || 'Innehåll saknas';
+}
+
 export default async function CourseOverview({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
 
@@ -43,21 +73,20 @@ export default async function CourseOverview({ params }: { params: Promise<{ cou
         {blocksError && (
           <p className="text-red-500 text-sm mb-4">Fel vid hämtning av block: {blocksError}</p>
         )}
-        {sortedBlocks.map((block, index) => (
-          <Link key={block.id} href={`/courses/${courseId}/blocks/${block.id}`}>
-            <BlockCard
-              icon={<span className="font-bold text-lg">{index + 1}</span>}
-              title={block.title || `Steg ${index + 1}`}
-              description={
-                typeof block.content === 'string'
-                  ? block.content.substring(0, 40) + '...'
-                  : block.content
-                  ? JSON.stringify(block.content).substring(0, 40) + '...'
-                  : 'Innehåll saknas'
-              }
-            />
-          </Link>
-        ))}
+        {sortedBlocks.map((block, index) => {
+          const plainText = extractPlainText(block.content);
+          const shortDesc = plainText.length > 40 ? plainText.substring(0, 40) + '...' : plainText;
+          
+          return (
+            <Link key={block.id} href={`/courses/${courseId}/blocks/${block.id}`}>
+              <BlockCard
+                icon={<span className="font-bold text-lg">{index + 1}</span>}
+                title={block.title || `Steg ${index + 1}`}
+                description={shortDesc}
+              />
+            </Link>
+          );
+        })}
 
         {sortedBlocks.length > 0 && (
           <Link href={`/courses/${courseId}/blocks/${sortedBlocks[0].id}`}>

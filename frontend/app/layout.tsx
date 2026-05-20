@@ -38,14 +38,14 @@ export default function RootLayout({
           <Header />
         </div>
 
-        
-          {children}
-        
+
+        {children}
+
 
         <div className="hidden md:block">
           <Footer />
         </div>
-         
+
       </body>
     </html>
   );

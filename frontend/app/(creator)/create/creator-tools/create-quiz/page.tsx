@@ -1,40 +1,35 @@
 import { requireRole } from "@/lib/guards";
-import Link from "next/link";
-import CourseButton from "@/components/courses/course-buttons";
 import CreatorStepper from "@/components/courses/creator-stepper";
+import StepNavigation from "@/components/courses/step-navigation";
 import GenerateCourseQuizPanel from "@/components/courses/generate-course-quiz-panel";
 
-type CreatorToolsPageProps = {
-  searchParams: Promise<{
-    courseId?: string;
-  }>;
-};
-
+  type CreatorToolsPageProps = {
+    searchParams: Promise<{
+      courseId?: string;
+    }>;
+  }
+  
 export default async function CreatorToolsPage({
   searchParams,
 }: CreatorToolsPageProps) {
   await requireRole(["creator", "admin"]);
-
+  
   const params = await searchParams;
   const courseId = params.courseId;
 
   return (
     <>
       <CreatorStepper currentStep={3} />
+      
+      {/* Resten av quiz-innehållet kommer här... */}
 
       <div className="my-6">
         <GenerateCourseQuizPanel courseId={courseId} />
       </div>
-
-      <div className="flex flex-row justify-between">
-        <Link href={`/create/creator-tools/create-content`}>
-          <CourseButton variant="secondary">Tillbaka</CourseButton>
-        </Link>
-
-        <Link href={`/create/creator-tools/preview`}>
-          <CourseButton>Nästa</CourseButton>
-        </Link>
-      </div>
+      <StepNavigation 
+        backPath="/create/creator-tools/create-content"
+        nextPath="/create/creator-tools/preview"
+      />
     </>
   );
 }
