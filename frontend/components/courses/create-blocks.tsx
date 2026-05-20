@@ -14,20 +14,20 @@ export default function CreateBlocks() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  
+
   // Hämtar courseId från antingen sökvägen (/courses/123) eller query-parametern (?courseId=123)
   const courseId = params?.courseId || searchParams.get('courseId');
-  
-  const [ saved, setSaved ] = useState(false);
-  const [ loading, setLoading ] = useState(false);
-  const [ error, setError ] = useState('');
-  const [ isLoaded, setIsLoaded ] = useState(false);
-  const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
-  const [ courseTitle, setCourseTitle ] = useState('');
-  const [ courseTime, setCourseTime ] = useState('');
-  const [ categoryId, setCategoryId ] = useState<string>('');
-  const [ categories, setCategories ] = useState<Category[]>([]);
-  const [ blocks, setBlocks ] = useState<Block[]>([
+
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeCourseId, setActiveCourseId] = useState<number | null>(courseId ? Number(courseId) : null);
+  const [courseTitle, setCourseTitle] = useState('');
+  const [courseTime, setCourseTime] = useState('');
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [blocks, setBlocks] = useState<Block[]>([
     {
       id: Date.now(),
       courseId: 0,
@@ -63,82 +63,82 @@ export default function CreateBlocks() {
     // Denna effekt körs om ett courseId finns i URL:en när komponenten laddas.
     // Den hämtar då befintlig kursdata så att du kan redigera en existerande kurs.
     const fetchCourseData = async (id: string | number) => {
-        setLoading(true);
-        setError('');
-        try {
-            const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
-            
-            // Hämta kursinformation (titel etc.) - OBS: Antar att GET /api/courses/:id finns.
-            const coursePromise = axios.get(`${baseUrl}/api/courses/${id}`, { withCredentials: true });
-            // Hämta alla block för kursen (innehåll)
-            const blocksPromise = axios.get(`${baseUrl}/api/courses/${id}/blocks`, { withCredentials: true });
+      setLoading(true);
+      setError('');
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
-            const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
+        // Hämta kursinformation (titel etc.) - OBS: Antar att GET /api/courses/:id finns.
+        const coursePromise = axios.get(`${baseUrl}/api/courses/${id}`, { withCredentials: true });
+        // Hämta alla block för kursen (innehåll)
+        const blocksPromise = axios.get(`${baseUrl}/api/courses/${id}/blocks`, { withCredentials: true });
 
-            // Lägg till fallbacks ifall backend returnerar datan direkt på .data 
-            // istället för inkapslat i .data.course / .data.blocks
-            const courseData: Course = courseResponse.data?.course || courseResponse.data; 
-            const blocksData: Block[] = blocksResponse.data?.blocks || blocksResponse.data || [];
-            
-            if (courseData) {
-                let useLocal = false;
-                const localDraft = localStorage.getItem(`course-draft-${courseData.id}`);
-                if (localDraft) {
-                    try {
-                        const parsed = JSON.parse(localDraft);
-                        setCourseTitle(parsed.courseTitle || courseData.title);
-                        const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
-                        setCategoryId(parsed.categoryId || String(extendedCourse.categoryId || ''));
-                        setCourseTime(parsed.courseTime || String(extendedCourse.time || ''));
-                        setBlocks(parsed.blocks || blocksData || []);
-                        useLocal = true;
-                    } catch (e) {
-                        console.error("Kunde inte läsa från localStorage", e);
-                    }
-                }
-                
-                if (!useLocal) {
-                    setCourseTitle(courseData.title);
-                    // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
-                    const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
-                    if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
-                    if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
-                    setBlocks(blocksData || []); 
-                    setSaved(true);
-                }
-                setActiveCourseId(courseData.id);
+        const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
+
+        // Lägg till fallbacks ifall backend returnerar datan direkt på .data 
+        // istället för inkapslat i .data.course / .data.blocks
+        const courseData: Course = courseResponse.data?.course || courseResponse.data;
+        const blocksData: Block[] = blocksResponse.data?.blocks || blocksResponse.data || [];
+
+        if (courseData) {
+          let useLocal = false;
+          const localDraft = localStorage.getItem(`course-draft-${courseData.id}`);
+          if (localDraft) {
+            try {
+              const parsed = JSON.parse(localDraft);
+              setCourseTitle(parsed.courseTitle || courseData.title);
+              const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
+              setCategoryId(parsed.categoryId || String(extendedCourse.categoryId || ''));
+              setCourseTime(parsed.courseTime || String(extendedCourse.time || ''));
+              setBlocks(parsed.blocks || blocksData || []);
+              useLocal = true;
+            } catch (e) {
+              console.error("Kunde inte läsa från localStorage", e);
             }
-        } catch (err) {
-            console.error("Failed to fetch course data", err);
-            setError("Kunde inte ladda kursdata. Kursen kanske inte finns eller så är du inte inloggad.");
-            router.replace('/create/creator-tools/create-blocks'); // Återställ URL om kursen inte hittas
-        } finally {
-            setLoading(false);
-            setIsLoaded(true);
+          }
+
+          if (!useLocal) {
+            setCourseTitle(courseData.title);
+            // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
+            const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
+            if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
+            if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
+            setBlocks(blocksData || []);
+            setSaved(true);
+          }
+          setActiveCourseId(courseData.id);
         }
+      } catch (err) {
+        console.error("Failed to fetch course data", err);
+        setError("Kunde inte ladda kursdata. Kursen kanske inte finns eller så är du inte inloggad.");
+        router.replace('/create/creator-tools/create-blocks'); // Återställ URL om kursen inte hittas
+      } finally {
+        setLoading(false);
+        setIsLoaded(true);
+      }
     };
 
     if (courseId) {
-        // Säkerställ att vi bara skickar en sträng, även om `useParams` skulle ge en array (vid catch-all routes)
-        const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
-        fetchCourseData(idToFetch);
+      // Säkerställ att vi bara skickar en sträng, även om `useParams` skulle ge en array (vid catch-all routes)
+      const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
+      fetchCourseData(idToFetch);
     } else {
-        // Ladda utkast för ny kurs
-        const localDraft = localStorage.getItem('course-draft-new');
-        if (localDraft) {
-            try {
-                const parsed = JSON.parse(localDraft);
-                if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
-                if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
-                if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
-                if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
-            } catch (e) {
-                console.error("Kunde inte läsa utkast från localStorage", e);
-            }
-        } else {
-            setSaved(true);
+      // Ladda utkast för ny kurs
+      const localDraft = localStorage.getItem('course-draft-new');
+      if (localDraft) {
+        try {
+          const parsed = JSON.parse(localDraft);
+          if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
+          if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
+          if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
+          if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
+        } catch (e) {
+          console.error("Kunde inte läsa utkast från localStorage", e);
         }
-        setIsLoaded(true);
+      } else {
+        setSaved(true);
+      }
+      setIsLoaded(true);
     }
   }, [courseId, router]);
 
@@ -279,12 +279,12 @@ export default function CreateBlocks() {
       );
 
       setSaved(true);
-      
+
       // Rensa draft nu när det är sparat i databasen
       localStorage.removeItem(`course-draft-${targetCourseId}`);
       if (!activeCourseId) {
         localStorage.removeItem('course-draft-new');
-        
+
         // Uppdatera URL:en med det nya kurs-ID:t EFTER att alla block sparats,
         // så att den inte råkar hämta gamla block via useEffecten under tiden den sparar.
         router.replace(`/create/creator-tools/create-blocks?courseId=${targetCourseId}`, { scroll: false });
@@ -313,7 +313,7 @@ export default function CreateBlocks() {
     }
 
     router.push(
-  `/create/creator-tools/create-content?courseId=${courseIdForNext}`,
+      `/create/creator-tools/create-content?courseId=${courseIdForNext}`,
     );
   };
 
@@ -332,9 +332,9 @@ export default function CreateBlocks() {
       blocks.map((block) =>
         block.id === id
           ? {
-              ...block,
-              content: createTextContent(newText),
-            }
+            ...block,
+            content: createTextContent(newText),
+          }
           : block,
       ),
     );
@@ -350,37 +350,15 @@ export default function CreateBlocks() {
           type: "paragraph",
           content: text.trim()
             ? [
-                {
-                  type: "text",
-                  text,
-                },
-              ]
+              {
+                type: "text",
+                text,
+              },
+            ]
             : [],
         },
       ],
     };
-  }
-
-  function getTextFromBlockContent(content: unknown): string {
-    const parts: string[] = [];
-
-    function walk(node: unknown) {
-      if (!node || typeof node !== "object") return;
-
-      if ("text" in node && typeof node.text === "string") {
-        parts.push(node.text);
-      }
-
-      if ("content" in node && Array.isArray(node.content)) {
-        for (const child of node.content) {
-          walk(child);
-        }
-      }
-    }
-
-    walk(content);
-
-    return parts.join(" ").trim();
   }
 
   return (
@@ -463,14 +441,6 @@ export default function CreateBlocks() {
               </button>
             )}
           </div>
-
-          <textarea
-            value={getTextFromBlockContent(block.content)}
-            onChange={(e) => updateBlockContent(block.id, e.target.value)}
-            placeholder="Skriv blockets innehåll här..."
-            rows={5}
-            className="mt-3 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:border-blue-500"
-          />
         </div>
       ))}
 

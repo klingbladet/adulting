@@ -26,7 +26,12 @@ export const courseService = {
     return await db.query.courses.findMany({ with: { category: true, courseBlocks: true } });
   },
 
-
+  async getUserCourses(userId: string) {
+    return await db.query.courses.findMany({
+      where: eq(courses.userId, userId),
+      with: { category: true, courseBlocks: true }
+    });
+  },
 
   async getCourseById(id: number) {
     return await db.query.courses.findFirst({
