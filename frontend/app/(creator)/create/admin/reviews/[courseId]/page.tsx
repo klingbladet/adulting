@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/guards";
 import { getCourseById } from "@/lib/api";
-import ReviewActions from "./review-actions";
+import ReviewActions from "@/components/admin/review-actions";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import PreviewClient from "@/components/courses/preview-client";

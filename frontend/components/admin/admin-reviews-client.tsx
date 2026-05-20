@@ -33,7 +33,7 @@ export default function AdminReviewsClient({
 
   const handleDelete = async () => {
     if (!courseToDelete) return;
-    
+
     setIsDeleting(true);
     setDeleteError("");
 
@@ -99,7 +99,7 @@ export default function AdminReviewsClient({
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Publicerade kurser</h2>
             <p className="text-gray-500 mb-6">Kurser som är aktiva och synliga för användare.</p>
-            
+
             <div className="flex flex-col gap-4">
               {publishedCourses.map((course) => (
                 <div key={course.id} className="p-4 border border-green-100 rounded-lg bg-green-50/30 flex justify-between items-center shadow-sm">
@@ -125,7 +125,7 @@ export default function AdminReviewsClient({
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Nekade kurser</h2>
             <p className="text-gray-500 mb-6">Dessa kurser har nekats. Som administratör kan du välja att radera dem permanent.</p>
-            
+
             <div className="flex flex-col gap-4">
               {rejectedCourses.map((course) => (
                 <div key={course.id} className="p-4 border border-red-100 rounded-lg bg-red-50 flex justify-between items-center shadow-sm">
@@ -142,7 +142,7 @@ export default function AdminReviewsClient({
                         Hantera kurs
                       </button>
                     </Link>
-                    <button 
+                    <button
                       onClick={() => { setCourseToDelete(course); setDeleteInput(''); setDeleteError(''); }}
                       className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition font-medium flex items-center gap-2"
                     >

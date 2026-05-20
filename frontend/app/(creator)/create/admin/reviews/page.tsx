@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/guards";
 import { cookies } from "next/headers";
 import { BACKEND_URL } from "@/lib/backend-url";
 import { Course } from "@/types/types";
-import AdminReviewsClient from "./admin-reviews-client";
+import AdminReviewsClient from "@/components/admin/admin-reviews-client";
 
 type CourseWithTimestamps = Course & {
   createdAt?: string;
