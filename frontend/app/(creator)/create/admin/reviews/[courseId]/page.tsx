@@ -3,15 +3,27 @@ import { getCourseById } from "@/lib/api";
 import ReviewActions from "./review-actions";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import PreviewClient from "@/components/courses/preview-client";
+import { JSONContent } from "@tiptap/core";
+import { Course } from "@/types/types";
 
-export default async function AdminReviewDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ courseId: string }> 
+type CourseWithRelations = Course & {
+  courseBlocks?: {
+    id: number;
+    title: string;
+    content: JSONContent | string | null;
+  }[];
+};
+
+export default async function AdminReviewDetailPage({
+  params
+}: {
+  params: Promise<{ courseId: string }>
 }) {
+
   await requireRole(["admin"]);
   const { courseId } = await params;
-  const course = await getCourseById(courseId).catch(() => null);
+  const course = (await getCourseById(courseId).catch(() => null)) as CourseWithRelations | null;
 
   if (!course) {
     return (
@@ -26,8 +38,8 @@ export default async function AdminReviewDetailPage({
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <Link 
-        href="/create/admin/reviews" 
+      <Link
+        href="/create/admin/reviews"
         className="flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6"
       >
         <ChevronLeft size={16} className="mr-1" />
@@ -53,6 +65,11 @@ export default async function AdminReviewDetailPage({
             <p className="text-lg font-medium">{course.blocks} st</p>
           </div>
         </div>
+        {course ? (
+          <PreviewClient blocks={course.courseBlocks || []} />
+        ) : (
+          <p className="text-red-500 italic mt-8">Ingen kurs hittades att förhandsgranska. Saknas courseId i URL:en?</p>
+        )}
 
         <ReviewActions courseId={courseId} />
       </div>
