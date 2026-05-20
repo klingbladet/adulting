@@ -77,6 +77,28 @@ export const quizQuestions = pgTable("quiz_questions", {
   orderIndex: integer("order_index").notNull(),
 });
 
+export const quizAttempts = pgTable("quiz_attempts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  courseId: integer("course_id")
+    .notNull()
+    .references(() => courses.id, { onDelete: "cascade" }),
+  quizId: integer("quiz_id")
+    .notNull()
+    .references(() => quizzes.id, { onDelete: "cascade" }),
+  status: varchar("status", { length: 50 }).notNull().default("completed"),
+  score: integer("score").notNull().default(0),
+  maxScore: integer("max_score").notNull().default(0),
+  completedAt: timestamp("completed_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const quizAnswers = pgTable("quiz_answers", {
     id: uuid("id").defaultRandom().primaryKey(),
     attemptId: uuid("attempt_id")
@@ -106,28 +128,6 @@ export const achievements = pgTable("achievements", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   iconUrl: varchar("icon_url", { length: 255 }),
-});
-
-export const quizAttempts = pgTable("quiz_attempts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  courseId: integer("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
-  quizId: integer("quiz_id")
-    .notNull()
-    .references(() => quizzes.id, { onDelete: "cascade" }),
-  status: varchar("status", { length: 50 }).notNull().default("completed"),
-  score: integer("score").notNull().default(0),
-  maxScore: integer("max_score").notNull().default(0),
-  completedAt: timestamp("completed_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
 });
 
 export const userCourses = pgTable("user_courses", {
