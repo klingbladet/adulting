@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { getServerSession } from '@/lib/session';
+import { getCourses } from '@/lib/api';
+import SearchComponent from '@/components/navigation/searchComponent';
 import CategoryCard from '@/components/courses/catagory-cards';
 
 function getFirstLetter(name?: string) {
@@ -8,6 +10,7 @@ function getFirstLetter(name?: string) {
 
 const UserDashboardPage = async () => {
   const session = await getServerSession()
+  const courses = await getCourses();
   return (
     <div className="relative mx-auto max-w-5xl h-screen bg-background overflow-y-auto font-sans text-foreground pb-24">
       
@@ -42,14 +45,7 @@ const UserDashboardPage = async () => {
         
         {/* Search Bar */}
         <div className="relative">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <div className="w-4 h-4 rounded-full bg-muted"></div> {/* Placeholder för sök-ikon */}
-          </div>
-          <input
-            type="text"
-            placeholder="Search guides, topics..."
-            className="w-full pl-11 pr-4 py-3 bg-background border border-border rounded-full text-sm focus:outline-none focus:border-ring focus:ring-1 focus:ring-ring placeholder-muted-foreground"
-          />
+          <SearchComponent courses={courses} placeholder="Search guides, topics..." />
         </div>
 
         {/* Start Here Section */}
