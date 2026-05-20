@@ -112,17 +112,22 @@ export const quizAttempts = pgTable("quiz_attempts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "no action" }),
+    .references(() => user.id, { onDelete: "cascade" }),
   courseId: integer("course_id")
     .notNull()
     .references(() => courses.id, { onDelete: "cascade" }),
-  status: varchar("status", { length: 50 }).notNull(),
   quizId: integer("quiz_id")
     .notNull()
-    .references(() => quizzes.id),
-  givenAnswer: varchar("given_answer", { length: 255 }),
-  isCorrect: boolean("is_correct").notNull(),
-  answeredAt: timestamp("answered_at").notNull(),
+    .references(() => quizzes.id, { onDelete: "cascade" }),
+  status: varchar("status", { length: 50 }).notNull().default("completed"),
+  score: integer("score").notNull().default(0),
+  maxScore: integer("max_score").notNull().default(0),
+  completedAt: timestamp("completed_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const userCourses = pgTable("user_courses", {
