@@ -2,6 +2,7 @@ import Link from 'next/link';
 import CourseButton from '@/components/courses/course-buttons';
 import { X } from 'lucide-react';
 import { getBlocksByCourseId } from '@/lib/api';
+import TipTapViewer from '@/components/courses/tiptap-viewer';
 
 export default async function BlockPage({ params }: { params: Promise<{ courseId: string; id: string }> }) {
   const { courseId, id } = await params;
@@ -76,19 +77,14 @@ export default async function BlockPage({ params }: { params: Promise<{ courseId
           {block.title}
         </h1>
 
-        <div className="prose prose-slate max-w-none">
-          <p className="text-foreground leading-relaxed text-lg">
-            {typeof block.content === 'string'
-              ? block.content
-              : JSON.stringify(block.content)}
-          </p>
+        {/* TipTapEditor genererar egen HTML (som kan innehålla <p> & <ul> etc),
+            så vi lägger den i en <div> istället för inuti en <p> för att undvika DOM-varningar */}
+        <div className="prose prose-slate max-w-none text-foreground leading-relaxed text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
+          <TipTapViewer content={block.content} />
         </div>
 
         {/* Här kan du lägga till bilder, videor eller quiz-element */}
         <div className="flex justify-center">
-          <div className="mt-8 w-auto h-50 aspect-video bg-secondary rounded-3xl border-2 border-dashed border-secondary-foreground flex items-center justify-center text-foreground">
-            Bild eller Video
-          </div>
         </div>
       </div>
 

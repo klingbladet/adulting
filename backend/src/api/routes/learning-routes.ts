@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
-
+import {
+  getLatestQuizDraftForCourse,
+  saveGeneratedQuizAsDraft,
+} from "../../services/learning/quiz-draft-service";
 import {
   buildAiReadableBlocks,
   formatLessonForAssistantContext,
@@ -19,39 +22,9 @@ import {
   createDemoAnswersForLesson,
 } from "../../services/learning/priority-service";
 import { defaultQuizGenerationService } from "../../services/learning/quiz-generation-service";
-
-/**
- * Learning routes.
- *
- * Dessa routes är en REST-brygga till samma services som MCP-servern använder.
- *
- * Varför behövs de?
- *
- * MCP är bra för AI/agent-lagret, men frontend/adminpanelen bör inte behöva
- * prata direkt med MCP i första MVP:n.
- *
- * Rekommenderad väg:
- *
- * Frontend/adminpanel
- *   -> backend REST route
- *   -> learning service
- *
- * MCP tool
- *   -> samma learning service
- *
- * Det gör att:
- * - frontend blir enklare
- * - MCP kan visas separat i demo
- * - business logic inte dupliceras
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - Sätt LEARNING_LESSON_PROVIDER=database
- * - Då börjar dessa routes automatiskt läsa riktiga lessons/blocks.
- *
- * TODO när quiz-tabellerna är klara:
- * - generate-quiz ska kunna spara quiz som draft i DB.
- * - Lägg då saveAsDraft: true från adminpanelen.
- */
+import { eq } from "drizzle-orm";
+import { db } from "../../db";
+import { quizzes } from "../../db/schema";
 
 const router = Router();
 
@@ -59,13 +32,6 @@ const generateQuizBodySchema = z.object({
   questionCountPerBlock: z.number().int().positive().optional(),
   language: z.enum(["sv", "en"]).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
-
-  /**
-   * Just nu returnerar quiz-generation-service preview.
-   *
-   * TODO när quiz-tabellerna finns:
-   * saveAsDraft: true ska skapa quiz + quiz_questions i databasen.
-   */
   saveAsDraft: z.boolean().optional(),
 });
 
@@ -89,11 +55,6 @@ const assistantContextBodySchema = z.object({
   quizAnswers: z.array(priorityAnswerSchema).optional(),
 });
 
-/**
- * GET /api/learning/health
- *
- * Enkel healthcheck för learning-routes.
- */
 router.get("/health", (_req, res) => {
   res.status(200).json({
     ok: true,
@@ -102,22 +63,6 @@ router.get("/health", (_req, res) => {
   });
 });
 
-/**
- * GET /api/learning/lessons
- *
- * Listar lessons från aktiv LessonProvider.
- *
- * I nuläget:
- * - mock lessons
- *
- * Senare:
- * - riktiga lessons från database provider
- *
- * Bra för:
- * - snabb debug
- * - frontend dropdown
- * - Postman-test
- */
 router.get("/lessons", async (_req, res) => {
   try {
     if (!defaultLessonProvider.listLessons) {
@@ -144,13 +89,6 @@ router.get("/lessons", async (_req, res) => {
   }
 });
 
-/**
- * GET /api/learning/lessons/:lessonId
- *
- * Returnerar lesson + raw blocks.
- *
- * Bra för att se exakt vilket kontrakt MCP/AI-lagret får.
- */
 router.get("/lessons/:lessonId", async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -164,15 +102,6 @@ router.get("/lessons/:lessonId", async (req, res) => {
   }
 });
 
-/**
- * GET /api/learning/lessons/:lessonId/context
- *
- * Returnerar AI-vänlig lesson context.
- *
- * Det här motsvarar ungefär MCP-toolen:
- *
- * get_lesson_context
- */
 router.get("/lessons/:lessonId/context", async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -192,69 +121,133 @@ router.get("/lessons/:lessonId/context", async (req, res) => {
   }
 });
 
-/**
- * POST /api/learning/lessons/:lessonId/generate-quiz
- *
- * Genererar quiz från lesson blocks.
- *
- * Detta motsvarar MCP-toolen:
- *
- * generate_quiz_from_lesson_blocks
- *
- * Exempel body:
- *
- * {
- *   "questionCountPerBlock": 2,
- *   "language": "sv",
- *   "difficulty": "medium",
- *   "saveAsDraft": false
- * }
- *
- * Testa med mock lesson:
- *
- * POST /api/learning/lessons/lesson_bolan_001/generate-quiz
- */
+router.get("/lessons/:lessonId/quiz-draft", async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+
+    const draft = await getLatestQuizDraftForCourse(lessonId);
+
+    if (!draft) {
+      res.status(200).json({
+        lessonId,
+        quiz: null,
+        questions: [],
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      lessonId,
+      quiz: draft.quiz,
+      questions: draft.questions,
+    });
+  } catch (error) {
+    sendRouteError(res, error);
+  }
+});
+
+router.get("/lessons/:lessonId/quiz", async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+
+    const quiz = await getLatestQuizDraftForCourse(lessonId);
+
+    if (!quiz) {
+      res.status(200).json({
+        lessonId,
+        quiz: null,
+        questions: [],
+      });
+
+      return;
+    }
+
+    res.status(200).json({
+      lessonId,
+      quiz: quiz.quiz,
+      questions: quiz.questions,
+    });
+  } catch (error) {
+    sendRouteError(res, error);
+  }
+});
+
+router.patch("/quizzes/:quizId/publish", async (req, res) => {
+  try {
+    const quizId = Number(req.params.quizId);
+
+    if (!Number.isInteger(quizId)) {
+      res.status(400).json({
+        error: "Ogiltigt quizId.",
+      });
+      return;
+    }
+
+    const [updatedQuiz] = await db
+      .update(quizzes)
+      .set({
+        status: "published",
+      })
+      .where(eq(quizzes.id, quizId))
+      .returning();
+
+    if (!updatedQuiz) {
+      res.status(404).json({
+        error: "Quiz hittades inte.",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      ok: true,
+      quiz: updatedQuiz,
+    });
+  } catch (error) {
+    sendRouteError(res, error);
+  }
+});
+
 router.post("/lessons/:lessonId/generate-quiz", async (req, res) => {
   try {
     const { lessonId } = req.params;
     const body = generateQuizBodySchema.parse(req.body ?? {});
+
+    const difficulty = body.difficulty ?? "medium";
 
     const result =
       await defaultQuizGenerationService.generateFromLessonBlocks({
         lessonId,
         questionCountPerBlock: body.questionCountPerBlock ?? 2,
         language: body.language ?? "sv",
-        difficulty: body.difficulty ?? "medium",
+        difficulty,
         saveAsDraft: body.saveAsDraft ?? false,
       });
 
-    res.status(201).json(result);
+    if (!body.saveAsDraft) {
+      res.status(201).json(result);
+      return;
+    }
+
+    const draft = await saveGeneratedQuizAsDraft({
+      courseId: lessonId,
+      quiz: result.quiz,
+      difficulty,
+      createdBy: null,
+    });
+
+    res.status(201).json({
+      lessonId,
+      status: "draft",
+      questionsCreated: result.quiz.questions.length,
+      quiz: result.quiz,
+      draft,
+    });
   } catch (error) {
     sendRouteError(res, error);
   }
 });
 
-/**
- * POST /api/learning/lessons/:lessonId/priorities
- *
- * Räknar blockprioritering baserat på quizsvar.
- *
- * Detta motsvarar ungefär MCP-toolen:
- *
- * calculate_block_priorities
- *
- * Exempel body:
- *
- * {
- *   "answers": [
- *     { "blockId": "block_bolan_text_001", "isCorrect": true },
- *     { "blockId": "block_bolan_text_001", "isCorrect": true },
- *     { "blockId": "block_bolan_text_002", "isCorrect": false },
- *     { "blockId": "block_bolan_text_002", "isCorrect": false }
- *   ],
- *   "includeUnansweredBlocks": true
- * }
- */
 router.post("/lessons/:lessonId/priorities", async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -288,16 +281,6 @@ router.post("/lessons/:lessonId/priorities", async (req, res) => {
   }
 });
 
-/**
- * GET /api/learning/lessons/:lessonId/priorities/demo
- *
- * Skapar demo-svar automatiskt och räknar blockprioritering.
- *
- * Bra för:
- * - snabb demo
- * - frontend-test innan quiz player finns
- * - jury-demo om studentflödet inte är helt klart
- */
 router.get("/lessons/:lessonId/priorities/demo", async (req, res) => {
   try {
     const { lessonId } = req.params;
@@ -327,32 +310,6 @@ router.get("/lessons/:lessonId/priorities/demo", async (req, res) => {
   }
 });
 
-/**
- * POST /api/learning/assistant/context
- *
- * Bygger prompt-context för AI-assistenten.
- *
- * Den här anropar inte AI-modellen.
- * Den visar bara vilken kontext som skulle skickas till modellen.
- *
- * Bra för att testa:
- * - onboarding/lärprofil
- * - lesson context
- * - quizbaserad weak-area context
- *
- * Exempel body:
- *
- * {
- *   "userId": "demo-user-1",
- *   "courseId": "course_bostad_001",
- *   "lessonId": "lesson_bolan_001",
- *   "mode": "lesson_help",
- *   "quizAnswers": [
- *     { "blockId": "block_bolan_text_002", "isCorrect": false },
- *     { "blockId": "block_bolan_text_002", "isCorrect": false }
- *   ]
- * }
- */
 router.post("/assistant/context", async (req, res) => {
   try {
     const body = assistantContextBodySchema.parse(req.body ?? {});
@@ -377,12 +334,10 @@ router.post("/assistant/context", async (req, res) => {
   }
 });
 
-/**
- * Central error handler för denna router.
- *
- * Håller svaren konsekventa och enklare att debugga.
- */
-function sendRouteError(res: { status: (code: number) => { json: (body: unknown) => void } }, error: unknown) {
+function sendRouteError(
+  res: { status: (code: number) => { json: (body: unknown) => void } },
+  error: unknown,
+) {
   console.error("[learning-routes] Error:", error);
 
   if (error instanceof LessonNotFoundError) {

@@ -1,18 +1,27 @@
-import { requireRole } from "@/lib/guards";
-import RichTextEditor from "@/components/courses/rich-text-editor";
-import GenerateQuizPanel from "@/components/learning/generate-quiz-panel";
-import { BlockPriorityDemoPanel } from "@/components/learning/block-priority-demo-panel";
-import { LearningDemoPanel } from "@/components/learning/learning-demo-panel";
+import CourseButton from "@/components/courses/course-buttons"
+import Link from "next/link"
+import { getCourses } from "@/lib/api";
+import CourseListClient from "@/components/courses/course-list-client";
+import { getServerSession } from "@/lib/session";
 
 export default async function CreatorToolsPage() {
-  await requireRole(["creator", "admin"]);
+  const session = await getServerSession();
+  const allCourses = await getCourses();
+  const courses = allCourses.filter(course => course.userId === session?.user?.id);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Skapa en kurs</h1>
-      <RichTextEditor />
-      
-
+    <div className="mb-10 max-w-250">
+      <div className="flex flex-row justify-between items-center mb-10">
+        <h1 className="text-3xl">Mina kurser</h1>
+        <Link href={`/create/creator-tools/create-blocks`}>
+          <CourseButton
+            variant="secondary"
+            fullWidth={false}>
+            Skapa ny kurs
+          </CourseButton>
+        </Link>
+      </div>
+      <CourseListClient initialCourses={courses} />
     </div>
-  );
+  )
 }

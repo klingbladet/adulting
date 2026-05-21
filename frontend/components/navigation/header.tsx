@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { LogoutButton } from "@/components/ui/logout-button";
 import ThemeToggle from "@/components/ui/theme-toggle";
@@ -20,8 +21,8 @@ export default function Header() {
   const isSignedIn = !!session;
 
   const canAccessUserApp =
-    roles.includes("user") 
-    roles.includes("creator") 
+    roles.includes("user") ||
+    roles.includes("creator") ||
     roles.includes("admin");
 
   const canAccessStaff =
@@ -30,7 +31,8 @@ export default function Header() {
   function closeMenu() {
     setMenuOpen(false);
   }
-return (
+
+  return (
     <header className="border-b bg-background text-foreground">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-xl font-bold text-primary">
@@ -48,14 +50,9 @@ return (
                 )}
 
                 {canAccessStaff && (
-                  <>
-                  <Link href="/courses" className="text-foreground">
-                    Learn
-                  </Link>
                   <Link href="/create" className="text-foreground">
                     Create
                   </Link>
-                  </>
                 )}
 
                 <LogoutButton />
@@ -68,6 +65,7 @@ return (
                 >
                   Sign in
                 </Link>
+
                 <Link
                   href="/sign-up"
                   className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
@@ -81,27 +79,24 @@ return (
         </nav>
 
         <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="rounded-lg border border-border px-3 py-2 text-sm md:hidden"
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className="rounded-lg border border-border p-2 md:hidden"
           aria-label="Open menu"
+          type="button"
         >
-          ☰
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
-{menuOpen && (
-        <div className="flex flex-col gap-4 px-6 pb-4 md:hidden text-center">
+
+      {menuOpen && (
+        <div className="flex flex-col gap-4 px-6 pb-4 text-center md:hidden">
           {!isPending &&
             (isSignedIn ? (
               <>
                 {canAccessUserApp && (
-                  <>
-                    <Link href="/courses" className="text-foreground">
-                      Learn
-                    </Link>
-                    <Link href="/courses" onClick={closeMenu}>
-                      Användare
-                    </Link>
-                  </>        
+                  <Link href="/courses" onClick={closeMenu}>
+                    Learn
+                  </Link>
                 )}
 
                 {canAccessStaff && (
@@ -121,6 +116,7 @@ return (
                 >
                   Sign in
                 </Link>
+
                 <Link
                   href="/sign-up"
                   onClick={closeMenu}
@@ -137,4 +133,3 @@ return (
     </header>
   );
 }
-﻿
