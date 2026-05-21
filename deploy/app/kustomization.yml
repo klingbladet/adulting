@@ -19,3 +19,18 @@ labels:
 - includeSelectors: true
   pairs:
     env: asdf
+
+secretGenerator:
+  - name: env-postgres
+    files:
+      - POSTGRES_PASSWORD=POSTGRES_PASSWORD.txt
+    literals:
+      - POSTGRES_DB=adulting
+      - POSTGRES_USER=postgres
+    options:
+      disableNameSuffixHash: true
+  - name: env-auth
+    files:
+      - BETTER_AUTH_SECRET=BETTER_AUTH_SECRET.txt
+    options:
+      disableNameSuffixHash: true

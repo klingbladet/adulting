@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: env-postgres
-stringData:
-  POSTGRES_DB: adulting
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: PASSWORD_REPLACE 

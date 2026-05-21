@@ -9,33 +9,25 @@ if [[ -z "$VERSION" ]]; then
     return 1
 fi
 
-kustomization_file="./deploy/app/kustomization.yml"
+prefix="${VERSION}-adulting-"
 
-secrets=$(kubectl get secrets -o json | yq -pj -oj ".items[] | select(.metadata.labels.env == \"$VERSION\")")
-
-for file in ./deploy/app/*.yml; do
-    file_content=$(<"$file")
-    if [[ "$(yq '.kind' <<< "$file_content")" != "Secret" ]]; then
-        continue
-    fi
-    name=$(yq '.metadata.name' <<< "$file_content")
-    name_with_prefix="${VERSION}-adulting-${name}"
-
-    matching_secret=$(yq -pj -oj ". | select(.metadata.name == \"$name_with_prefix\")" <<< "$secrets")
-
-    if [[ -n "$matching_secret" ]]; then
-        echo "--- secret named '$name_with_prefix' already exists, skipped adding"
-        continue
-    else
-        echo "--- no existing secret named '$name_with_prefix' adding secret to kustomization"
-    fi
-
+get_previous_password() {
+    secret_name=$1
+    password_name=$2
+    password_file="deploy/app/${password_name}.txt"
     set +e
-    ./scripts/inject-passwords.sh "$file"
+    password=$(kubectl get secret "$prefix$secret_name" -o jsonpath="{.data.${password_name}}")
     set -e
 
-    echo "updating $kustomization_file"
-    yq -i ".resources = [\"$(basename "$file")\"] + .resources" "$kustomization_file"
+    if [[ -n "$password" ]]; then
+        echo "used existing password for '$secret_name'"
+        echo "$password" | base64 -d > "$password_file"
+    else
+        echo "generated new password for '$secret_name'"
+        new_password=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 64)
+        printf '%s' "$new_password" > "$password_file"
+    fi
+}
 
-    echo
-done
+get_previous_password env-postgres POSTGRES_PASSWORD
+get_previous_password env-auth BETTER_AUTH_SECRET
