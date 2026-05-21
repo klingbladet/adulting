@@ -11,8 +11,6 @@ fi
 
 kustomization_file="./deploy/app/kustomization.yml"
 
-echo "=== getting existing secrets with version '$VERSION'"
-
 secrets=$(kubectl get secrets -o json | yq -pj -oj ".items[] | select(.metadata.labels.env == \"$VERSION\")")
 
 for file in ./deploy/app/*.yml; do
@@ -36,7 +34,7 @@ for file in ./deploy/app/*.yml; do
     ./scripts/inject-passwords.sh "$file"
     set -e
 
-    echo "--- updating $kustomization_file"
+    echo "updating $kustomization_file"
     yq -i ".resources = [\"$(basename "$file")\"] + .resources" "$kustomization_file"
 
     echo
