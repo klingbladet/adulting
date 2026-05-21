@@ -1,8 +1,10 @@
 import CourseButton from '@/components/courses/course-buttons';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { getCourseById, getBlocksByCourseId } from '@/lib/api';
 import { Block } from '@/types/types';
 import BlockCard from '@/components/courses/course-layout';
+import CoursePriorityBadge from '@/components/courses/course-priority-badge';
 
 interface TipTapNode {
   type?: string;
@@ -10,23 +12,46 @@ interface TipTapNode {
   content?: TipTapNode[];
 }
 
-// Hjälpfunktion för att extrahera ren text från TipTap JSON
+type BlockPriority = {
+  blockId: number;
+  blockTitle?: string;
+  correctCount: number;
+  incorrectCount: number;
+  priority: 'high' | 'medium' | 'low';
+  label: string;
+};
+
+type CoursePersonalization = {
+  courseId: number;
+  latestAttempt: {
+    id: string;
+    quizId: number;
+    score: number;
+    maxScore: number;
+    completedAt: string;
+  } | null;
+  blockPriorities: BlockPriority[];
+};
+
 function extractPlainText(content: unknown): string {
   if (!content) return 'Innehåll saknas';
-  
+
   let parsed = content;
+
   if (typeof content === 'string') {
     try {
       parsed = JSON.parse(content);
-    } catch (e) {
-      return content; // Det var redan en vanlig sträng
+    } catch {
+      return content;
     }
   }
 
   function parseNode(node: TipTapNode): string {
     if (!node) return '';
     if (node.type === 'text' && node.text) return node.text;
-    if (Array.isArray(node.content)) return node.content.map(parseNode).join(' ');
+    if (Array.isArray(node.content)) {
+      return node.content.map(parseNode).join(' ');
+    }
     return '';
   }
 
@@ -34,7 +59,48 @@ function extractPlainText(content: unknown): string {
   return text || 'Innehåll saknas';
 }
 
-export default async function CourseOverview({ params }: { params: Promise<{ courseId: string }> }) {
+async function getCoursePersonalization(
+  courseId: string,
+): Promise<CoursePersonalization | null> {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+
+  try {
+    const response = await fetch(
+      `${backendUrl}/api/learning/courses/${courseId}/personalization`,
+      {
+        method: 'GET',
+        headers: {
+          cookie: cookieHeader,
+        },
+        cache: 'no-store',
+      },
+    );
+
+    if (!response.ok) {
+      console.error('getCoursePersonalization failed:', {
+        status: response.status,
+        body: await response.text(),
+      });
+
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('getCoursePersonalization crashed:', error);
+    return null;
+  }
+}
+
+export default async function CourseOverview({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}) {
   const { courseId } = await params;
 
   const course = await getCourseById(courseId).catch((err) => {
@@ -64,26 +130,68 @@ export default async function CourseOverview({ params }: { params: Promise<{ cou
     blocksError = err instanceof Error ? err.message : String(err);
   }
 
+  const personalization = await getCoursePersonalization(courseId);
+  console.log("overview personalization:", personalization);
+  const prioritiesByBlockId = new Map(
+    personalization?.blockPriorities.map((priority) => [
+      priority.blockId,
+      priority,
+    ]) ?? [],
+  );
+
   const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
     <>
-      <h1 className="text-center mb-10 text-4xl">{course.title}</h1>
-      <div className="flex flex-col gap-4 p-6 bg-background min-h-screen relative mx-auto max-w-5xl">
-        {blocksError && (
-          <p className="text-red-500 text-sm mb-4">Fel vid hämtning av block: {blocksError}</p>
+      <h1 className="mb-10 text-center text-4xl">{course.title}</h1>
+
+      <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col gap-4 bg-background p-6">
+        {personalization?.latestAttempt && (
+          <section className="rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-sm font-medium text-muted-foreground">
+              Ditt quizresultat
+            </p>
+            <h2 className="mt-1 text-2xl font-bold text-foreground">
+              {personalization.latestAttempt.score} av{' '}
+              {personalization.latestAttempt.maxScore} rätt
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Vi har markerat vilka steg du bör fokusera extra på.
+            </p>
+          </section>
         )}
+
+        {blocksError && (
+          <p className="mb-4 text-sm text-red-500">
+            Fel vid hämtning av block: {blocksError}
+          </p>
+        )}
+
         {sortedBlocks.map((block, index) => {
           const plainText = extractPlainText(block.content);
-          const shortDesc = plainText.length > 40 ? plainText.substring(0, 40) + '...' : plainText;
-          
+          const shortDesc =
+            plainText.length > 40 ? plainText.substring(0, 40) + '...' : plainText;
+
+          const priority = prioritiesByBlockId.get(block.id);
+
           return (
             <Link key={block.id} href={`/courses/${courseId}/blocks/${block.id}`}>
-              <BlockCard
-                icon={<span className="font-bold text-lg">{index + 1}</span>}
-                title={block.title || `Steg ${index + 1}`}
-                description={shortDesc}
-              />
+              <div className="space-y-2">
+                <BlockCard
+                  icon={<span className="text-lg font-bold">{index + 1}</span>}
+                  title={block.title || `Steg ${index + 1}`}
+                  description={shortDesc}
+                />
+
+                {priority && (
+                  <div className="px-2">
+                    <CoursePriorityBadge
+                      priority={priority.priority}
+                      label={priority.label}
+                    />
+                  </div>
+                )}
+              </div>
             </Link>
           );
         })}
