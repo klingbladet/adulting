@@ -19,7 +19,6 @@ import {
   Users,
 } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 type ProfileUser = {
