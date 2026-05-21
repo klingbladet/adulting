@@ -5,7 +5,7 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
-seperator="-0-"
+seperator="-"
 
 delete-resource () {
     local kind=$1

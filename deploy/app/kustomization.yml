@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namePrefix: asdf-0-adulting-
+namePrefix: asdf-adulting-
 resources:
 - secret-openrouter.yml
 - secret-auth.yml

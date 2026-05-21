@@ -25,8 +25,8 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              echo "waiting for http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health"
-              until wget -T 1 --spider http://${VERSION}-0-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
+              echo "waiting for http://${VERSION}-adulting-backend.doe25-group-1.svc.cluster.local:8080/health"
+              until wget -T 1 --spider http://${VERSION}-adulting-backend.doe25-group-1.svc.cluster.local:8080/health; do
                 sleep 1
               done
       containers:
@@ -41,7 +41,7 @@ spec:
             - name: HOSTNAME
               value: 0.0.0.0
             - name: BACKEND_URL
-              value: http://$(VERSION)-0-adulting-backend.doe25-group-1.svc.cluster.local:8080
+              value: http://$(VERSION)-adulting-backend.doe25-group-1.svc.cluster.local:8080
 
             - name: NEXT_PUBLIC_BACKEND_URL
               value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev/backend

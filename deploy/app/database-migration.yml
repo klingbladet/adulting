@@ -24,7 +24,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.labels['env']
             - name: DATABASE_URL
-              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-0-adulting-postgres-0.$(VERSION)-0-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
           envFrom:
             - secretRef: 
                 name: env-postgres
