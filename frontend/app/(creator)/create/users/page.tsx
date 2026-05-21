@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/guards";
-import { SERVER_BACKEND_URL } from "@/lib/backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 import { cookies } from "next/headers";
 
 type UserItem = {
@@ -14,7 +14,7 @@ async function getUsers(): Promise<UserItem[]> {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const res = await fetch(`${SERVER_BACKEND_URL}/api/admin/users`, {
+  const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
     cache: "no-store",
     headers: {
       cookie: cookieHeader,

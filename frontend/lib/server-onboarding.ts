@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { SERVER_BACKEND_URL } from "@/lib/backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 import type { OnboardingData } from "@/lib/onboarding";
 
 export async function getServerOnboarding(): Promise<OnboardingData | null> {
@@ -7,7 +7,7 @@ export async function getServerOnboarding(): Promise<OnboardingData | null> {
   const cookieHeader = cookieStore.toString();
 
   try {
-    const response = await fetch(`${SERVER_BACKEND_URL}/api/onboarding`, {
+    const response = await fetch(`${BACKEND_URL}/api/onboarding`, {
       method: "GET",
       headers: {
         cookie: cookieHeader,

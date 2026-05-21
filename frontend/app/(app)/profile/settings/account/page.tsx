@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SettingsPageShell from "@/components/profile/settings-page-shell";
-import { SERVER_BACKEND_URL } from "@/lib/backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 
 type ProfileResponse = {
   user: {
@@ -22,7 +22,7 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const response = await fetch(`${SERVER_BACKEND_URL}/api/profile/me`, {
+        const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
           credentials: "include",
         });
 
@@ -51,7 +51,7 @@ export default function AccountSettingsPage() {
       setMessage("");
       setError("");
 
-      const response = await fetch(`${SERVER_BACKEND_URL}/api/profile/me`, {
+      const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
         method: "PATCH",
         credentials: "include",
         headers: {

@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
-import { SERVER_BACKEND_URL } from "@/lib/backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 
 export async function getServerSession() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   try {
-    const response = await fetch(`${SERVER_BACKEND_URL}/api/session`, {
+    const response = await fetch(`${BACKEND_URL}/api/session`, {
       method: "GET",
       headers: {
         cookie: cookieHeader,
