@@ -34,3 +34,4 @@ delete-resource statefulset
 delete-resource jobs
 delete-resource ingress
 delete-resource middleware
+delete-resource configmap
