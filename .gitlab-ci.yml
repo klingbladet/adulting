@@ -132,8 +132,7 @@ deploy app:
   rules:
     - if: $VERSION
   script:
-    - ./scripts/inject-passwords.sh ./deploy/app/secret-auth.yml
-    - ./scripts/inject-passwords.sh ./deploy/app/secret-postgres.yml
+    - ./scripts/apply-secrets-if-not-exist.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION

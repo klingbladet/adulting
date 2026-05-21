@@ -4,4 +4,5 @@ RUN apk add --no-cache \
     kubectl \
     kustomize \
     bash \
-    jq
+    jq \
+    yq-go

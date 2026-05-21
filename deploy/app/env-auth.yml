@@ -3,4 +3,4 @@ kind: Secret
 metadata:
   name: env-auth
 stringData:
-  BETTER_AUTH_SECRET: PASSWORD_REPLACE
+  BETTER_AUTH_SECRET: PASSWORD_REPLACE 
