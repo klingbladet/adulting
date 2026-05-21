@@ -7,6 +7,10 @@ fi
 
 seperator="-"
 
+if [[ -n "$SEP" ]]; then
+    seperator=$SEP
+fi
+
 delete-resource () {
     local kind=$1
     local resources=""
@@ -15,6 +19,7 @@ delete-resource () {
         | grep -E "^${VERSION}${seperator}.*$")
     if [[ -n "$resources" ]]; then
         echo "--- '$kind' resources deleting with version '$VERSION' ---"
+        # shellcheck disable=SC2086
         kubectl delete "$kind" $resources
         echo
     else
