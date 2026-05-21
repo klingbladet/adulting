@@ -3,7 +3,7 @@ import { Hind, Montserrat } from "next/font/google";
 import "./globals.css";
 import Header from "../components/navigation/header";
 import Footer from "../components/navigation/footer";
-
+import ThemeProvider from "@/components/theme-provider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -31,21 +31,21 @@ export default function RootLayout({
   return (
     <html
       lang="sv"
+      suppressHydrationWarning
       className={`${montserrat.variable} ${hind.variable}`}
     >
-      <body className="min-h-screen bg-background text-foreground">
+      <body className="min-h-screen bg-background text-foreground transition-colors">
+        <ThemeProvider />
+
         <div className="hidden md:block">
           <Header />
         </div>
 
-
         {children}
-
 
         <div className="hidden md:block">
           <Footer />
         </div>
-
       </body>
     </html>
   );
