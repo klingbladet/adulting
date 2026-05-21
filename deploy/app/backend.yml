@@ -26,6 +26,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['env']
+            - name: FRONTEND_URL
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
             - name: BETTER_AUTH_URL
               value: http://localhost:3001
             - name: DATABASE_URL
