@@ -33,7 +33,9 @@ import {
   quizAnswers,
   quizQuestions,
   quizzes,
+  blocks,
 } from "../../db/schema";
+
 
 const router = Router();
 
@@ -159,6 +161,36 @@ function buildBlockPriorities(
       label,
     };
   });
+}
+
+async function attachBlockTitlesToPriorities(
+  blockPriorities: ReturnType<typeof buildBlockPriorities>,
+) {
+  const blockIds = blockPriorities.map((priority) => priority.blockId);
+
+  if (blockIds.length === 0) {
+    return blockPriorities.map((priority) => ({
+      ...priority,
+      blockTitle: `Block ${priority.blockId}`,
+    }));
+  }
+
+  const blockRows = await db
+    .select({
+      id: blocks.id,
+      title: blocks.title,
+    })
+    .from(blocks)
+    .where(inArray(blocks.id, blockIds));
+
+  const titleByBlockId = new Map(
+    blockRows.map((block) => [block.id, block.title]),
+  );
+
+  return blockPriorities.map((priority) => ({
+    ...priority,
+    blockTitle: titleByBlockId.get(priority.blockId) ?? `Block ${priority.blockId}`,
+  }));
 }
 
 router.get("/health", (_req, res) => {
@@ -483,8 +515,9 @@ router.post("/quizzes/:quizId/attempts", async (req, res) => {
       };
     });
 
-    const blockPriorities = buildBlockPriorities(checkedAnswers);
-
+    const blockPriorities = await attachBlockTitlesToPriorities(
+      buildBlockPriorities(checkedAnswers),
+    );
     res.status(201).json({
       message: "Quiz attempt har sparats.",
       attemptId: result.attempt.id,
@@ -619,8 +652,9 @@ router.get("/courses/:courseId/personalization", async (req, res) => {
       .from(quizAnswers)
       .where(eq(quizAnswers.attemptId, latestAttempt.id));
 
-    const blockPriorities = buildBlockPriorities(answers);
-
+      const blockPriorities = await attachBlockTitlesToPriorities(
+        buildBlockPriorities(answers),
+      );
     res.status(200).json({
       courseId,
       latestAttempt: {

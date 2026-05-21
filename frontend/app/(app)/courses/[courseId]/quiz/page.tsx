@@ -179,8 +179,8 @@ export default function CourseQuizPage({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold">
-                    Block {block.blockId}
-                  </p>
+                    {block.blockTitle}
+                    </p>
                   <p className="text-xs text-muted-foreground">
                     {block.correctCount} rätt, {block.incorrectCount} fel
                   </p>

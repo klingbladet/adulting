@@ -36,6 +36,7 @@ export type SubmitQuizAttemptPayload = {
 
 export type QuizBlockPriority = {
   blockId: number;
+  blockTitle: string;
   correctCount: number;
   incorrectCount: number;
   priority: "high" | "medium" | "low";
@@ -93,6 +94,13 @@ export async function submitQuizAttempt(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
+
+    console.error("submitQuizAttempt failed:", {
+      status: response.status,
+      errorData,
+      payload,
+    });
+
     throw new Error(errorData?.error ?? "Could not submit quiz attempt");
   }
 
