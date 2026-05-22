@@ -6,6 +6,9 @@ stages:
   - deploy
   - cleanup
 
+variables:
+  IMAGE_VERSION: $CI_COMMIT_SHA
+
 workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
@@ -70,7 +73,7 @@ build backend base:
   script:
     - >
       docker buildx build
-      -t $CI_REGISTRY_IMAGE/backend-base:$VERSION
+      -t $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
       --push --target base ./backend
   rules:
     - if: $VERSION
@@ -82,7 +85,7 @@ build frontend base:
   script: 
     - >
       docker buildx build 
-      -t $CI_REGISTRY_IMAGE/frontend-base:$VERSION
+      -t $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
       --push --target base ./frontend
   rules:
     - if: $VERSION
@@ -90,7 +93,7 @@ build frontend base:
 
 lint frontend:
   stage: lint
-  image: $CI_REGISTRY_IMAGE/frontend-base:$VERSION
+  image: $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
   before_script: cd /app
   script:
     - pnpm lint
@@ -102,7 +105,7 @@ lint frontend:
 
 lint backend:
   stage: lint
-  image: $CI_REGISTRY_IMAGE/backend-base:$VERSION
+  image: $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
   before_script: cd /app
   script: 
     - pnpm eslint
@@ -120,7 +123,7 @@ build backend:
   script: 
     - >
       docker buildx build
-      -t $CI_REGISTRY_IMAGE/backend:$VERSION
+      -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
       --push ./backend
   rules:
     - if: $VERSION
@@ -139,7 +142,7 @@ build frontend:
       docker buildx build
       --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
-      -t $CI_REGISTRY_IMAGE/frontend:$VERSION
+      -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
       --push ./frontend
   rules:
     - if: $VERSION
@@ -159,9 +162,9 @@ deploy app:
     - ./scripts/apply-secrets-if-not-exist.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
-    - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$VERSION
-    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$VERSION
-    - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
     - sed -i "s/asdf/${VERSION}/g" *
     - cd -
     - kubectl apply -k deploy
@@ -172,10 +175,6 @@ deploy app:
         ./scripts/delete-resources.sh
         exit $err
       fi
-    - kubectl rollout restart deployment $VERSION-adulting-backend
-    - kubectl rollout restart deployment $VERSION-adulting-frontend
-    - kubectl rollout status  deployment $VERSION-adulting-backend
-    - kubectl rollout status  deployment $VERSION-adulting-frontend
 
 
 delete env:
