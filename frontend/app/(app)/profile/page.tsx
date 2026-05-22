@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
+import getCourseIcon from "@/components/courses/course-dynamic-icon";
 
 type ProfileUser = {
   id: string;
@@ -307,16 +308,8 @@ function CourseCard({ course }: { course: ProfileCourse }) {
       href={`/courses/${course.id}`}
       className="flex min-h-[76px] items-center gap-3 rounded-3xl bg-[#EAF7FF] px-3 py-2.5 shadow-sm dark:bg-white/10"
     >
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-300 bg-white">
-        {course.image ? (
-          <img
-            src={course.image}
-            alt={course.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <BookOpen className="text-[#2563EB]" size={26} />
-        )}
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full">
+        {getCourseIcon(course)}
       </div>
 
       <div className="min-w-0 flex-1">

@@ -142,15 +142,15 @@ export default function CreatorToolsClient() {
   return (
     <div className="space-y-6">
       <CreatorStepper currentStep={2} />
-      <h1 className="text-2xl font-bold">{courseTitle || 'Laddar kurs...'}</h1>
-      <p className="text-gray-500">Lägg till innehåll i de block du skapade.</p>
+      <h1 className="text-2xl font-bold text-foreground">{courseTitle || 'Laddar kurs...'}</h1>
+      <p className="text-muted-foreground">Lägg till innehåll i de block du skapade.</p>
 
       {blocks.length > 0 && (
         <div>
           <select
             value={selectedBlockId || ''}
             onChange={(e) => setSelectedBlockId(Number(e.target.value))}
-            className="w-full font-medium text-gray-700 bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
+            className="w-full font-medium text-foreground bg-background border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
           >
             {blocks.map((block, index) => (
               <option key={block.id} value={block.id}>
@@ -162,11 +162,11 @@ export default function CreatorToolsClient() {
       )}
 
       {activeBlock ? (
-        <div key={activeBlock.id} className="border p-4 rounded-lg relative bg-white shadow-sm mt-4">
+        <div key={activeBlock.id} className="border border-border p-4 rounded-lg relative bg-card shadow-sm mt-4">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2 flex-grow max-w-sm">
-              <span className="font-medium text-gray-400">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
-              <h2 className="text-lg font-semibold text-gray-700">{activeBlock.title}</h2>
+              <span className="font-medium text-muted-foreground">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
+              <h2 className="text-lg font-semibold text-foreground">{activeBlock.title}</h2>
             </div>
           </div>
 
@@ -176,14 +176,14 @@ export default function CreatorToolsClient() {
           />
         </div>
       ) : (
-        !loading && <p className="text-gray-500 italic">Inga block hittades för denna kurs.</p>
+        !loading && <p className="text-muted-foreground italic">Inga block hittades för denna kurs.</p>
       )}
 
       <div className="flex gap-4">
         <button 
           onClick={handleSave}
           disabled={loading}
-          className='border rounded-sm border-blue-500 py-2 px-4 text-blue-600 hover:bg-blue-50 transition disabled:opacity-50'
+          className='border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50'
         >
           {loading ? 'Wait...' : saved ? 'Sparad' : 'Spara innehåll'}
         </button>
