@@ -1,3 +1,16 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres
+spec:
+  accessModes:
+    - ReadWriteOncePod
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: longhorn
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -13,6 +26,9 @@ spec:
       labels:
         adulting: db
     spec:
+      volumes:
+        - name: postgres
+          versistentVolumeClaim: postgres
       containers:
         - name: postgres
           image: postgres:18
@@ -24,6 +40,9 @@ spec:
           ports:
             - containerPort: 5432
               protocol: TCP
+          volumeMounts:
+            - name: postgres
+              mountPath: /var/lib/postgresql
           startupProbe:
             exec:
               command:
