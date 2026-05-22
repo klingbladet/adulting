@@ -148,10 +148,10 @@ deploy app:
         ./scripts/delete-resources.sh
         exit $err
       fi
-    - kubectl rollout restart $VERSION-adulting-frontend
-    - kubectl rollout restart $VERSION-adulting-backend
-    - kubectl rollout status $VERSION-adulting-frontend
-    - kubectl rollout status $VERSION-adulting-frontend
+    - kubectl rollout restart deployment $VERSION-adulting-frontend
+    - kubectl rollout restart deployment $VERSION-adulting-backend
+    - kubectl rollout status  deployment $VERSION-adulting-frontend
+    - kubectl rollout status  deployment $VERSION-adulting-frontend
 
 
 delete env:
