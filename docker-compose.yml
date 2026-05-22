@@ -6,6 +6,9 @@ services:
     ports:
       - 3000:3000
     command: ["pnpm", "run", "dev"]
+    environment:
+      BACKEND_URL: http://backend:3001
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:3001
     depends_on:
       backend:
         condition: service_healthy
