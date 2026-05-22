@@ -152,7 +152,9 @@ build frontend:
 cleanup base images:
   stage: cleanup
   image: registry.gitlab.com/gitlab-org/cli:latest
-  script: glab repo list
+  script: 
+    - glab auth login --hostname git.chas-lab.dev
+    - glab repo list
 
 deploy app:
   stage: deploy
