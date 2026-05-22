@@ -169,10 +169,7 @@ async function attachBlockTitlesToPriorities(
   const blockIds = blockPriorities.map((priority) => priority.blockId);
 
   if (blockIds.length === 0) {
-    return blockPriorities.map((priority) => ({
-      ...priority,
-      blockTitle: `Block ${priority.blockId}`,
-    }));
+    return [];
   }
 
   const blockRows = await db
@@ -189,7 +186,8 @@ async function attachBlockTitlesToPriorities(
 
   return blockPriorities.map((priority) => ({
     ...priority,
-    blockTitle: titleByBlockId.get(priority.blockId) ?? `Block ${priority.blockId}`,
+    blockTitle:
+      titleByBlockId.get(priority.blockId) ?? `Block ${priority.blockId}`,
   }));
 }
 
@@ -514,10 +512,10 @@ router.post("/quizzes/:quizId/attempts", async (req, res) => {
         savedAnswers,
       };
     });
+const blockPriorities = await attachBlockTitlesToPriorities(
+  buildBlockPriorities(checkedAnswers),
+);
 
-    const blockPriorities = await attachBlockTitlesToPriorities(
-      buildBlockPriorities(checkedAnswers),
-    );
     res.status(201).json({
       message: "Quiz attempt har sparats.",
       attemptId: result.attempt.id,

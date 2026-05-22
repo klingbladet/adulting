@@ -36,7 +36,7 @@ export type SubmitQuizAttemptPayload = {
 
 export type QuizBlockPriority = {
   blockId: number;
-  blockTitle: string;
+  blockTitle?: string;
   correctCount: number;
   incorrectCount: number;
   priority: "high" | "medium" | "low";

@@ -66,7 +66,9 @@ async function getCoursePersonalization(
   const cookieHeader = cookieStore.toString();
 
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    'http://localhost:3001';
 
   try {
     const response = await fetch(
@@ -147,19 +149,27 @@ export default async function CourseOverview({
 
       <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col gap-4 bg-background p-6">
         {personalization?.latestAttempt && (
-          <section className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-sm font-medium text-muted-foreground">
-              Ditt quizresultat
-            </p>
-            <h2 className="mt-1 text-2xl font-bold text-foreground">
-              {personalization.latestAttempt.score} av{' '}
-              {personalization.latestAttempt.maxScore} rätt
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Vi har markerat vilka steg du bör fokusera extra på.
-            </p>
-          </section>
-        )}
+        <section className="rounded-2xl border bg-card p-4 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">
+            Ditt quizresultat
+          </p>
+
+          <h2 className="mt-1 text-2xl font-bold text-foreground">
+            {personalization.latestAttempt.score} av{' '}
+            {personalization.latestAttempt.maxScore} rätt
+          </h2>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            Vi har markerat vilka steg du bör fokusera extra på.
+          </p>
+
+          <Link href={`/courses/${courseId}/quiz`} className="mt-4 inline-block">
+            <CourseButton variant="secondary">
+              Gör om quiz
+            </CourseButton>
+          </Link>
+        </section>
+      )}
 
         {blocksError && (
           <p className="mb-4 text-sm text-red-500">

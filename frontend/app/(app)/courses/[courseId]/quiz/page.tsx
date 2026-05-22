@@ -9,8 +9,24 @@ import {
   getCourseQuiz,
   submitQuizAttempt,
   type CourseQuiz,
-  type SubmitQuizAttemptResponse,
 } from "@/lib/api";
+
+type QuizPriority = {
+  blockId: number;
+  blockTitle?: string;
+  correctCount: number;
+  incorrectCount: number;
+  priority: "high" | "medium" | "low";
+  label: string;
+};
+
+type QuizResult = {
+  message: string;
+  attemptId: string;
+  score: number;
+  maxScore: number;
+  blockPriorities: QuizPriority[];
+};
 
 export default function CourseQuizPage({
   params,
@@ -26,7 +42,7 @@ export default function CourseQuizPage({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>(
     {},
   );
-  const [result, setResult] = useState<SubmitQuizAttemptResponse | null>(null);
+  const [result, setResult] = useState<QuizResult | null>(null);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +55,7 @@ export default function CourseQuizPage({
 
   const totalQuestions = quiz?.questions.length ?? 0;
   const isLastQuestion = currentIndex === totalQuestions - 1;
+
   const selectedOptionId = currentQuestion
     ? selectedAnswers[currentQuestion.id]
     : undefined;
@@ -100,15 +117,20 @@ export default function CourseQuizPage({
       setIsSubmitting(true);
       setError(null);
 
-      const response = await submitQuizAttempt(quiz.id, {
+      const response = (await submitQuizAttempt(quiz.id, {
         courseId: Number(courseId),
         answers,
-      });
+      })) as QuizResult;
 
       setResult(response);
     } catch (err) {
       console.error(err);
-      setError("Kunde inte skicka in quizet just nu.");
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Kunde inte skicka in quizet just nu.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -139,6 +161,7 @@ export default function CourseQuizPage({
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6 text-center">
         <h1 className="text-2xl font-bold">Inget quiz hittades</h1>
+
         <p className="text-sm text-muted-foreground">
           Den här kursen verkar inte ha något quiz ännu.
         </p>
@@ -178,9 +201,10 @@ export default function CourseQuizPage({
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold">
-                    {block.blockTitle}
-                    </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {block.blockTitle ?? `Block ${block.blockId}`}
+                  </p>
+
                   <p className="text-xs text-muted-foreground">
                     {block.correctCount} rätt, {block.incorrectCount} fel
                   </p>
@@ -227,8 +251,8 @@ export default function CourseQuizPage({
       </div>
 
       {currentQuestion && (
-        <section className="flex flex-1 flex-col gap-6">
-          <div>
+        <section className="flex flex-col gap-6">
+              <div>
             <h1 className="text-2xl font-extrabold leading-tight text-foreground">
               {currentQuestion.question}
             </h1>
@@ -321,9 +345,7 @@ function PriorityBadge({
         : "bg-green-100 text-green-700";
 
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-medium ${className}`}
-    >
+    <span className={`rounded-full px-3 py-1 text-xs font-medium ${className}`}>
       {label}
     </span>
   );
