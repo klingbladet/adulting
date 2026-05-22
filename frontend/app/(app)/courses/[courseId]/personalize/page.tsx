@@ -27,7 +27,7 @@ export default function Personalize({ params }: { params: Promise<{ courseId: st
     setError(null);
     try {
       await enrollInCourse(courseId, selectedLevel ?? undefined);
-      router.push(`/courses/${courseId}/overview`);
+      router.push(`/courses/${courseId}/quiz`);
     } catch (err) {
       console.error(err);
       setError('Något gick fel. Försök igen.');
@@ -71,8 +71,8 @@ export default function Personalize({ params }: { params: Promise<{ courseId: st
         {isLoading ? 'Sparar...' : 'Spara och fortsätt till kurs'}
       </CourseButton>
 
-      <Link href={`/courses/${courseId}/overview`} className="text-center text-sm text-muted-foreground underline">
-        Hoppa över
+      <Link href={`/courses/${courseId}/quiz`} className="text-center text-sm text-muted-foreground underline">
+        Hoppa över personalisering
       </Link>
     </div>
   );

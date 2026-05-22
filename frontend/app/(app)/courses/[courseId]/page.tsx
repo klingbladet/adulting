@@ -50,12 +50,7 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
       <div className="flex flex-col gap-3 p-6 pb-12 mt-10">
         <Link href={`/courses/${courseId}/personalize`}>
           <CourseButton className="mt-10" variant="primary">
-            Gå till personalisering
-          </CourseButton>
-        </Link>
-        <Link href={`/courses/${courseId}/overview`}>
-          <CourseButton variant="primary">
-            Starta kursen
+            Gör quiz och starta kursen
             <ChevronRight size={20} />
           </CourseButton>
         </Link>
