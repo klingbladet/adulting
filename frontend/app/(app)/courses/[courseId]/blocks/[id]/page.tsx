@@ -1,48 +1,76 @@
-import Link from 'next/link';
-import CourseButton from '@/components/courses/course-buttons';
-import { X } from 'lucide-react';
-import { getBlocksByCourseId } from '@/lib/api';
-import TipTapViewer from '@/components/courses/tiptap-viewer';
+import Link from "next/link";
+import CourseButton from "@/components/courses/course-buttons";
+import { X } from "lucide-react";
+import { getBlocksByCourseId } from "@/lib/api";
+import TipTapViewer from "@/components/courses/tiptap-viewer";
+import ProgressLink from "@/components/courses/progress-link";
 
-export default async function BlockPage({ params }: { params: Promise<{ courseId: string; id: string }> }) {
+export default async function BlockPage({
+  params,
+}: {
+  params: Promise<{ courseId: string; id: string }>;
+}) {
   const { courseId, id } = await params;
 
   let blocks;
+
   try {
     blocks = await getBlocksByCourseId(courseId);
   } catch {
     return (
-      <main className="flex flex-col min-h-screen items-center justify-center p-6 bg-background">
-        <h1 className="text-2xl font-bold mb-4 text-foreground">Steget hittades inte</h1>
-        <p className="text-muted-foreground mb-6 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+        <h1 className="mb-4 text-2xl font-bold text-foreground">
+          Steget hittades inte
+        </h1>
+
+        <p className="mb-6 text-center text-muted-foreground">
           Kunde inte hämta block för kursen {courseId}.
         </p>
+
         <Link href={`/courses/${courseId}/overview`}>
-          <CourseButton variant="primary">Gå tillbaka till översikten</CourseButton>
+          <CourseButton variant="primary">
+            Gå tillbaka till översikten
+          </CourseButton>
         </Link>
       </main>
     );
   }
 
-  const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
+  const sortedBlocks = [...blocks].sort(
+    (a, b) => a.orderIndex - b.orderIndex
+  );
+
   const totalBlocks = sortedBlocks.length;
 
-  // id i URL:en är block.id från databasen
   const block = sortedBlocks.find((b) => b.id === Number(id));
-  const currentIndex = sortedBlocks.findIndex((b) => b.id === Number(id));
 
-  const previousBlock = currentIndex > 0 ? sortedBlocks[currentIndex - 1] : null;
-  const nextBlock = currentIndex < totalBlocks - 1 ? sortedBlocks[currentIndex + 1] : null;
+  const currentIndex = sortedBlocks.findIndex(
+    (b) => b.id === Number(id)
+  );
+
+  const previousBlock =
+    currentIndex > 0 ? sortedBlocks[currentIndex - 1] : null;
+
+  const nextBlock =
+    currentIndex < totalBlocks - 1
+      ? sortedBlocks[currentIndex + 1]
+      : null;
 
   if (!block) {
     return (
-      <main className="flex flex-col min-h-screen items-center justify-center p-6 bg-background">
-        <h1 className="text-2xl font-bold mb-4 text-foreground">Steget hittades inte</h1>
-        <p className="text-muted-foreground mb-6 text-center">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
+        <h1 className="mb-4 text-2xl font-bold text-foreground">
+          Steget hittades inte
+        </h1>
+
+        <p className="mb-6 text-center text-muted-foreground">
           Kunde inte hitta steg {id} i kursen {courseId}.
         </p>
+
         <Link href={`/courses/${courseId}/overview`}>
-          <CourseButton variant="primary">Gå tillbaka till översikten</CourseButton>
+          <CourseButton variant="primary">
+            Gå tillbaka till översikten
+          </CourseButton>
         </Link>
       </main>
     );
@@ -50,19 +78,29 @@ export default async function BlockPage({ params }: { params: Promise<{ courseId
 
   const stepNumber = currentIndex + 1;
 
+  const progress =
+    totalBlocks > 0
+      ? (stepNumber / totalBlocks) * 100
+      : 0;
+
   return (
-    <main className="flex flex-col min-h-screen bg-background">
-      {/* Header med stäng-knapp och progress */}
-      <div className="p-6 flex items-center justify-between">
+    <main className="flex min-h-screen flex-col bg-background">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6">
         <Link href={`/courses/${courseId}/overview`}>
-          <X size={24} className="text-secondary-foreground" />
+          <X
+            size={24}
+            className="text-secondary-foreground"
+          />
         </Link>
 
-        {/* Enkel progress bar-indikator */}
-        <div className="flex-1 mx-8 h-2 bg-secondary rounded-full overflow-hidden">
+        {/* Progress bar */}
+        <div className="mx-8 h-2 flex-1 overflow-hidden rounded-full bg-secondary">
           <div
             className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${(stepNumber / totalBlocks) * 100}%` }}
+            style={{
+              width: `${progress}%`,
+            }}
           />
         </div>
 
@@ -71,45 +109,63 @@ export default async function BlockPage({ params }: { params: Promise<{ courseId
         </span>
       </div>
 
-      {/* Innehållssektion */}
-      <div className="flex flex-col mb-10 p-6">
-        <h1 className="text-2xl font-bold text-foreground mb-6">
+      {/* Content */}
+      <div className="mb-10 flex flex-col p-6">
+        <h1 className="mb-6 text-2xl font-bold text-foreground">
           {block.title}
         </h1>
 
-        {/* TipTapEditor genererar egen HTML (som kan innehålla <p> & <ul> etc),
-            så vi lägger den i en <div> istället för inuti en <p> för att undvika DOM-varningar */}
-        <div className="prose prose-slate max-w-none text-foreground leading-relaxed text-lg [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
+        <div className="prose prose-slate max-w-none text-lg leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
           <TipTapViewer content={block.content} />
         </div>
 
-        {/* Här kan du lägga till bilder, videor eller quiz-element */}
-        <div className="flex justify-center">
-        </div>
+        <div className="flex justify-center" />
       </div>
 
-      {/* Footer med navigering */}
-      <div className="p-6 pb-10 border-t border-border flex justify-center gap-4">
+      {/* Footer navigation */}
+      <div className="flex justify-center gap-4 border-t border-border p-6 pb-10">
         {previousBlock && (
-          <Link href={`/courses/${courseId}/blocks/${previousBlock.id}`} className="flex-2">
-            <CourseButton variant="primary" fullWidth>
+          <Link
+            href={`/courses/${courseId}/blocks/${previousBlock.id}`}
+            className="flex-2"
+          >
+            <CourseButton
+              variant="primary"
+              fullWidth
+            >
               Tillbaka
             </CourseButton>
           </Link>
         )}
 
         {nextBlock ? (
-          <Link href={`/courses/${courseId}/blocks/${nextBlock.id}`} className="flex-2">
-            <CourseButton variant="primary" fullWidth>
+          <ProgressLink
+            href={`/courses/${courseId}/blocks/${nextBlock.id}`}
+            courseId={courseId}
+            progress={progress}
+            className="flex-2"
+          >
+            <CourseButton
+              variant="primary"
+              fullWidth
+            >
               Nästa
             </CourseButton>
-          </Link>
+          </ProgressLink>
         ) : (
-          <Link href={`/courses/${courseId}/summary/${block.id}`} className="flex-2">
-            <CourseButton variant="primary" fullWidth>
+          <ProgressLink
+            href={`/courses/${courseId}/summary/${block.id}`}
+            courseId={courseId}
+            progress={100}
+            className="flex-2"
+          >
+            <CourseButton
+              variant="primary"
+              fullWidth
+            >
               Slutför kurs
             </CourseButton>
-          </Link>
+          </ProgressLink>
         )}
       </div>
     </main>

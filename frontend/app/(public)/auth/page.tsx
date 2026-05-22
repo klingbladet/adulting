@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 
 function GoogleIcon() {
   return (
-    <span className="text-2xl font-bold text-gray-900">
+    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-lg font-bold text-[#4285F4]">
       G
     </span>
   );
@@ -21,58 +21,61 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-6">
-      <section className="min-h-[760px] w-full max-w-[430px] rounded-[36px] bg-white px-6 py-8 shadow-sm">
-        
-        <Link
-          href="/"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition hover:bg-gray-100"
-        >
-          <ArrowLeft size={24} />
-        </Link>
+    <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC] px-4 text-gray-950 md:min-h-screen md:py-8">
+      <section className="relative min-h-dvh w-full max-w-[430px] overflow-hidden bg-white px-6 py-8 md:min-h-[760px] md:rounded-[36px] md:shadow-sm">
+        <div className="pointer-events-none absolute -right-20 -top-16 h-56 w-56 rounded-full bg-[#FBF8C6] blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-[#E9F2E6] blur-2xl" />
 
-        <div className="mt-10">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-950">
-            Välj hur du vill fortsätta
-          </h1>
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#2563EB] transition hover:bg-blue-50"
+            aria-label="Tillbaka"
+          >
+            <ArrowLeft size={22} />
+          </Link>
 
-          <div className="mt-10 space-y-4">
+          <div className="mt-20">
+            <h1 className="text-[34px] font-bold leading-tight tracking-tight text-gray-950">
+              Logga in /<br />
+              Skapa konto
+            </h1>
 
-            <button
-              onClick={handleGoogleLogin}
-              className="flex h-14 w-full items-center justify-center gap-5 rounded-2xl bg-gray-100 text-base font-bold text-gray-900 transition hover:bg-gray-200"
-            >
-              <GoogleIcon />
-              Fortsätt med Google
-            </button>
+            <div className="mt-10 space-y-4">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="flex h-14 w-full items-center gap-4 rounded-2xl border border-gray-200 bg-white px-4 text-left text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+              >
+                <GoogleIcon />
+                Fortsätt med Google
+              </button>
 
-            <button
-              className="flex h-14 w-full items-center justify-center gap-5 rounded-2xl bg-gray-100 text-base font-bold text-gray-900 transition hover:bg-gray-200"
-            >
-              <Apple size={26} fill="currentColor" />
-              Fortsätt med Apple
-            </button>
+              <button
+                type="button"
+                className="flex h-14 w-full items-center gap-4 rounded-2xl border border-gray-200 bg-white px-4 text-left text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+              >
+                <Apple size={24} fill="currentColor" />
+                Fortsätt med Apple
+              </button>
 
-            <Link
-              href="/sign-in"
-              className="flex h-14 w-full items-center justify-center gap-5 rounded-2xl bg-gray-100 text-base font-bold text-gray-900 transition hover:bg-gray-200"
-            >
-              <Mail size={24} fill="currentColor" />
-              E-post
-            </Link>
-          </div>
+              <Link
+                href="/sign-in"
+                className="flex h-14 w-full items-center gap-4 rounded-2xl border border-gray-200 bg-white px-4 text-left text-base font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50"
+              >
+                <Mail size={23} />
+                Fortsätt med e-post
+              </Link>
+            </div>
 
-          <div className="mt-10 text-center">
-            <p className="text-sm text-gray-500">
-              Eller
-            </p>
-
-            <Link
-              href="/chat"
-              className="mt-5 inline-block text-base font-bold text-[#2563EB]"
-            >
-              Fortsätt utan konto
-            </Link>
+            <div className="mt-8 text-center">
+              <Link
+                href="/chat"
+                className="text-base font-semibold text-[#2563EB]"
+              >
+                Eller fortsätt utan konto
+              </Link>
+            </div>
           </div>
         </div>
       </section>

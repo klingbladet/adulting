@@ -230,7 +230,7 @@ function ProfileContent({
         <h2 className="text-lg font-bold">Mina kurser</h2>
 
         <Link
-          href="/courses"
+          href="/profile/courses"
           className="flex items-center gap-1 text-sm font-bold text-[#2563EB] dark:text-blue-300"
         >
           Se alla <ChevronRight size={16} />
