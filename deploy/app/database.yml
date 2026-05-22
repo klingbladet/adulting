@@ -28,7 +28,7 @@ spec:
     spec:
       volumes:
         - name: postgres
-          versistentVolumeClaim: postgres
+          persistentVolumeClaim: postgres
       containers:
         - name: postgres
           image: postgres:18
