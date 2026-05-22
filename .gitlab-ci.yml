@@ -5,7 +5,6 @@ stages:
   - build
   - deploy
   - cleanup
-  - cleanup after
 
 variables:
   IMAGE_VERSION: $CI_COMMIT_SHA
@@ -149,13 +148,6 @@ build frontend:
     - if: $VERSION
 
 
-cleanup base images:
-  stage: cleanup
-  image: registry.gitlab.com/gitlab-org/cli:latest
-  script: 
-    - glab auth login --hostname git.chas-lab.dev
-    - glab repo list
-
 deploy app:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/util:latest
@@ -184,9 +176,8 @@ deploy app:
         exit $err
       fi
 
-
 delete env:
-  stage: cleanup after
+  stage: cleanup
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   environment:
