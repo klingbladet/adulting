@@ -39,7 +39,7 @@ build util image:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/util:latest
-      --push --provenance -f ./docker/util.Dockerfile .
+      --push --provenance=false -f ./docker/util.Dockerfile .
   rules:
     - changes: 
       - docker/util.Dockerfile
@@ -74,7 +74,7 @@ build backend base:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
-      --push --provenance --target base ./backend
+      --push --provenance=false --target base ./backend
   rules:
     - if: $VERSION
 
@@ -86,7 +86,7 @@ build frontend base:
     - >
       docker buildx build 
       -t $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
-      --push --provenance --target base ./frontend
+      --push --provenance=false --target base ./frontend
   rules:
     - if: $VERSION
 
@@ -124,7 +124,7 @@ build backend:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-      --push --provenance ./backend
+      --push --provenance=false ./backend
   rules:
     - if: $VERSION
 
@@ -143,7 +143,7 @@ build frontend:
       --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
       -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
-      --push --provenance ./frontend
+      --push --provenance=false ./frontend
   rules:
     - if: $VERSION
 
