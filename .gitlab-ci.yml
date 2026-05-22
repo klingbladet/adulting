@@ -140,7 +140,14 @@ deploy app:
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$VERSION
     - sed -i "s/asdf/${VERSION}/g" *
     - cd -
-    - kubectl apply -k deploy || err=$?; ./scripts/delete-resources.sh; exit $err
+    - kubectl apply -k deploy
+    - |
+      err=$?
+      if [ $err -ne 0 ]; then
+        echo "apply failed with $err"
+        ./scripts/delete-resources.sh
+        exit $err
+      fi
 
 
 delete env:
