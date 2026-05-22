@@ -26,6 +26,13 @@ spec:
       labels:
         adulting: db
     spec:
+      resources:
+        requests:
+          cpu: 30m
+          memory: 50Mi
+        limits:
+          cpu: 1000m
+          memory: 500Mi
       volumes:
         - name: postgres
           persistentVolumeClaim:
