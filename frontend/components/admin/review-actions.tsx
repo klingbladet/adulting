@@ -71,7 +71,7 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
 
   return (
     <>
-      <div className="mt-10 p-6 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="mt-10 p-6 bg-muted rounded-lg border border-border">
         <h3 className="text-lg font-bold mb-4">Beslut</h3>
         {error && <p className="text-red-500 text-sm font-medium mb-4">{error}</p>}
         <div className="flex flex-col sm:flex-row justify-end gap-4">
@@ -80,7 +80,7 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
             <button 
               onClick={() => setPendingAction('reject')} 
               disabled={!!loading} 
-              className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+              className="px-6 py-3 bg-background border border-border text-foreground rounded-lg hover:bg-muted transition-colors font-medium disabled:opacity-50"
             >
               {loading === 'reject' ? 'Sparar...' : courseStatus === 'published' ? 'Neka (Avpublicera)' : 'Neka (återställ till nekad)'}
             </button>
@@ -90,7 +90,7 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
             <button 
               onClick={() => setShowDeleteModal(true)} 
               disabled={!!loading} 
-              className="px-6 py-3 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+              className="px-6 py-3 bg-background border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Trash2 size={20} />
               {loading === 'delete' ? 'Raderar...' : 'Ta bort permanent'}
@@ -112,11 +112,11 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
 
       {pendingAction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">
+          <div className="bg-card p-6 rounded-2xl max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold mb-4 text-foreground">
               Bekräfta beslut
             </h3>
-            <p className="mb-6 text-gray-600 text-lg">
+            <p className="mb-6 text-muted-foreground text-lg">
               Är du säker på att du vill {pendingAction === 'approve' ? 'godkänna och publicera' : 'neka'} denna kurs?
             </p>
             
@@ -124,7 +124,7 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
               <button
                 onClick={() => setPendingAction(null)}
                 disabled={!!loading}
-                className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium disabled:opacity-50"
+                className="px-5 py-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors font-medium disabled:opacity-50"
               >
                 Avbryt
               </button>
@@ -144,20 +144,20 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
 
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Radera kurs permanent</h3>
-            <p className="mb-4 text-sm text-gray-600">
+          <div className="bg-card p-6 rounded-2xl max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold mb-4 text-foreground">Radera kurs permanent</h3>
+            <p className="mb-4 text-sm text-muted-foreground">
               Är du säker på att du vill radera <strong>{expectedTitleToMatch}</strong>? Denna åtgärd går inte att ångra och all data kommer att försvinna permanent.
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Skriv <strong>{expectedTitleToMatch}</strong> för att bekräfta:
               </label>
               <input
                 type="text"
                 value={deleteInput}
                 onChange={(e) => setDeleteInput(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800 bg-transparent"
+                className="w-full border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 text-foreground bg-background"
                 placeholder={expectedTitleToMatch}
               />
             </div>
@@ -166,7 +166,7 @@ export default function ReviewActions({ courseId, courseStatus, courseTitle }: {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={!!loading}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium disabled:opacity-50"
+                className="px-4 py-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors font-medium disabled:opacity-50"
               >
                 Avbryt
               </button>
