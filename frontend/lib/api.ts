@@ -1,8 +1,6 @@
 import { Block, Course, UserCourse } from "@/types/types";
 import { BACKEND_URL } from "./backend-url";
 
-import { CLIENT_BACKEND_URL } from "@/lib/client-backend-url";
-
 const BASE_URL = `${BACKEND_URL}/api`;
 
 export type CourseQuizOption = {
@@ -53,7 +51,7 @@ export type SubmitQuizAttemptResponse = {
 
 export async function getCourseQuiz(courseId: string): Promise<CourseQuiz> {
   const response = await fetch(
-    `${CLIENT_BACKEND_URL}/api/learning/courses/${courseId}/quiz`,
+    `${BASE_URL}/learning/courses/${courseId}/quiz`,
     {
       method: "GET",
       credentials: "include",
@@ -81,7 +79,7 @@ export async function submitQuizAttempt(
   payload: SubmitQuizAttemptPayload,
 ): Promise<SubmitQuizAttemptResponse> {
   const response = await fetch(
-    `${CLIENT_BACKEND_URL}/api/learning/quizzes/${quizId}/attempts`,
+    `${BASE_URL}/learning/quizzes/${quizId}/attempts`,
     {
       method: "POST",
       credentials: "include",
