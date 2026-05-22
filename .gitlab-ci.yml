@@ -148,8 +148,8 @@ deploy app:
         ./scripts/delete-resources.sh
         exit $err
       fi
-    - kubectl rollout update $VERSION-adulting-frontend
-    - kubectl rollout update $VERSION-adulting-backend
+    - kubectl rollout restart $VERSION-adulting-frontend
+    - kubectl rollout restart $VERSION-adulting-backend
     - kubectl rollout status $VERSION-adulting-frontend
     - kubectl rollout status $VERSION-adulting-frontend
 
