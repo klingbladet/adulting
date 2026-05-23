@@ -182,7 +182,7 @@ delete env:
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   environment:
-    name: adulting/$VERSION
+    name: review/$VERSION
     action: stop
   rules:
     - if: $VERSION
