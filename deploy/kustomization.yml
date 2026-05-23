@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
 - secret-registry.yml
 - secret-openrouter.yml
+- secret-dbui.yml
 - app
