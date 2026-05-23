@@ -78,7 +78,14 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
           </div>
           </DragHandle>
         </div>
-        {preview ? <div dangerouslySetInnerHTML={{__html:editor.getHTML()}} ></div> : <EditorContent editor={editor}/> }
+        {preview ? (
+          <div 
+            className="min-h-[150px] w-full p-4 [&_p:empty]:min-h-[1.5rem] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+            dangerouslySetInnerHTML={{__html:editor.getHTML()}} 
+          ></div>
+        ) : (
+          <EditorContent editor={editor}/>
+        )}
           <div className='flex justify-end gap-1'>
           {preview && 
             <button 
