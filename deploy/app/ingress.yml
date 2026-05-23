@@ -40,7 +40,6 @@ metadata:
   name: ingress-dbui
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: doe25-group-1-asdf-adulting-dbui-auth@kubernetescrd
 spec:
   rules:
   - host: asdf-dbui-adulting.cc.k3s.chas-lab.dev
