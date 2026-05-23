@@ -61,7 +61,8 @@ export default async function ContinueCard() {
   }
 
   // Hämta blocken för kursen och räkna ut vilket block användaren är på just nu
-  let currentBlockTitle = mostRecentCourse.textContent;
+  let currentBlockTitle = mostRecentCourse.textContent || "Fortsätt där du slutade";
+  let targetUrl = `/courses/${mostRecentCourse.id}/overview`;
   try {
     const blocks = await getBlocksByCourseId(mostRecentCourse.id.toString(), {
       headers: { cookie: cookieStore.toString() }
@@ -76,15 +77,15 @@ export default async function ContinueCard() {
       // Säkerställ att vi inte går utanför arrayens längd
       const currentBlockIndex = Math.min(completedSteps, blocks.length - 1);
 
-      if (blocks[currentBlockIndex]?.title) {
-        currentBlockTitle = `${blocks[currentBlockIndex].title}`;
+      const currentBlock = blocks[currentBlockIndex];
+      if (currentBlock) {
+        if (currentBlock.title) currentBlockTitle = currentBlock.title;
+        targetUrl = `/courses/${mostRecentCourse.id}/blocks/${currentBlock.id}`;
       }
     }
   } catch (error) {
     console.error("Kunde inte hämta block för continue card", error);
   }
-
-  const targetUrl = `/courses/${mostRecentCourse.id}/overview`;
 
   return (
     <>

@@ -451,7 +451,7 @@ export default function CreateBlocks() {
           disabled={loading}
           className="border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50"
         >
-          + Add block
+          + Lägg till steg
         </button>
 
         <button

@@ -14,72 +14,72 @@ export default function CreatorToolsClient() {
   const searchParams = useSearchParams();
   // Hämtar courseId från antingen sökvägen (/courses/123) eller query-parametern (?courseId=123)
   const courseId = params?.courseId || searchParams.get('courseId');
-  
-  const [ saved, setSaved ] = useState(false);
-  const [ loading, setLoading ] = useState(false);
-  const [ error, setError ] = useState('');
-  const [ isLoaded, setIsLoaded ] = useState(false);
-  const [ activeCourseId, setActiveCourseId ] = useState<number | null>(courseId ? Number(courseId) : null);
-  const [ courseTitle, setCourseTitle ] = useState('');
-  const [ blocks, setBlocks ] = useState<Block[]>([]);
-  const [ selectedBlockId, setSelectedBlockId ] = useState<number | null>(null);
+
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [activeCourseId, setActiveCourseId] = useState<number | null>(courseId ? Number(courseId) : null);
+  const [courseTitle, setCourseTitle] = useState('');
+  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchCourseData = async (id: string | number) => {
-        setLoading(true);
-        setError('');
-        try {
-            const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
-            
-            const coursePromise = axios.get(`${baseUrl}/api/courses/${id}`, { withCredentials: true });
-            const blocksPromise = axios.get(`${baseUrl}/api/courses/${id}/blocks`, { withCredentials: true });
+      setLoading(true);
+      setError('');
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
-            const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
+        const coursePromise = axios.get(`${baseUrl}/api/courses/${id}`, { withCredentials: true });
+        const blocksPromise = axios.get(`${baseUrl}/api/courses/${id}/blocks`, { withCredentials: true });
 
-            // Lägg till fallbacks ifall backend returnerar datan direkt på .data 
-            // istället för inkapslat i .data.course / .data.blocks
-            const courseData: Course = courseResponse.data?.course || courseResponse.data; 
-            const blocksData: Block[] = blocksResponse.data?.blocks || blocksResponse.data || [];
-            
-            if (courseData) {
-                setCourseTitle(courseData.title);
-                
-                let useLocal = false;
-                const localDraft = localStorage.getItem(`course-content-draft-${courseData.id}`);
-                if (localDraft) {
-                    try {
-                        const parsed = JSON.parse(localDraft);
-                        if (parsed.blocks && parsed.blocks.length > 0) {
-                            setBlocks(parsed.blocks);
-                            useLocal = true;
-                        }
-                    } catch (e) {
-                        console.error("Kunde inte läsa från localStorage", e);
-                    }
-                }
-                
-                if (!useLocal) {
-                    setBlocks(blocksData); 
-                    setSaved(true);
-                }
-                
-                if (blocksData.length > 0 && !selectedBlockId) {
-                  setSelectedBlockId(blocksData[0].id);
-                }
-                setActiveCourseId(courseData.id);
+        const [courseResponse, blocksResponse] = await Promise.all([coursePromise, blocksPromise]);
+
+        // Lägg till fallbacks ifall backend returnerar datan direkt på .data 
+        // istället för inkapslat i .data.course / .data.blocks
+        const courseData: Course = courseResponse.data?.course || courseResponse.data;
+        const blocksData: Block[] = blocksResponse.data?.blocks || blocksResponse.data || [];
+
+        if (courseData) {
+          setCourseTitle(courseData.title);
+
+          let useLocal = false;
+          const localDraft = localStorage.getItem(`course-content-draft-${courseData.id}`);
+          if (localDraft) {
+            try {
+              const parsed = JSON.parse(localDraft);
+              if (parsed.blocks && parsed.blocks.length > 0) {
+                setBlocks(parsed.blocks);
+                useLocal = true;
+              }
+            } catch (e) {
+              console.error("Kunde inte läsa från localStorage", e);
             }
-        } catch (err) {
-            console.error("Failed to fetch course data", err);
-            setError("Kunde inte ladda kursdata. Kursen kanske inte finns.");
-        } finally {
-            setLoading(false);
-            setIsLoaded(true);
+          }
+
+          if (!useLocal) {
+            setBlocks(blocksData);
+            setSaved(true);
+          }
+
+          if (blocksData.length > 0 && !selectedBlockId) {
+            setSelectedBlockId(blocksData[0].id);
+          }
+          setActiveCourseId(courseData.id);
         }
+      } catch (err) {
+        console.error("Failed to fetch course data", err);
+        setError("Kunde inte ladda kursdata. Kursen kanske inte finns.");
+      } finally {
+        setLoading(false);
+        setIsLoaded(true);
+      }
     };
 
     if (courseId) {
-        const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
-        fetchCourseData(idToFetch);
+      const idToFetch = Array.isArray(courseId) ? courseId[0] : courseId;
+      fetchCourseData(idToFetch);
     }
   }, [courseId]);
 
@@ -103,11 +103,11 @@ export default function CreatorToolsClient() {
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
-      
+
       // Formatera blocken för att bara uppdatera innehållet
-      const blocksToSave = blocks.map((block) => ({ 
-        ...block, 
-        courseId: Number(activeCourseId), 
+      const blocksToSave = blocks.map((block) => ({
+        ...block,
+        courseId: Number(activeCourseId),
         type: 'text',
         quizEligible: true
       }));
@@ -117,7 +117,7 @@ export default function CreatorToolsClient() {
         withCredentials: true
       });
       setSaved(true);
-      
+
       // Rensa utkastet efter sparande
       localStorage.removeItem(`course-content-draft-${activeCourseId}`);
       return activeCourseId;
@@ -126,12 +126,12 @@ export default function CreatorToolsClient() {
       setError('Det gick inte att spara innehållet!')
       return null;
     } finally {
-      setLoading (false);
+      setLoading(false);
     }
   }
 
   const updateBlockContent = (id: number, newContent: JSONContent) => {
-    setBlocks(blocks.map(block => 
+    setBlocks(blocks.map(block =>
       block.id === id ? { ...block, content: newContent } : block
     ));
     setSaved(false)
@@ -143,7 +143,7 @@ export default function CreatorToolsClient() {
     <div className="space-y-6">
       <CreatorStepper currentStep={2} />
       <h1 className="text-2xl font-bold text-foreground">{courseTitle || 'Laddar kurs...'}</h1>
-      <p className="text-muted-foreground">Lägg till innehåll i de block du skapade.</p>
+      <p className="text-muted-foreground">Lägg till innehåll i de steg du skapade.</p>
 
       {blocks.length > 0 && (
         <div>
@@ -180,7 +180,7 @@ export default function CreatorToolsClient() {
       )}
 
       <div className="flex gap-4">
-        <button 
+        <button
           onClick={handleSave}
           disabled={loading}
           className='border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50'
