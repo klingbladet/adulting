@@ -31,10 +31,10 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
       <CreatorStepper currentStep={4} />
       
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           Förhandsgranska: {course?.title || 'Laddar...'}
         </h1>
-        <p className="text-gray-500 mb-6">
+        <p className="text-muted-foreground mb-6">
           Här kan du se exakt hur innehållet i dina block kommer att presenteras för studenterna.
         </p>
 

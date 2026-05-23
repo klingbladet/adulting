@@ -33,7 +33,8 @@ function getCourseImage(title: string) {
   if (lower.includes("skatt")) return "/images/icons/skatt.png";
   if (lower.includes("csn")) return "/images/icons/CSN.png";
 
-  return "/images/icons/bostad.jpg";
+  // Ta bort den felaktiga default-ikonen så profilsidan kan få en fallback-bok
+  return null;
 }
 
 function getProgress(status: string, score: number | null) {

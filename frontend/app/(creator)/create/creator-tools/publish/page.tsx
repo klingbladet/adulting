@@ -31,26 +31,26 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
     <>
       <CreatorStepper currentStep={5} />
       
-      <div className="max-w-2xl mx-auto mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">Sammanfattning av kursen</h1>
+      <div className="max-w-2xl mx-auto mt-8 bg-card p-6 rounded-lg shadow-sm border border-border">
+        <h1 className="text-2xl font-bold mb-6 text-foreground">Sammanfattning av kursen</h1>
         
         {course ? (
           <div className="space-y-4 mb-8">
             <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500 font-medium">Titel</span>
-              <span className="font-semibold text-gray-800">{course.title}</span>
+              <span className="text-muted-foreground font-medium">Titel</span>
+              <span className="font-semibold text-foreground">{course.title}</span>
             </div>
             
             <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500 font-medium">Kategori</span>
-              <span className="font-semibold text-gray-800">
+              <span className="text-muted-foreground font-medium">Kategori</span>
+              <span className="font-semibold text-foreground">
                 {course.category?.name || "Ingen kategori"}
               </span>
             </div>
             
             <div className="flex justify-between border-b pb-4">
-              <span className="text-gray-500 font-medium">Omfattning</span>
-              <span className="font-semibold text-gray-800">{steps} block • {course.time} minuter</span>
+              <span className="text-muted-foreground font-medium">Omfattning</span>
+              <span className="font-semibold text-foreground">{steps} block • {course.time} minuter</span>
             </div>
           </div>
         ) : (
