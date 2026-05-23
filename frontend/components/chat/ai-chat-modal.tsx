@@ -4,13 +4,11 @@ import { ReactNode, useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import AiChat from "@/components/chat/ai-chat";
 import {
-  createDemoLearningContext,
-  type AiLearningContext,
+    type AiLearningContext,
 } from "@/lib/learning-context";
 
 type AiChatModalProps = {
   learningContext?: AiLearningContext;
-  useDemoLearningContext?: boolean;
 
   /**
    * Optional custom trigger.
@@ -23,16 +21,11 @@ type AiChatModalProps = {
 
 export default function AiChatModal({
   learningContext,
-  useDemoLearningContext = true,
   trigger,
 }: AiChatModalProps) {
   const [open, setOpen] = useState(false);
 
-  const resolvedLearningContext =
-    learningContext ??
-    (useDemoLearningContext
-      ? createDemoLearningContext("lesson_bolan_001")
-      : undefined);
+  const resolvedLearningContext = learningContext;
 
   return (
     <>
@@ -62,7 +55,7 @@ export default function AiChatModal({
             <AiChat
               variant="embedded"
               onClose={() => setOpen(false)}
-              learningContext={resolvedLearningContext}
+              learningContext={learningContext}
             />
           </div>
         </div>

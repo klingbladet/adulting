@@ -1,54 +1,17 @@
 import { z } from "zod";
-import {
-  formatLessonForAssistantContext,
-  getBlockTextForAi,
-} from "./block-utils";
+import { formatLessonForAssistantContext } from "./block-utils";
 import {
   defaultLessonProvider,
   type LessonProvider,
   LessonNotFoundError,
 } from "./lesson-provider";
-import {
-  buildLessonFocusSummary,
-} from "./priority-service";
-import type {
-  BlockPriorityResult,
-  LessonBlock,
-  LessonWithBlocks,
-  QuizAnswerForPriority,
-} from "./types";
+import type { BlockPriorityResult, LessonWithBlocks } from "./types";
 
 /**
- * Assistant context service.
+ * Bygger kontext som AI-assistenten kan använda i prompten.
  *
- * Den här filen bygger kontext som AI-assistenten kan använda när den svarar.
- *
- * Målet:
- * AI-assistenten ska inte bara svara generellt.
- * Den ska kunna svara utifrån:
- *
- * - vem användaren är
- * - vad användaren vill lära sig
- * - vilken lektion användaren är på
- * - vilka block användaren verkar ha svårt med
- * - vilka regler assistenten ska följa
- *
- * Viktigt:
- * Den här servicen anropar inte AI-modellen direkt.
- * Den bygger bara kontext.
- *
- * AI-route eller assistant-service använder sedan contexten i prompten.
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - Byt från MockLessonProvider till DatabaseLessonProvider.
- * - Se till att lesson blocks från databasen returneras i LessonWithBlocks-formatet.
- *
- * TODO när onboarding är helt kopplad:
- * - Implementera DatabaseUserLearningProfileProvider mot user_onboarding-tabellen.
- *
- * TODO när quiz_attempts finns:
- * - Hämta användarens senaste quiz answers från DB.
- * - Skicka in dem som quizAnswers till buildAssistantContext().
+ * Frontend skickar bara pekare, t.ex. courseId och lessonId.
+ * Användarspecifik data ska hämtas i backend.
  */
 
 export const assistantContextModeSchema = z.enum([
@@ -58,75 +21,23 @@ export const assistantContextModeSchema = z.enum([
   "course_recommendation",
 ]);
 
-export type AssistantContextMode = z.infer<
-  typeof assistantContextModeSchema
->;
+export type AssistantContextMode = z.infer<typeof assistantContextModeSchema>;
 
-/**
- * En förenklad lärprofil från onboarding.
- *
- * Den här bör mappas från er user_onboarding-tabell senare.
- *
- * Exempel:
- * - användaren är nybörjare
- * - användaren vill lära sig boende/ekonomi
- * - användaren föredrar korta, praktiska förklaringar
- */
 export const userLearningProfileSchema = z.object({
   userId: z.string(),
-
-  /**
-   * Exempel:
-   * ["boende", "ekonomi", "arbete"]
-   */
   interests: z.array(z.string()).default([]),
-
-  /**
-   * Exempel:
-   * "nybörjare", "lite erfaren", "kan en del"
-   */
   experienceLevel: z.string().optional(),
-
-  /**
-   * Exempel:
-   * "köpa bostad", "förstå lån", "flytta hemifrån"
-   */
   focusArea: z.string().optional(),
-
-  /**
-   * Exempel:
-   * "kort och enkelt", "steg-för-steg", "praktiska exempel"
-   */
   preferredLearningStyle: z.string().optional(),
-
-  /**
-   * Fritt fält för framtida onboarding-data.
-   *
-   * TODO:
-   * När onboarding-schemat är mer stabilt kan detta ersättas
-   * av tydligare fält.
-   */
-rawOnboardingData: z.record(z.string(), z.unknown()).optional(),
+  rawOnboardingData: z.record(z.string(), z.unknown()).optional(),
 });
 
-export type UserLearningProfile = z.infer<
-  typeof userLearningProfileSchema
->;
+export type UserLearningProfile = z.infer<typeof userLearningProfileSchema>;
 
 export interface UserLearningProfileProvider {
-  getUserLearningProfile(
-    userId: string,
-  ): Promise<UserLearningProfile | null>;
+  getUserLearningProfile(userId: string): Promise<UserLearningProfile | null>;
 }
 
-/**
- * Mockad user profile provider.
- *
- * Gör att vi kan testa AI-assistenten innan onboarding-datan är helt mappad.
- *
- * TODO när onboarding är klar:
- * Ersätt med DatabaseUserLearningProfileProvider.
- */
 export class MockUserLearningProfileProvider
   implements UserLearningProfileProvider
 {
@@ -146,31 +57,6 @@ export class MockUserLearningProfileProvider
   }
 }
 
-/**
- * Placeholder för riktig onboarding-provider.
- *
- * TODO när onboarding-teamet/DB är redo:
- *
- * Implementera ungefär:
- *
- * const [row] = await db
- *   .select()
- *   .from(userOnboarding)
- *   .where(eq(userOnboarding.userId, userId));
- *
- * return userLearningProfileSchema.parse({
- *   userId,
- *   interests: mapCategories(row.stepOneData),
- *   experienceLevel: row.stepTwoData?.experience,
- *   focusArea: row.stepThreeData?.focusArea,
- *   preferredLearningStyle: row.stepThreeData?.learningStyle,
- *   rawOnboardingData: {
- *     stepOneData: row.stepOneData,
- *     stepTwoData: row.stepTwoData,
- *     stepThreeData: row.stepThreeData,
- *   },
- * });
- */
 export class DatabaseUserLearningProfileProvider
   implements UserLearningProfileProvider
 {
@@ -200,50 +86,19 @@ export function createUserLearningProfileProvider(): UserLearningProfileProvider
 export const defaultUserLearningProfileProvider =
   createUserLearningProfileProvider();
 
-/**
- * Input till assistant context.
- *
- * Det här kan AI-chat route senare ta emot från frontend.
- *
- * Exempel:
- *
- * {
- *   userId: "...",
- *   lessonId: "lesson_bolan_001",
- *   mode: "lesson_help"
- * }
- */
 export const buildAssistantContextInputSchema = z.object({
   userId: z.string(),
-
-  /**
-   * Optional just nu eftersom assistenten även kan svara generellt.
-   */
   courseId: z.string().optional(),
   lessonId: z.string().optional(),
-
-  /**
-   * Vilket läge assistenten är i.
-   */
+  currentBlockId: z.string().optional(),
   mode: assistantContextModeSchema.default("general"),
-
-  /**
-   * Quiz answers kan skickas in direkt i början.
-   *
-   * TODO när quiz_attempts finns:
-   * Hämta answers från databasen med userId + lessonId i stället.
-   */
-  quizAnswers: z
-    .array(
-      z.object({
-        blockId: z.string(),
-        isCorrect: z.boolean(),
-      }),
-    )
-    .optional(),
 });
 
-export type BuildAssistantContextInput = z.infer<
+export type BuildAssistantContextInput = z.input<
+  typeof buildAssistantContextInputSchema
+>;
+
+type ParsedBuildAssistantContextInput = z.output<
   typeof buildAssistantContextInputSchema
 >;
 
@@ -259,24 +114,11 @@ export type AssistantContext = {
   mode: AssistantContextMode;
   courseId?: string;
   lessonId?: string;
-
+  currentBlockId?: string;
   learningProfile?: UserLearningProfile | null;
-
   lessonWithBlocks?: LessonWithBlocks | null;
-
-  /**
-   * Blockprioritet från quizsvar.
-   *
-   * Detta gör att assistenten kan säga:
-   * "Du verkar behöva lägga extra fokus på kontantinsats."
-   */
   blockPriorities?: BlockPriorityResult[];
-
   weakAreas?: AssistantWeakArea[];
-
-  /**
-   * En färdig text som kan stoppas in i systemprompten.
-   */
   promptContext: string;
 };
 
@@ -303,31 +145,14 @@ export function createAssistantContextService(
         ? await safeGetLessonWithBlocks(deps.lessonProvider, input.lessonId)
         : null;
 
-      const blockPriorities =
-        lessonWithBlocks && input.quizAnswers?.length
-          ? buildLessonFocusSummary({
-              lessonWithBlocks,
-              answers: input.quizAnswers,
-            }).priorities
-          : undefined;
-
-      const weakAreas =
-        lessonWithBlocks && blockPriorities
-          ? buildWeakAreas({
-              lessonWithBlocks,
-              priorities: blockPriorities,
-            })
-          : undefined;
-
       const promptContext = formatAssistantPromptContext({
         userId: input.userId,
         mode: input.mode,
         courseId: input.courseId,
         lessonId: input.lessonId,
+        currentBlockId: input.currentBlockId,
         learningProfile,
         lessonWithBlocks,
-        blockPriorities,
-        weakAreas,
       });
 
       return {
@@ -335,10 +160,9 @@ export function createAssistantContextService(
         mode: input.mode,
         courseId: input.courseId,
         lessonId: input.lessonId,
+        currentBlockId: input.currentBlockId,
         learningProfile,
         lessonWithBlocks,
-        blockPriorities,
-        weakAreas,
         promptContext,
       };
     },
@@ -349,21 +173,11 @@ export type AssistantContextService = ReturnType<
   typeof createAssistantContextService
 >;
 
-export const defaultAssistantContextService =
-  createAssistantContextService({
-    lessonProvider: defaultLessonProvider,
-    userLearningProfileProvider: defaultUserLearningProfileProvider,
-  });
+export const defaultAssistantContextService = createAssistantContextService({
+  lessonProvider: defaultLessonProvider,
+  userLearningProfileProvider: defaultUserLearningProfileProvider,
+});
 
-/**
- * Hämtar lesson på ett säkert sätt.
- *
- * Om lesson saknas returnerar vi null i stället för att krascha hela chatten.
- *
- * Varför?
- * AI-assistenten ska fortfarande kunna svara generellt även om frontend
- * råkar skicka ett gammalt eller felaktigt lessonId.
- */
 async function safeGetLessonWithBlocks(
   lessonProvider: LessonProvider,
   lessonId: string,
@@ -379,59 +193,14 @@ async function safeGetLessonWithBlocks(
   }
 }
 
-/**
- * Bygger svaga områden från blockprioritering.
- *
- * Första MVP:
- * - high och medium visas som weakAreas
- * - low räknas som behärskat område
- */
-function buildWeakAreas(input: {
-  lessonWithBlocks: LessonWithBlocks;
-  priorities: BlockPriorityResult[];
-}): AssistantWeakArea[] {
-  const blocksById = new Map<string, LessonBlock>(
-    input.lessonWithBlocks.blocks.map((block) => [block.id, block]),
-  );
-
-  return input.priorities
-    .filter(
-      (priority) =>
-        priority.priority === "high" || priority.priority === "medium",
-    )
-    .map((priority) => {
-      const block = blocksById.get(priority.blockId);
-      const blockText = block ? getBlockTextForAi(block) : "";
-
-      const reason =
-        priority.priority === "high"
-          ? "Eleven svarade fel på de flesta frågor kopplade till detta block."
-          : "Eleven svarade delvis rätt men kan behöva repetera detta block.";
-
-      return {
-        blockId: priority.blockId,
-        priority: priority.priority,
-        reason,
-        blockTextPreview: blockText ? blockText.slice(0, 180) : undefined,
-      };
-    });
-}
-
-/**
- * Formaterar all kontext till en promptvänlig text.
- *
- * Denna text kan läggas in i systemprompten eller som ett separat system-meddelande.
- */
-export function formatAssistantPromptContext(input: {
-  userId: string;
-  mode: AssistantContextMode;
-  courseId?: string;
-  lessonId?: string;
-  learningProfile?: UserLearningProfile | null;
-  lessonWithBlocks?: LessonWithBlocks | null;
-  blockPriorities?: BlockPriorityResult[];
-  weakAreas?: AssistantWeakArea[];
-}): string {
+export function formatAssistantPromptContext(
+  input: ParsedBuildAssistantContextInput & {
+    learningProfile?: UserLearningProfile | null;
+    lessonWithBlocks?: LessonWithBlocks | null;
+    blockPriorities?: BlockPriorityResult[];
+    weakAreas?: AssistantWeakArea[];
+  },
+): string {
   const lines: string[] = [];
 
   lines.push("ASSISTENTKONTEXT");
@@ -446,6 +215,10 @@ export function formatAssistantPromptContext(input: {
 
   if (input.lessonId) {
     lines.push(`Lesson ID: ${input.lessonId}`);
+  }
+
+  if (input.currentBlockId) {
+    lines.push(`Current Block ID: ${input.currentBlockId}`);
   }
 
   lines.push("");
@@ -489,18 +262,16 @@ export function formatAssistantPromptContext(input: {
   lines.push("- Utgå från kursmaterialet när lesson context finns.");
   lines.push("- Hitta inte på innehåll som inte finns i lektionen.");
   lines.push(
-    "- Om frågan gäller ekonomi, lån eller bostad: ge generell utbildande information, inte personlig finansiell rådgivning.",
+    "- Gissa aldrig quizresultat, poäng eller progression. Sådan data måste komma från backend.",
   );
   lines.push(
-    "- Uppmana användaren att kontrollera viktiga beslut med relevant expert, bank, myndighet eller hyresvärd när det behövs.",
+    "- Om frågan gäller ekonomi, lån eller bostad: ge generell utbildande information, inte personlig finansiell rådgivning.",
   );
 
   return lines.join("\n");
 }
 
-function formatLearningProfileForPrompt(
-  profile: UserLearningProfile,
-): string {
+function formatLearningProfileForPrompt(profile: UserLearningProfile): string {
   const lines: string[] = [];
 
   if (profile.interests.length) {
@@ -548,9 +319,7 @@ function formatWeakAreasForPrompt(weakAreas: AssistantWeakArea[]): string {
         `- Block ${area.blockId}`,
         `priority: ${area.priority}`,
         `reason: ${area.reason}`,
-        area.blockTextPreview
-          ? `preview: ${area.blockTextPreview}`
-          : null,
+        area.blockTextPreview ? `preview: ${area.blockTextPreview}` : null,
       ]
         .filter((value): value is string => value !== null)
         .join(", ");
@@ -558,23 +327,6 @@ function formatWeakAreasForPrompt(weakAreas: AssistantWeakArea[]): string {
     .join("\n");
 }
 
-/**
- * Bygger en systemprompt för assistenten.
- *
- * Den här kan användas direkt i er befintliga AI-route.
- *
- * Exempel:
- *
- * const context = await defaultAssistantContextService.buildAssistantContext(...)
- *
- * messages = [
- *   {
- *     role: "system",
- *     content: buildAssistantSystemPrompt(context.promptContext)
- *   },
- *   ...
- * ]
- */
 export function buildAssistantSystemPrompt(promptContext: string): string {
   return [
     "Du är en AI-assistent i en lärplattform för unga vuxna.",
@@ -595,43 +347,4 @@ export function buildAssistantSystemPrompt(promptContext: string): string {
     "",
     promptContext,
   ].join("\n");
-}
-
-/**
- * Demo-helper.
- *
- * Användbar för att testa assistentkontext innan frontend skickar riktig context.
- *
- * TODO senare:
- * Flytta till test/demo-fil när flödet är stabilt.
- */
-export async function buildMockBolaneAssistantContext(userId: string) {
-  return defaultAssistantContextService.buildAssistantContext({
-    userId,
-    lessonId: "lesson_bolan_001",
-    courseId: "course_bostad_001",
-    mode: "lesson_help",
-    quizAnswers: [
-      /**
-       * Simulerat:
-       * Eleven verkar kunna första blocket men har svårt med ränta/amortering.
-       */
-      {
-        blockId: "block_bolan_text_001",
-        isCorrect: true,
-      },
-      {
-        blockId: "block_bolan_text_001",
-        isCorrect: true,
-      },
-      {
-        blockId: "block_bolan_text_002",
-        isCorrect: false,
-      },
-      {
-        blockId: "block_bolan_text_002",
-        isCorrect: false,
-      },
-    ],
-  });
 }

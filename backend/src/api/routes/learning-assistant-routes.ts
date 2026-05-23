@@ -130,7 +130,6 @@ router.post("/chat", async (req, res) => {
         courseId: body.courseId,
         lessonId: body.lessonId,
         mode: body.mode,
-        quizAnswers: body.quizAnswers,
       });
 
     const systemPrompt = buildAssistantSystemPrompt(
