@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Bell, ChevronLeft } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
+import getCourseIcon from "@/components/courses/course-dynamic-icon";
 
 type Filter = "alla" | "pagaende" | "klart" | "sparade";
 
@@ -15,7 +15,10 @@ type ProfileCourse = {
   progress: number;
   totalSteps: number;
   completedSteps: number;
-  image: string | null;
+  category?: {
+    name?: string;
+    iconName?: string | null;
+  } | null;
 };
 
 type ProfileResponse = {
@@ -109,13 +112,7 @@ export default function ProfileCoursesPage() {
                 className="flex min-h-[86px] items-center gap-4 rounded-2xl bg-[#0E4A73] p-3 text-white shadow-sm"
               >
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
-                  <Image
-                    src={course.image ?? "/images/icons/bostad.jpg"}
-                    alt={course.title}
-                    width={54}
-                    height={54}
-                    className="object-contain"
-                  />
+                  {getCourseIcon(course)}
                 </div>
 
                 <div className="min-w-0 flex-1">
