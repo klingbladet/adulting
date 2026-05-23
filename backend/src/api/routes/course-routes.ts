@@ -253,6 +253,7 @@ router.patch("/:courseId/progress", async (req, res) => {
         status,
         score: progress,
         completedAt: progress >= 100 ? new Date() : null,
+        updatedAt: new Date(),
       })
       .where(
         and(

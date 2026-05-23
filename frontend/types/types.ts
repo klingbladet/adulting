@@ -51,6 +51,7 @@ export interface UserCourse {
   enrolledAt: string;
   completedAt: string | null;
   score: number | null;
+  updatedAt?: string | null;
   course?: Course;
 }
 
