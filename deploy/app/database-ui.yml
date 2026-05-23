@@ -32,7 +32,7 @@ spec:
             - name: PASSWORD_postgres
               value: $(POSTGRES_PASSWORD)
             - name: PORT_postgres
-              value: 5432
+              value: "5432"
             - name: ENGINE_postgres
               value: postgres@dbgate-plugin-postgres
             - name: DATABASE_postgres
