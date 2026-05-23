@@ -41,6 +41,9 @@ spec:
             - secretRef: 
                 name: env-postgres
                 optional: false
+            - secretRef:
+                name: dbui-auth
+                optional: false
           startupProbe:
             httpGet:
               port: 3000
