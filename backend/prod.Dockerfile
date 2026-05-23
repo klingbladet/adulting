@@ -2,7 +2,7 @@ FROM node:25-alpine AS builder
 
 WORKDIR /app
 
-RUN npm install --global pnpm@latest
+RUN corepack enable && corepack prepare pnpm@10.32.0 --activate
 
 RUN npm install --global esbuild
 
