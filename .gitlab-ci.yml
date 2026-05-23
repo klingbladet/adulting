@@ -148,16 +148,15 @@ build frontend:
     - if: $VERSION
 
 
-deploy app:
+deploy app static:
   stage: deploy
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   environment:
-    name: review/$VERSION
+    name: $VERSION
     url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
-    on_stop: delete env
   rules:
-    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
+    - if: $VERSION == "main" && $VERSION == "latest"
   script:
     - ./scripts/apply-secrets-if-not-exist.sh
     - cd deploy/app
@@ -169,13 +168,13 @@ deploy app:
     - cd -
     - kubectl apply -k deploy
 
-deploy app static:
+deploy app dynamic:
   extends: deploy app
   environment:
-    name: $VERSION
-    url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
+    name: review/$VERSION
+    on_stop: delete env
   rules:
-    - if: $VERSION == "main" && $VERSION == "latest"
+    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
 
 
 delete env:
