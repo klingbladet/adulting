@@ -73,11 +73,14 @@ spec:
               value: admin@admin.lan
             - name: PGADMIN_DEFAULT_PASSWORD
               value: strongpassword
+          volumeMounts:
+            - name: overrides
+              mountPath: /pgadmin4
           startupProbe:
             httpGet:
               port: 80
-            periodSeconds: 1
-            failureThreshold: 90
+            periodSeconds: 2
+            failureThreshold: 120
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
