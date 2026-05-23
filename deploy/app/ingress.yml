@@ -34,3 +34,22 @@ spec:
               name: frontend
               port:
                 number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  rules:
+  - host: asdf-pgadmin-adulting.cc.k3s.chas-lab.dev
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: pgadmin
+              port:
+                number: 8080
