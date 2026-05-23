@@ -30,7 +30,7 @@ spec:
             - name: USER_postgres
               value: $(POSTGRES_USER)
             - name: PASSWORD_postgres
-              value: $(POSTGRES_PASSWORD)
+              value: $(POSTGRES_PASSWORD)aaa
             - name: PORT_postgres
               value: "5432"
             - name: ENGINE_postgres
@@ -44,8 +44,8 @@ spec:
           startupProbe:
             httpGet:
               port: 3000
-            periodSeconds: 2
-            failureThreshold: 120
+            periodSeconds: 1
+            failureThreshold: 60
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
