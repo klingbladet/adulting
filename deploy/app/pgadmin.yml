@@ -46,6 +46,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['env']
+          envFrom:
+            - secretRef: 
+                name: env-postgres
+                optional: false
           volumeMounts:
             - name: pgadmin-config
               mountPath: /config
@@ -73,7 +77,7 @@ spec:
             httpGet:
               port: 80
             periodSeconds: 1
-            failureThreshold: 60
+            failureThreshold: 90
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
