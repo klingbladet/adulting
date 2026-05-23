@@ -153,11 +153,11 @@ deploy app:
   image: $CI_REGISTRY_IMAGE/util:latest
   extends: .kubeconfig setup
   environment:
-    name: adulting/$VERSION
+    name: review/$VERSION
     url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
     on_stop: delete env
   rules:
-    - if: $VERSION
+    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
   script:
     - ./scripts/apply-secrets-if-not-exist.sh
     - cd deploy/app
@@ -168,13 +168,15 @@ deploy app:
     - sed -i "s/asdf/${VERSION}/g" *
     - cd -
     - kubectl apply -k deploy
-    - |
-      err=$?
-      if [ $err -ne 0 ]; then
-        echo "apply failed with $err"
-        ./scripts/delete-resources.sh
-        exit $err
-      fi
+
+deploy app static:
+  extends: deploy app
+  environment:
+    name: $VERSION
+    url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
+  rules:
+    - if: $VERSION == "main" && $VERSION == "latest"
+
 
 delete env:
   stage: cleanup
@@ -186,4 +188,4 @@ delete env:
   rules:
     - if: $VERSION
       when: manual
-  script: ./scripts/delete-resources.sh
+  script: ./scripts/delete-resources.sh persistentvolumeclaim
