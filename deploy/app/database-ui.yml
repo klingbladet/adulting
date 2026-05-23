@@ -30,7 +30,7 @@ spec:
             - name: USER_postgres
               value: $(POSTGRES_USER)
             - name: PASSWORD_postgres
-              value: $(POSTGRES_PASSWORD)aaa
+              value: $(POSTGRES_PASSWORD)
             - name: PORT_postgres
               value: "5432"
             - name: ENGINE_postgres
