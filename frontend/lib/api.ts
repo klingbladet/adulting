@@ -107,26 +107,26 @@ export async function submitQuizAttempt(
   return response.json();
 }
 
-export async function getCourses(): Promise<Course[]> {
-  const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store' });
+export async function getCourses(options?: RequestInit): Promise<Course[]> {
+  const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error("Misslyckades att hämta kurser");
   return res.json();
 }
 
-export async function getCourseById(id: string): Promise<Course> {
-  const res = await fetch(`${BASE_URL}/courses/${id}`, { cache: 'no-store' });
+export async function getCourseById(id: string, options?: RequestInit): Promise<Course> {
+  const res = await fetch(`${BASE_URL}/courses/${id}`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error(`Misslyckades att hämta kurs ${id}`);
   return res.json();
 }
 
-export async function getCoursesByCategory(categoryName: string): Promise<Course[]> {
-  const res = await fetch(`${BASE_URL}/courses?category=${encodeURIComponent(categoryName)}`, { cache: 'no-store' });
+export async function getCoursesByCategory(categoryName: string, options?: RequestInit): Promise<Course[]> {
+  const res = await fetch(`${BASE_URL}/courses?category=${encodeURIComponent(categoryName)}`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error("Misslyckades att hämta kurser för kategori");
   return res.json();
 }
 
-export async function getBlocksByCourseId(courseId: string): Promise<Block[]> {
-  const res = await fetch(`${BASE_URL}/courses/${courseId}/blocks`, { cache: 'no-store' });
+export async function getBlocksByCourseId(courseId: string, options?: RequestInit): Promise<Block[]> {
+  const res = await fetch(`${BASE_URL}/courses/${courseId}/blocks`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error(`Misslyckades att hämta block för kurs ${courseId}`);
   const data = await res.json();
   // Backend returnerar { message: "...", blocks: [...] }

@@ -3,10 +3,18 @@ import CourseButton from '@/components/courses/course-buttons';
 import { ChevronRight } from 'lucide-react';
 import { getCourseById } from '@/lib/api';
 import getCourseIcon from '@/components/courses/course-dynamic-icon';
+import { redirect } from 'next/navigation';
+import { UserCourse } from '@/types/types';
+import { cookies } from 'next/headers';
 
 export default async function CourseStartPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const course = await getCourseById(courseId).catch(() => null);
+  const cookieStore = await cookies();
+  const course = await getCourseById(courseId, {
+    headers: {
+      cookie: cookieStore.toString()
+    }
+  }).catch(() => null);
 
   if (!course) {
     return (
@@ -18,6 +26,15 @@ export default async function CourseStartPage({ params }: { params: Promise<{ co
         </Link>
       </div>
     );
+  }
+
+  // Kontrollera om användaren redan har startat/registrerat sig på kursen via tabellen userCourses.
+  // Drizzle returnerar vanligtvis denna relation som 'enrollments'.
+  const enrollments = course.enrollments || course.userCourses || [];
+  const enrollment = enrollments[0];
+  
+  if (enrollment && enrollment.status !== 'not_started') {
+    redirect(`/courses/${courseId}/overview`);
   }
 
   return (

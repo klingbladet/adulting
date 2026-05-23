@@ -5,7 +5,7 @@ export interface CourseIconData {
   title?: string;
   category?: {
     name?: string;
-    iconName?: string;
+    iconName?: string | null;
   } | null;
 }
 

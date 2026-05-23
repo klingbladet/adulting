@@ -123,7 +123,7 @@ export default async function BlockPage({
       </div>
 
       {/* Footer navigation */}
-      <div className="flex justify-center gap-4 border-t border-border p-6 pb-10">
+      <div className="mb-20 flex justify-center gap-4 border-t border-border p-6 pb-10">
         {previousBlock && (
           <Link
             href={`/courses/${courseId}/blocks/${previousBlock.id}`}
