@@ -365,7 +365,7 @@ export default function CreateBlocks() {
     <div className="space-y-6">
       <CreatorStepper currentStep={1} />
 
-      <h1 className="text-2xl font-bold">Skapa en kurs</h1>
+      <h1 className="text-2xl font-bold text-foreground">Skapa en kurs</h1>
 
       <div>
         <input
@@ -376,7 +376,7 @@ export default function CreateBlocks() {
             setSaved(false);
           }}
           placeholder="Kursnamn"
-          className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
         />
       </div>
 
@@ -387,7 +387,7 @@ export default function CreateBlocks() {
             setCategoryId(e.target.value);
             setSaved(false);
           }}
-          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-background border-b border-dashed border-border px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
         >
           <option value="" disabled>
             Välj kategori
@@ -409,25 +409,25 @@ export default function CreateBlocks() {
           }}
           placeholder="Uppskattad tid (minuter)"
           min="1"
-          className="w-full sm:w-1/2 font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
         />
       </div>
 
       {blocks.map((block, index) => (
         <div
           key={block.id}
-          className="border p-4 rounded-lg relative bg-white shadow-sm"
+          className="border border-border p-4 rounded-lg relative bg-card shadow-sm"
         >
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2 flex-grow max-w-sm">
-              <span className="font-medium text-gray-400">#{index + 1}</span>
+              <span className="font-medium text-muted-foreground">#{index + 1}</span>
 
               <input
                 type="text"
                 value={block.title || ""}
                 onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                 placeholder="Skriv en rubrik (minst 5 tecken)"
-                className="w-full font-medium text-gray-700 bg-transparent border-b border-dashed border-gray-300 px-1 py-1 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
 
@@ -449,7 +449,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={addBlock}
           disabled={loading}
-          className="border rounded-sm border-blue-500 py-2 px-4 text-blue-600 hover:bg-blue-50 transition disabled:opacity-50"
+          className="border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50"
         >
           + Add block
         </button>
@@ -458,7 +458,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={handleSave}
           disabled={loading}
-          className="border rounded-sm border-gray-300 py-2 px-4 text-gray-600 hover:bg-gray-300 hover:text-white/80 transition disabled:opacity-50"
+          className="border rounded-sm border-border py-2 px-4 text-muted-foreground hover:bg-border hover:text-foreground transition disabled:opacity-50"
         >
           {loading ? "Wait..." : saved ? "Sparad" : "Spara"}
         </button>

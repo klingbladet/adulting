@@ -154,6 +154,105 @@ router.post("/:courseId/enroll", async (req, res) => {
   }
 });
 
+const progressSchema = z.object({
+  progress: z.number().min(0).max(100),
+});
+
+router.patch("/:courseId/progress", async (req, res) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
+
+    if (!session?.user?.id) {
+      res.status(401).json({ error: "Du måste vara inloggad." });
+      return;
+    }
+
+    const courseId = parseInt(req.params.courseId);
+
+    if (isNaN(courseId)) {
+      res.status(400).json({ error: "Ogiltigt kurs-ID." });
+      return;
+    }
+
+    const { progress } = progressSchema.parse(req.body ?? {});
+    const userId = session.user.id;
+
+    const status =
+      progress >= 100
+        ? "completed"
+        : progress > 0
+          ? "in_progress"
+          : "not_started";
+
+    const [existing] = await db
+      .select()
+      .from(userCourses)
+      .where(
+        and(
+          eq(userCourses.userId, userId),
+          eq(userCourses.courseId, courseId)
+        )
+      );
+
+    if (!existing) {
+      const [created] = await db
+        .insert(userCourses)
+        .values({
+          userId,
+          courseId,
+          status,
+          score: progress,
+          enrolledAt: new Date(),
+          completedAt: progress >= 100 ? new Date() : null,
+        })
+        .returning();
+
+      res.status(201).json({
+        message: "Progress skapad.",
+        userCourse: created,
+      });
+
+      return;
+    }
+
+    const [updated] = await db
+      .update(userCourses)
+      .set({
+        status,
+        score: progress,
+        completedAt: progress >= 100 ? new Date() : null,
+      })
+      .where(
+        and(
+          eq(userCourses.userId, userId),
+          eq(userCourses.courseId, courseId)
+        )
+      )
+      .returning();
+
+    res.status(200).json({
+      message: "Progress uppdaterad.",
+      userCourse: updated,
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        error: "Validation failed",
+        details: error.issues.map((e: ZodIssue) => ({
+          path: e.path,
+          message: e.message,
+        })),
+      });
+      return;
+    }
+
+    console.error("Fel vid uppdatering av progress:", error);
+    res.status(500).json({ error: "Kunde inte uppdatera progress." });
+  }
+});
+
 //PATCH /:id - uppdaterar course
 router.patch("/:id", checkRole(["admin", "creator"]), async (req, res) => {
     const { id } = req.params;

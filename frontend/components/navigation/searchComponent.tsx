@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Fuse from "fuse.js";
 import { Course as CourseType } from "@/types/types";
+import { Search } from 'lucide-react'
 
 type Props = {
     courses?: CourseType[];
@@ -13,7 +14,7 @@ type Props = {
 
 export default function SearchComponent({
     courses: initialCourses,
-    placeholder = "Sök kurser...",
+    placeholder,
     onSelect,
 }: Props) {
     const [courses, setCourses] = useState<CourseType[]>(initialCourses ?? []);
@@ -47,7 +48,7 @@ export default function SearchComponent({
 
                 if (mounted) setCourses(coursesWithBlocks);
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => mounted && setLoading(false));
 
         return () => {
@@ -88,14 +89,26 @@ export default function SearchComponent({
     const showResults = debouncedQuery.length > 0;
 
     return (
-        <div className="w-full max-w-lg">
+        <div className="relative flex flex-col w-full max-w-lg">
+            {!query && (
+                <Search
+                    size={12}
+                    style={{
+                        position: 'absolute',
+                        left: '20px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#999'
+                    }}
+                />
+            )}
             <input
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={placeholder}
-                className="w-full pl-4 pr-3 py-2 rounded-full border bg-background text-sm"
-                aria-label="Sök kurser"
+                placeholder={`${placeholder} Sök kurser`.trim()}
+                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-800 focus:outline-0 bg-muted text-sm"
+                aria-label={`Sök kurser`}
             />
             {showResults && (
                 <div className="mt-2 bg-card rounded-lg shadow-sm max-h-64 overflow-auto">
