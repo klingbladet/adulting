@@ -169,7 +169,7 @@ deploy app static:
     - kubectl apply -k deploy
 
 deploy app dynamic:
-  extends: deploy app
+  extends: deploy app static
   environment:
     name: review/$VERSION
     on_stop: delete env
