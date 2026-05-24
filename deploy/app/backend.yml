@@ -40,6 +40,8 @@ spec:
                   fieldPath: metadata.labels['env']
             - name: FRONTEND_URL
               value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
+            - name: OPENROUTER_SITE_URL
+              value: $(FRONTEND_URL)
             - name: BETTER_AUTH_URL
               value: http://localhost:3001
             - name: DATABASE_URL
@@ -50,6 +52,12 @@ spec:
                 optional: false
             - secretRef: 
                 name: env-postgres
+                optional: false
+            - secretRef:
+                name: openrouter-api-key
+                optional: false
+            - configMapRef:
+                name: env-openrouter
                 optional: false
           startupProbe:
             httpGet:
