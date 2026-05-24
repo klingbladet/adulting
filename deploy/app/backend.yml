@@ -21,11 +21,11 @@ spec:
         - name: registry-credentials
       resources:
         requests:
-          cpu: 5m
+          cpu: 200m
           memory: 65Mi
         limits:
-          cpu: 300m
-          memory: 200Mi
+          cpu: 400m
+          memory: 120Mi
       containers:
         - name: backend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend:latest
