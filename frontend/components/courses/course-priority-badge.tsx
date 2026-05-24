@@ -9,10 +9,10 @@ export default function CoursePriorityBadge({
 }: CoursePriorityBadgeProps) {
   const className =
     priority === "high"
-      ? "bg-red-100 text-red-700"
+      ? "bg-red-900/70 text-red-300/80"
       : priority === "medium"
-        ? "bg-yellow-100 text-yellow-700"
-        : "bg-green-100 text-green-700";
+        ? "bg-yellow-900/70 text-yellow-300/80"
+        : "bg-green-900/70 text-green-300/80";
 
   return (
     <span

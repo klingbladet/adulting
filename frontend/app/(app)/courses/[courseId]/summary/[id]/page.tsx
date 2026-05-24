@@ -38,7 +38,7 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
     style={{
       backgroundImage: "url('/images/backgrounds/fyrverkerier.gif')", 
       backgroundSize: "150%", 
-      backgroundPosition: "50% -60%", 
+      backgroundPosition: "50% -10%", 
       backgroundRepeat: "no-repeat"
     }}>
 
@@ -64,7 +64,7 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
           <CategoryButtons categories={categories} />
         </div>
         <Link href={`/learn`} className="block">
-          <CourseButton variant="primary">
+          <CourseButton variant="third">
             Utforska fler kurser
           </CourseButton>
         </Link>

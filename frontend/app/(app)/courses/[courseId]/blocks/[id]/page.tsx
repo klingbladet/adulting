@@ -1,7 +1,7 @@
 import Link from "next/link";
 import CourseButton from "@/components/courses/course-buttons";
-import { X } from "lucide-react";
-import { getBlocksByCourseId } from "@/lib/api";
+import { ArrowLeft } from "lucide-react";
+import { getBlocksByCourseId, getCourseById } from "@/lib/api";
 import TipTapViewer from "@/components/courses/tiptap-viewer";
 import ProgressLink from "@/components/courses/progress-link";
 
@@ -13,9 +13,11 @@ export default async function BlockPage({
   const { courseId, id } = await params;
 
   let blocks;
+  let course;
 
   try {
     blocks = await getBlocksByCourseId(courseId);
+    course = await getCourseById(courseId)
   } catch {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
@@ -84,77 +86,91 @@ export default async function BlockPage({
       : 0;
 
   return (
-    <main className="flex min-h-screen flex-col bg-background">
+    <main className="flex w-full min-h-screen flex-col bg-background -mt-12">
       {/* Header */}
-      <div className="flex items-center justify-between p-6">
-        <Link href={`/courses/${courseId}/overview`}>
-          <X
-            size={24}
-            className="text-secondary-foreground"
-          />
-        </Link>
+      <div className="flex items-center justify-between p-6 relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
+          <header className="h-auto min-h-45 md:min-h-60 w-screen -mx-12 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-14 pb-6 px-6 relative">
+            <div className="flex justify-start items-center md:flex-col md:justify-center md:text-center">
+              <div className="flex flex-col gap-4 md:mt-4">
 
-        {/* Progress bar */}
-        <div className="mx-8 h-2 flex-1 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{
-              width: `${progress}%`,
-            }}
-          />
+                {previousBlock ? (
+                   <Link href={`/courses/${courseId}/blocks/${previousBlock.id}`}>
+                    <ArrowLeft
+                      size={20}
+                      className="text-secondary-foreground"
+                    />
+                  </Link>
+                ) : (
+                  <Link href={`/courses/${courseId}/overview`}>
+                    <ArrowLeft
+                      size={20}
+                      className="text-secondary-foreground"
+                    />
+                  </Link>
+                )}
+                  
+                <div className="flex flex-col items-start justify-end">
+                  <p className="text-sm md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
+                    {course.title}
+                  </p>
+                  <p className="text-xl md:text-lg font-semibold leading-tight mt-1 md:max-w-md">
+                    {block.title}
+                  </p>
+                </div>
+                <div className="flex justify-start items-start w-100">
+                  
+                  {/* Progress bar */}
+                  <div className="mr-12 h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-button transition-all duration-300"
+                      style={{
+                      width: `${progress}%`,
+                  }}
+                    />
+                  </div>
+                </div>
+                <span className="text-sm font-medium">
+                  {stepNumber} av {totalBlocks} avklarat
+                </span>
+              </div>
+            </div>
+          </header>
         </div>
 
-        <span className="text-sm font-medium text-secondary-foreground">
-          {stepNumber}/{totalBlocks}
-        </span>
-      </div>
+        {/* Content */}
+        <div className="mb-10 flex flex-col p-6">
 
-      {/* Content */}
-      <div className="mb-10 flex flex-col p-6">
-        <h1 className="mb-6 text-2xl font-bold text-foreground">
-          {block.title}
-        </h1>
+          <div className="prose prose-slate max-w-none text-lg leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
+            <TipTapViewer content={block.content} />
+          </div>
 
-        <div className="prose prose-slate max-w-none text-lg leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
-          <TipTapViewer content={block.content} />
+          <div className="flex justify-center" />
         </div>
 
-        <div className="flex justify-center" />
+        {/* Footer navigation */}
+        <div className="mb-10 flex justify-center gap-4 border-t border-border p-6 pb-10">
+
+          {nextBlock ? (
+            <ProgressLink
+              href={`/courses/${courseId}/blocks/${nextBlock.id}`}
+              courseId={courseId}
+              progress={progress}
+              className="text-md rounded-4xl px-6 py-4 font-semibold transition hover:opacity-90 bg-button text-white hover:bg-[#6696F4]"
+            >
+              Gå vidare till: {nextBlock.title}
+            </ProgressLink>
+          ) : (
+            <ProgressLink
+              href={`/courses/${courseId}/summary/${block.id}`}
+              courseId={courseId}
+              progress={100}
+              className="flex-2 rounded-2xl bg-button px-6 py-4 font-semibold text-white transition hover:opacity-90"
+            >
+              Slutför kurs
+            </ProgressLink>
+          )}
       </div>
 
-      {/* Footer navigation */}
-      <div className="mb-20 flex justify-center gap-4 border-t border-border p-6 pb-10">
-        {previousBlock && (
-          <Link
-            href={`/courses/${courseId}/blocks/${previousBlock.id}`}
-            className="flex-2"
-          >
-            <CourseButton variant="primary" fullWidth>
-              Tillbaka
-            </CourseButton>
-          </Link>
-        )}
-
-        {nextBlock ? (
-          <ProgressLink
-            href={`/courses/${courseId}/blocks/${nextBlock.id}`}
-            courseId={courseId}
-            progress={progress}
-            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
-          >
-            Nästa
-          </ProgressLink>
-        ) : (
-          <ProgressLink
-            href={`/courses/${courseId}/summary/${block.id}`}
-            courseId={courseId}
-            progress={100}
-            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
-          >
-            Slutför kurs
-          </ProgressLink>
-        )}
-      </div>
     </main>
   );
 }

@@ -28,9 +28,12 @@
   --input: #e5e7eb;
   --ring: #818cf8;
 
+  --bland-foreground: #FAFAFA;
+  --button: #4981F2;
+
   --category-one: #DCE9FD;
   --category-one-text: #4981F2;
-    --category-two: #F5F7EE;
+  --category-two: #F5F7EE;
   --category-two-text: #8CA653;
   --category-three: #BDC4E4;
   --category-three-text: #6460A2;
@@ -66,6 +69,8 @@
   --border: #374151;
   --input: #374151;
   --ring: #a5b4fc;
+
+  --bland-foreground: var(--color-card);
 
   --category-one: #213787;
   --category-one-text: #4981F2;
@@ -103,6 +108,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-bland-foreground: var(--bland-foreground);
+  --color-button: var(--button);
 
   --color-category-one: var(--category-one);
   --color-category-one-text: var(--category-one-text);
