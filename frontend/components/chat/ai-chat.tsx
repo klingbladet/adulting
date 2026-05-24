@@ -1,15 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
-  ChevronRight,
-  MessageCircle,
+  Lightbulb,
   Menu,
+  MessageCircle,
   Plus,
+  Send,
+  Settings,
+  Sparkles,
   Trash2,
   User,
-  Users,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -59,7 +62,6 @@ export default function AiChat({
   const [sending, setSending] = useState(false);
   const [creatingThread, setCreatingThread] = useState(false);
   const [error, setError] = useState("");
-  const [view, setView] = useState<"ai" | "personer">("ai");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -126,9 +128,7 @@ export default function AiChat({
         setActiveThreadId(list[0].id);
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Kunde inte hämta chattar.";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Kunde inte hämta chattar.");
     } finally {
       setLoadingThreads(false);
     }
@@ -141,9 +141,7 @@ export default function AiChat({
 
       const response = await fetch(
         `${API_BASE}/api/ai/threads/${threadId}/messages`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
 
       const data = await safeJson(response);
@@ -154,9 +152,9 @@ export default function AiChat({
 
       setMessages(Array.isArray(data) ? data : []);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Kunde inte hämta meddelanden.";
-      setError(message);
+      setError(
+        err instanceof Error ? err.message : "Kunde inte hämta meddelanden."
+      );
     } finally {
       setLoadingMessages(false);
     }
@@ -166,7 +164,6 @@ export default function AiChat({
     try {
       setCreatingThread(true);
       setError("");
-      setView("ai");
 
       const response = await fetch(`${API_BASE}/api/ai/threads`, {
         method: "POST",
@@ -186,9 +183,7 @@ export default function AiChat({
 
       return data?.id as string;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Kunde inte skapa ny chatt.";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Kunde inte skapa ny chatt.");
       return null;
     } finally {
       setCreatingThread(false);
@@ -220,14 +215,11 @@ export default function AiChat({
 
       await fetchThreads(true);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Kunde inte radera chatten.";
-      setError(message);
+      setError(err instanceof Error ? err.message : "Kunde inte radera chatten.");
     }
   }
 
   async function handleSelectThread(threadId: string) {
-    setView("ai");
     setActiveThreadId(threadId);
     setSidebarOpen(false);
     await fetchMessages(threadId);
@@ -240,7 +232,6 @@ export default function AiChat({
 
   setError("");
   setSending(true);
-  setView("ai");
 
   let threadId = activeThreadId;
 
@@ -316,24 +307,18 @@ export default function AiChat({
     }
   }
 
-  function openAiChat() {
-    setView("ai");
-    setSidebarOpen(false);
-  }
-
-  function openPersonChat() {
-    setView("personer");
-    setSidebarOpen(false);
-  }
-
   function handleCloseChat() {
-  if (onClose) {
-    onClose();
-    return;
+    if (onClose) {
+      onClose();
+      return;
+    }
+
+    router.back();
   }
 
-  router.back();
-}
+  function useSuggestion(text: string) {
+    setMessageInput(text);
+  }
 
   useEffect(() => {
     if (session) {
@@ -342,10 +327,10 @@ export default function AiChat({
   }, [session]);
 
   useEffect(() => {
-    if (activeThreadId && view === "ai") {
+    if (activeThreadId) {
       fetchMessages(activeThreadId);
     }
-  }, [activeThreadId, view]);
+  }, [activeThreadId]);
 
   const activeThreadTitle = useMemo(() => {
     const active = threads.find((item) => item.id === activeThreadId);
@@ -364,22 +349,22 @@ export default function AiChat({
 
   const isEmbedded = variant === "embedded";
 
-return (
-  <main
-    className={
-      isEmbedded
-        ? "flex h-full w-full items-center justify-center bg-transparent"
-        : "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-4"
-    }
-  >
-    <div
+  return (
+    <main
       className={
         isEmbedded
-          ? "relative flex h-full w-full overflow-hidden bg-background"
-          : "relative flex h-[90vh] w-full max-w-6xl overflow-hidden rounded-[30px] bg-background shadow-2xl md:h-[82vh] md:border md:border-border"
+          ? "flex h-full w-full items-center justify-center bg-transparent"
+          : "fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3 py-4"
       }
     >
-       {sidebarOpen && (
+      <div
+        className={
+          isEmbedded
+            ? "relative flex h-full w-full overflow-hidden bg-background"
+            : "relative flex h-[90vh] w-full max-w-6xl overflow-hidden rounded-[30px] bg-background shadow-2xl md:h-[82vh] md:border md:border-border"
+        }
+      >
+        {sidebarOpen && (
           <div
             onClick={() => setSidebarOpen(false)}
             className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
@@ -387,13 +372,13 @@ return (
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 h-full w-[82%] max-w-77 border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
+          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
-              Meny
+              AI-assistent
             </h2>
 
             <button
@@ -404,34 +389,21 @@ return (
             </button>
           </div>
 
-          <div className="mt-7">
-            <button
-              onClick={openAiChat}
-              className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
-                view === "ai" ? "bg-secondary" : "hover:bg-secondary/70"
-              }`}
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Bot size={20} />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  AI-chat
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Gå tillbaka till AI-assistenten
-                </p>
-              </div>
-            </button>
-          </div>
+          <button
+            onClick={createThread}
+            disabled={creatingThread}
+            className="mt-7 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+          >
+            <Plus size={20} />
+            Ny AI-chatt
+          </button>
 
           <div className="mt-7">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Historik
+              Senaste chattar
             </p>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               {loadingThreads ? (
                 <div className="rounded-2xl border border-border bg-background p-4 text-sm text-muted-foreground">
                   Laddar tidigare chattar...
@@ -442,7 +414,7 @@ return (
                 </div>
               ) : (
                 threads.map((thread) => {
-                  const isActive = activeThreadId === thread.id && view === "ai";
+                  const isActive = activeThreadId === thread.id;
 
                   return (
                     <div
@@ -484,32 +456,24 @@ return (
             </div>
           </div>
 
-          <div className="mt-6 border-t border-border pt-5">
-            <button
-              onClick={openPersonChat}
-              className={`flex w-full items-center justify-between rounded-2xl p-3 text-left transition ${
-                view === "personer"
-                  ? "bg-secondary"
-                  : "hover:bg-secondary/70"
-              }`}
+          <div className="mt-auto border-t border-border pt-5">
+            <Link
+              href="/profile/settings"
+              className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:bg-secondary/70"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Users size={20} />
-                </div>
-
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Person-chatt
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Chatta med en riktig person
-                  </p>
-                </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Settings size={20} />
               </div>
 
-              <ChevronRight size={18} className="text-muted-foreground" />
-            </button>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Inställningar
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Gå till dina inställningar
+                </p>
+              </div>
+            </Link>
           </div>
         </aside>
 
@@ -526,13 +490,11 @@ return (
 
             <div className="min-w-0 text-center">
               <h1 className="text-base font-bold tracking-tight text-foreground md:text-lg">
-                {view === "ai" ? "AI-chat" : "Person-chatt"}
+                AI-chat
               </h1>
 
               <p className="hidden max-w-[260px] truncate text-xs text-muted-foreground md:block">
-                {view === "ai"
-                  ? activeThreadTitle
-                  : "Kontakta en riktig person"}
+                {activeThreadTitle}
               </p>
             </div>
 
@@ -562,132 +524,128 @@ return (
             </div>
           )}
 
-          {view === "personer" ? (
-            <div className="flex flex-1 items-center justify-center px-6 py-8">
-              <div className="w-full max-w-sm text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
-                  <Users size={30} />
-                </div>
-
-                <h2 className="mt-6 text-2xl font-bold tracking-tight text-foreground">
-                  Person-chatt
-                </h2>
-
-                <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-muted-foreground">
-                  Här kommer användaren kunna chatta med en riktig person från
-                  teamet.
-                </p>
-
-                <button
-                  onClick={openAiChat}
-                  className="mt-7 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
-                >
-                  Tillbaka till AI-chat
-                </button>
+          <div className="flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-6">
+            {loadingMessages ? (
+              <div className="text-sm text-muted-foreground">
+                Laddar meddelanden...
               </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-6">
-                {loadingMessages ? (
-                  <div className="text-sm text-muted-foreground">
-                    Laddar meddelanden...
+            ) : messages.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="w-full max-w-sm text-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                    <Bot size={30} />
                   </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex h-full items-center justify-center">
-                    <div className="w-full max-w-sm text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
-                        <Bot size={30} />
-                      </div>
 
-                      <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
-                        Hur kan jag hjälpa dig?
-                      </h2>
+                  <h2 className="mt-6 text-3xl font-bold tracking-tight text-foreground">
+                    Hur kan jag hjälpa dig?
+                  </h2>
 
-                      <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-muted-foreground">
-                        Skriv din fråga så hjälper jag dig på bästa sätt.
-                      </p>
-                    </div>
+                  <p className="mx-auto mt-3 max-w-[280px] text-sm leading-6 text-muted-foreground">
+                    Skriv din fråga så hjälper jag dig på bästa sätt.
+                  </p>
+
+                  <div className="mt-8 grid gap-3 text-left">
+                    <button
+                      onClick={() => useSuggestion("Förklara ett begrepp enkelt")}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary"
+                    >
+                      <Lightbulb size={20} className="text-primary" />
+                      Förklara ett begrepp
+                    </button>
+
+                    <button
+                      onClick={() => useSuggestion("Hjälp mig med kursen")}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary"
+                    >
+                      <Bot size={20} className="text-primary" />
+                      Hjälp med kursen
+                    </button>
+
+                    <button
+                      onClick={() => useSuggestion("Ge mig tips för studier")}
+                      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm font-semibold text-foreground shadow-sm transition hover:bg-secondary"
+                    >
+                      <Sparkles size={20} className="text-primary" />
+                      Tips för studier
+                    </button>
                   </div>
-                ) : (
-                  <div className="mx-auto max-w-3xl space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex items-end gap-2 ${
-                          message.role === "user"
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        {message.role === "assistant" && (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <Bot size={15} />
-                          </div>
-                        )}
-
-                        <div
-                          className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${
-                            message.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-border bg-card text-foreground"
-                          }`}
-                        >
-                          {message.content}
-                        </div>
-
-                        {message.role === "user" && (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground">
-                            <User size={15} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {sending && (
-                      <div className="flex items-end gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          <Bot size={15} />
-                        </div>
-
-                        <div className="rounded-[22px] border border-border bg-card px-4 py-3 text-left text-[15px] text-muted-foreground shadow-sm">
-                          <span>AI skriver</span>
-                          <span className="ml-1 inline-flex gap-1">
-                            <span className="animate-bounce">.</span>
-                            <span className="animate-bounce delay-100">.</span>
-                            <span className="animate-bounce delay-200">.</span>
-                          </span>
-                        </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-3xl space-y-4">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex items-end gap-2 ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {message.role === "assistant" && (
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Bot size={15} />
                       </div>
                     )}
 
-                    <div ref={messagesEndRef} />
+                    <div
+                      className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-border bg-card text-foreground"
+                      }`}
+                    >
+                      {message.content}
+                    </div>
+
+                    {message.role === "user" && (
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground">
+                        <User size={15} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {sending && (
+                  <div className="flex items-end gap-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <Bot size={15} />
+                    </div>
+
+                    <div className="rounded-[22px] border border-border bg-card px-4 py-3 text-left text-[15px] text-muted-foreground shadow-sm">
+                      <span>AI skriver</span>
+                      <span className="ml-1 inline-flex gap-1">
+                        <span className="animate-bounce">.</span>
+                        <span className="animate-bounce delay-100">.</span>
+                        <span className="animate-bounce delay-200">.</span>
+                      </span>
+                    </div>
                   </div>
                 )}
-              </div>
 
-              <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
-                <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
-                  <textarea
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={handleTextareaKeyDown}
-                    placeholder="Skriv din fråga här..."
-                    rows={1}
-                    className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
-                  />
-
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={sending || !messageInput.trim()}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-                  >
-                    <MessageCircle size={20} />
-                  </button>
-                </div>
+                <div ref={messagesEndRef} />
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
+            <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
+              <textarea
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyDown={handleTextareaKeyDown}
+                placeholder="Skriv din fråga här..."
+                rows={1}
+                className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+              />
+
+              <button
+                onClick={handleSendMessage}
+                disabled={sending || !messageInput.trim()}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+              >
+                <Send size={19} />
+              </button>
+            </div>
+          </div>
         </section>
       </div>
     </main>
