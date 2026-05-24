@@ -63,7 +63,7 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
           <p className="font-medium text-muted-foreground">Vill du fortsätta din resa?</p>
           <CategoryButtons categories={categories} />
         </div>
-        <Link href={`/courses/${courseId}/overview`} className="block">
+        <Link href={`/learn`} className="block">
           <CourseButton variant="primary">
             Utforska fler kurser
           </CourseButton>
