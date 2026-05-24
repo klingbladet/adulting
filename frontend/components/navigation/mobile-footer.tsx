@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, BookOpen, LifeBuoy, User } from "lucide-react";
 import AiChatModal from "@/components/chat/ai-chat-modal";
+import type { AiLearningContext } from "@/lib/learning-context";
 
 const links = [
   { href: "/learn", label: "Home", icon: Home },
@@ -11,8 +12,27 @@ const links = [
   { href: "/profile", label: "You", icon: User },
 ];
 
+function getLearningContextFromPathname(
+  pathname: string,
+): AiLearningContext | undefined {
+  const parts = pathname.split("/").filter(Boolean);
+
+  const coursesIndex = parts.indexOf("courses");
+  const courseId = coursesIndex >= 0 ? parts[coursesIndex + 1] : undefined;
+
+  if (!courseId) {
+    return undefined;
+  }
+
+  return {
+    courseId,
+    mode: "course_recommendation",
+  };
+}
+
 export default function MobileFooter() {
   const pathname = usePathname();
+  const learningContext = getLearningContextFromPathname(pathname);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-4 lg:hidden">
@@ -48,6 +68,7 @@ export default function MobileFooter() {
 
           <li>
             <AiChatModal
+              learningContext={learningContext}
               trigger={(open) => (
                 <button
                   type="button"

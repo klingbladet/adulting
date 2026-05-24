@@ -39,9 +39,9 @@ type Message = {
 };
 
 type AiChatProps = {
+  variant?: "standalone" | "embedded";
   onClose?: () => void;
   learningContext?: AiLearningContext;
-  variant?: "standalone" | "embedded";
 };
 
 export default function AiChat({
@@ -226,74 +226,77 @@ export default function AiChat({
   }
 
   async function handleSendMessage() {
-    const cleanMessage = messageInput.trim();
+  const cleanMessage = messageInput.trim();
 
-    if (!cleanMessage || sending) return;
+  if (!cleanMessage || sending) return;
 
-    setError("");
-    setSending(true);
+  setError("");
+  setSending(true);
 
-    let threadId = activeThreadId;
+  let threadId = activeThreadId;
+
+  if (!threadId) {
+    threadId = await createThread();
 
     if (!threadId) {
-      threadId = await createThread();
-
-      if (!threadId) {
-        setSending(false);
-        return;
-      }
-    }
-
-    const optimisticUserMessage: Message = {
-      id: `temp-${Date.now()}`,
-      threadId,
-      role: "user",
-      content: cleanMessage,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, optimisticUserMessage]);
-    setMessageInput("");
-
-    try {
-      const response = await fetch(
-        `${API_BASE}/api/ai/threads/${threadId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            message: cleanMessage,
-            ...(learningContext ? { learningContext } : {}),
-          }),
-        }
-      );
-
-      const data = await safeJson(response);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "AI-assistenten kunde inte svara just nu."
-        );
-      }
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "AI-assistenten kunde inte svara just nu."
-      );
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } finally {
       setSending(false);
+      return;
     }
   }
+
+  const optimisticUserMessage: Message = {
+    id: `temp-${Date.now()}`,
+    threadId,
+    role: "user",
+    content: cleanMessage,
+    createdAt: new Date().toISOString(),
+  };
+
+  setMessages((prev) => [...prev, optimisticUserMessage]);
+  setMessageInput("");
+
+  const payload = {
+    message: cleanMessage,
+    ...(learningContext ? { learningContext } : {}),
+  };
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/ai/threads/${threadId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      },
+    );
+
+    const data = await safeJson(response);
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "AI-assistenten kunde inte svara just nu.",
+      );
+    }
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } catch (err) {
+    const message =
+      err instanceof Error
+        ? err.message
+        : "AI-assistenten kunde inte svara just nu.";
+
+    setError(message);
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } finally {
+    setSending(false);
+  }
+}
 
   function handleTextareaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>

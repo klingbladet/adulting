@@ -678,7 +678,6 @@ router.post("/assistant/context", async (req, res) => {
       courseId: body.courseId,
       lessonId: body.lessonId,
       mode: body.mode ?? "general",
-      quizAnswers: body.quizAnswers,
     });
 
     res.status(200).json({
