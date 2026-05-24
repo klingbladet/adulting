@@ -144,8 +144,6 @@ export default function Header() {
       {/* rad 2 */}
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <nav className="hidden items-center gap-6 md:flex">
-          {!isPending &&
-            (isSignedIn ? (
               <>
                 {canAccessUserApp && (
                   <Link href="/learn" className="text-foreground">
@@ -166,24 +164,6 @@ export default function Header() {
                 )}
 
               </>
-            ) : (
-              <>
-                <Link
-                  href="/sign-in"
-                  className="rounded-lg border border-border px-4 py-2 text-sm"
-                >
-                  Sign in
-                </Link>
-
-                <Link
-                  href="/sign-up"
-                  className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
-                >
-                  Sign up
-                </Link>
-              </>
-            ))}
-
         </nav>
 
         <button
