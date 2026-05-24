@@ -46,7 +46,8 @@ app.get("/", (_req: Request, res: Response) => {
       "get_current_course_quiz_result",
       "get_current_course_learning_context",
       "get_course_quiz_result_by_course_id",
-    ]  });
+    ],
+  });
 });
 
 app.all("/mcp", async (req: Request, res: Response) => {
@@ -71,7 +72,12 @@ app.all("/mcp", async (req: Request, res: Response) => {
     if (sessionId && transports.has(sessionId)) {
       transport = transports.get(sessionId)!;
     } else {
-      const server = createAdultingMcpServer();
+      const context = {
+        userId: req.header("x-user-id") ?? undefined,
+        courseId: req.header("x-course-id") ?? undefined,
+      };
+
+      const server = createAdultingMcpServer(undefined, context);
 
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
@@ -82,6 +88,10 @@ app.all("/mcp", async (req: Request, res: Response) => {
           transports.set(newSessionId, transport);
 
           console.log(`[MCP] Session initialized: ${newSessionId}`);
+          console.log("[MCP] Context:", {
+            hasUserId: Boolean(context.userId),
+            courseId: context.courseId,
+          });
         },
       });
 
@@ -92,6 +102,8 @@ app.all("/mcp", async (req: Request, res: Response) => {
           transports.delete(closedSessionId);
           console.log(`[MCP] Session closed: ${closedSessionId}`);
         }
+
+        server.close();
       };
 
       await server.connect(transport);
@@ -141,6 +153,12 @@ process.on("SIGTERM", shutdown);
 
 function shutdown() {
   console.log("[MCP] Shutting down...");
+
+  for (const transport of transports.values()) {
+    transport.close();
+  }
+
+  transports.clear();
 
   httpServer.close((error) => {
     if (error) {

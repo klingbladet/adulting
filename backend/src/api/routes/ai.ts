@@ -23,7 +23,7 @@ import {
   buildAssistantSystemPrompt,
   defaultAssistantContextService,
 } from "../../services/learning/assistant-context-service";
-
+import { callOpenRouterWithMcpTools } from "../../services/ai/mcp-openrouter-bridge";
 const router = Router();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -162,6 +162,12 @@ async function buildLearningAwareSystemPrompt(input: {
     "- Om användaren frågar hur det gick på quizet, svara med resultatet från 'Quizresultat'.",
     "- Om quizresultat finns i backend-context, säg inte att du saknar quizresultat.",
     "- Om quizresultat saknas i backend-context, säg att du inte kan se quizresultatet ännu.",
+    "- Gissa aldrig kursnamn, quizresultat eller progression.",
+    "Du har tillgång till MCP-tools för kurs- och quizdata.",
+    "Använd tools när användaren frågar om aktuell kurs, quizresultat eller vad hen bör fokusera på.",
+    "- Om användaren frågar om aktuell kurs, använd MCP-toolen get_current_course.",
+    "- Om användaren frågar om quizresultat, använd MCP-toolen get_current_course_quiz_result.",
+    "- Om användaren frågar vad hen bör fokusera på, använd MCP-toolen get_current_course_learning_context.",
     "- Gissa aldrig kursnamn, quizresultat eller progression.",
   ].join("\n");
 }
@@ -427,16 +433,25 @@ router.post("/threads/:threadId/messages", async (req, res) => {
 
     let aiReply = "";
 
-    try {
-      aiReply = await callOpenRouter(history, {
-        systemPrompt: learningAwareSystemPrompt,
-      });
-    } catch (error) {
-      console.error("AI ERROR:", error);
+      try {
+        if (!OPENROUTER_API_KEY) {
+          throw new Error("OPENROUTER_API_KEY saknas");
+        }
 
-      aiReply =
-        "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
-    }
+        aiReply = await callOpenRouterWithMcpTools({
+          history,
+          systemPrompt: learningAwareSystemPrompt,
+          userId,
+          courseId: learningContext?.courseId,
+          openRouterApiKey: OPENROUTER_API_KEY,
+          openRouterModel: OPENROUTER_MODEL,
+        });
+      } catch (error) {
+        console.error("AI ERROR:", error);
+
+        aiReply =
+          "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
+      }
 
     await db.insert(aiMessages).values({
       threadId,
