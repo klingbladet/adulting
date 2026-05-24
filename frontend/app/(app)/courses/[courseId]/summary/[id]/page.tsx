@@ -1,19 +1,27 @@
 import Link from 'next/link';
 import CourseButton from '@/components/courses/course-buttons';
-import { getCourseById, getBlocksByCourseId } from '@/lib/api';
+import { getCourseById, getBlocksByCourseId, getCategories, Category } from '@/lib/api';
+
+import BasicRating from '@/components/courses/StarsRating';
+import CategoryButtons from '@/components/courses/category-buttons';
 
 export default async function SummaryPage({ params }: { params: Promise<{ courseId: string; id: string }> }) {
+  
   const { courseId, id } = await params;
 
   let course;
   let blocks;
+  let categories: Category[] = [];
 
   try {
-    [course, blocks] = await Promise.all([
+    [course, blocks, categories] = await Promise.all([
       getCourseById(courseId),
       getBlocksByCourseId(courseId),
+      getCategories(),
     ]);
-  } catch {
+  } catch (error) {
+    console.error("Kunde inte hämta kursdata", error)
+    console.log(categories);
     return <div>Kunde inte hämta kursdata</div>;
   }
 
@@ -26,27 +34,38 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
   }
 
   return (
-    <main className="flex flex-col min-h-screen bg-background p-6 text-center">
+    <main className="flex flex-col justify-around min-h-screen bg-background p-6 text-center my-4"
+    style={{
+      backgroundImage: "url('/images/backgrounds/fyrverkerier.gif')", 
+      backgroundSize: "150%", 
+      backgroundPosition: "50% -60%", 
+      backgroundRepeat: "no-repeat"
+    }}>
 
-      <div className="mb-8">
-        <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-4xl text-primary font-bold">✓</span>
+      <div className="flex flex-col justify-center gap-4">
+        <h1 className="text-7xl font-bold text-summary">Grattis!</h1>
+        <div className="flex flex-col justify-center gap-2">
+          {isLastBlock && course && (
+            <span className="flex gap-1 justify-center flex-wrap text-summary font-normal">
+              Du har läst igenom sista blocket: <p className='font-semibold'>{block.title}</p>
+            </span>
+          )}
+          <span className="flex justify-center flex-wrap gap-1 text-summary font-normal text-lg">
+            Du har slutfört kursen: <p className='font-semibold'>{course.title}</p>
+          </span>
         </div>
-        <h1 className="text-3xl font-bold mb-2 text-foreground">Snyggt jobbat!</h1>
-        <p className="text-muted-foreground text-lg">
-          Du har slutfört: {block.title}
-        </p>
-        {isLastBlock && course && (
-          <p className="text-muted-foreground mt-2">
-            Du har nu gått igenom hela kursen: <strong>{course.title}</strong>
-          </p>
-        )}
       </div>
 
+      <BasicRating />
+
       <div className="w-full space-y-4">
-        <Link href={`/courses/${courseId}/overview`} className="block">
+        <div className='flex flex-col items-start pb-10 pl-4'>
+          <p className="font-medium text-muted-foreground">Vill du fortsätta din resa?</p>
+          <CategoryButtons categories={categories} />
+        </div>
+        <Link href={`/learn`} className="block">
           <CourseButton variant="primary">
-            Tillbaka till översikt
+            Utforska fler kurser
           </CourseButton>
         </Link>
       </div>
