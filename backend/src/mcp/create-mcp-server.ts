@@ -17,43 +17,21 @@ import {
   defaultQuizGenerationService,
   type QuizGenerationService,
 } from "../services/learning/quiz-generation-service";
-import type {
-  QuizAnswerForPriority,
-} from "../services/learning/types";
-
-/**
- * Adulting MCP server.
- *
- * Den här filen skapar MCP-servern och registrerar de tools som AI-klienter
- * senare kan använda.
- *
- * Första MVP-tools:
- *
- * 1. generate_quiz_from_lesson_blocks
- *    Skapar quizfrågor från lesson blocks.
- *
- * 2. get_lesson_context
- *    Hämtar AI-vänlig kontext för en lektion.
- *
- * 3. calculate_block_priorities
- *    Räknar ut vilka blocks eleven bör fokusera på baserat på quizsvar.
- *
- * Viktigt:
- * Den här filen ska INTE innehålla tung business logic.
- * Tools ska bara validera input, anropa services och returnera resultat.
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - Byt LEARNING_LESSON_PROVIDER från "mock" till "database".
- * - get_lesson_context kommer då automatiskt hämta riktiga lesson blocks.
- *
- * TODO när quiz-tabellerna är klara:
- * - generate_quiz_from_lesson_blocks kan spara quiz som draft.
- * - saveAsDraft kan då sättas till true från adminflödet.
- */
+import type { QuizAnswerForPriority } from "../services/learning/types";
+import {
+  getCurrentCourseContext,
+  getCurrentCourseLearningContext,
+  getCurrentCourseQuizResult,
+} from "../services/ai-context/course-ai-context-service";
 
 export type AdultingMcpServerDeps = {
   lessonProvider: LessonProvider;
   quizGenerationService: QuizGenerationService;
+};
+
+export type AdultingMcpRequestContext = {
+  userId?: string;
+  courseId?: string;
 };
 
 export function createAdultingMcpServer(
@@ -61,6 +39,7 @@ export function createAdultingMcpServer(
     lessonProvider: defaultLessonProvider,
     quizGenerationService: defaultQuizGenerationService,
   },
+  context: AdultingMcpRequestContext = {},
 ) {
   const server = new McpServer(
     {
@@ -73,8 +52,10 @@ export function createAdultingMcpServer(
         "Use generate_quiz_from_lesson_blocks to create quiz drafts from lesson blocks.",
         "Use get_lesson_context before answering lesson-specific questions.",
         "Use calculate_block_priorities after quiz answers to identify what the learner should focus on.",
-        "Never publish or delete user content directly from MCP tools in the MVP.",
-        "Quiz generation should create drafts/previews that a human expert can review.",
+        "Use get_current_course when the user asks which course they are currently working on.",
+        "Use get_current_course_quiz_result when the user asks about their quiz result.",
+        "Use get_current_course_learning_context when the user asks what to focus on next.",
+        "Never let the model choose userId. userId must always come from backend context.",
       ].join("\n"),
     },
   );
@@ -82,28 +63,11 @@ export function createAdultingMcpServer(
   registerGenerateQuizFromLessonBlocksTool(server, deps);
   registerGetLessonContextTool(server, deps);
   registerCalculateBlockPrioritiesTool(server, deps);
+  registerCurrentCourseTools(server, context);
 
   return server;
 }
 
-/**
- * Tool 1:
- * generate_quiz_from_lesson_blocks
- *
- * Den här är huvudtoolfunktionen för MCP-demo och MVP.
- *
- * Input:
- * - lessonId
- * - questionCountPerBlock
- * - language
- * - difficulty
- * - saveAsDraft
- *
- * Output:
- * - quiz preview/draft
- * - questions
- * - blockId per question
- */
 function registerGenerateQuizFromLessonBlocksTool(
   server: McpServer,
   deps: AdultingMcpServerDeps,
@@ -125,7 +89,9 @@ function registerGenerateQuizFromLessonBlocksTool(
           .int()
           .positive()
           .optional()
-          .describe("How many questions to generate per quiz-eligible block. Default is 2."),
+          .describe(
+            "How many questions to generate per quiz-eligible block. Default is 2.",
+          ),
         language: z
           .enum(["sv", "en"])
           .optional()
@@ -133,7 +99,9 @@ function registerGenerateQuizFromLessonBlocksTool(
         difficulty: z
           .enum(["easy", "medium", "hard"])
           .optional()
-          .describe("Difficulty level for the generated questions. Default is medium."),
+          .describe(
+            "Difficulty level for the generated questions. Default is medium.",
+          ),
         saveAsDraft: z
           .boolean()
           .optional()
@@ -150,14 +118,6 @@ function registerGenerateQuizFromLessonBlocksTool(
             questionCountPerBlock: input.questionCountPerBlock ?? 2,
             language: input.language ?? "sv",
             difficulty: input.difficulty ?? "medium",
-
-            /**
-             * Just nu kommer servicen returnera preview även om saveAsDraft är true,
-             * eftersom DB-tabellerna inte är implementerade ännu.
-             *
-             * TODO när quiz-tabellerna är klara:
-             * Låt saveAsDraft styra om quizet sparas i databasen.
-             */
             saveAsDraft: input.saveAsDraft ?? false,
           });
 
@@ -169,20 +129,6 @@ function registerGenerateQuizFromLessonBlocksTool(
   );
 }
 
-/**
- * Tool 2:
- * get_lesson_context
- *
- * Den här gör AI-assistenten smartare.
- *
- * Den returnerar:
- * - lesson metadata
- * - blocks i AI-läsbart format
- * - full promptContext som kan skickas in i assistentprompten
- *
- * Den här kan användas innan AI:n svarar på frågor som:
- * "Kan du förklara kontantinsats enklare?"
- */
 function registerGetLessonContextTool(
   server: McpServer,
   deps: AdultingMcpServerDeps,
@@ -222,22 +168,6 @@ function registerGetLessonContextTool(
   );
 }
 
-/**
- * Tool 3:
- * calculate_block_priorities
- *
- * Den här räknar ut vilka blocks eleven bör fokusera på baserat på quizsvar.
- *
- * Kan köras på två sätt:
- *
- * 1. Med bara answers:
- *    Då räknar vi prioritet för de blockIds som finns i answers.
- *
- * 2. Med lessonId + answers:
- *    Då hämtar vi lesson och sorterar priorities enligt lesson block order.
- *
- * Detta kräver ingen AI.
- */
 function registerCalculateBlockPrioritiesTool(
   server: McpServer,
   deps: AdultingMcpServerDeps,
@@ -305,12 +235,114 @@ function registerCalculateBlockPrioritiesTool(
   );
 }
 
-/**
- * Standardiserad MCP success response.
- *
- * MCP tools returnerar alltid content.
- * structuredContent gör det enklare för klienter att läsa resultatet som data.
- */
+function registerCurrentCourseTools(
+  server: McpServer,
+  context: AdultingMcpRequestContext,
+) {
+  server.registerTool(
+    "get_current_course",
+    {
+      title: "Get current course",
+      description:
+        "Gets the current course from backend context. Use this when the user asks which course they are currently working on.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        const result = await getCurrentCourseContext({
+          courseId: context.courseId,
+        });
+
+        return toStructuredToolResult(result);
+      } catch (error) {
+        return toToolErrorResult(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    "get_current_course_quiz_result",
+    {
+      title: "Get current course quiz result",
+      description:
+        "Gets the latest quiz result for the current user and current course. The userId comes from backend context and must never be provided by the model.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        if (!context.userId) {
+          throw new Error("Missing userId in MCP request context.");
+        }
+
+        const result = await getCurrentCourseQuizResult({
+          userId: context.userId,
+          courseId: context.courseId,
+        });
+
+        return toStructuredToolResult(result);
+      } catch (error) {
+        return toToolErrorResult(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    "get_current_course_learning_context",
+    {
+      title: "Get current course learning context",
+      description:
+        "Gets both current course context and latest quiz result for the current user and course. Use this when the user asks what to focus on next.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        if (!context.userId) {
+          throw new Error("Missing userId in MCP request context.");
+        }
+
+        const result = await getCurrentCourseLearningContext({
+          userId: context.userId,
+          courseId: context.courseId,
+        });
+
+        return toStructuredToolResult(result);
+      } catch (error) {
+        return toToolErrorResult(error);
+      }
+    },
+  );
+
+  server.registerTool(
+    "get_course_quiz_result_by_course_id",
+    {
+      title: "Get course quiz result by courseId",
+      description:
+        "Gets the latest quiz result for a specific courseId. The userId still comes from backend context and must never be provided by the model.",
+      inputSchema: {
+        courseId: z
+          .string()
+          .describe("The courseId to get quiz result for."),
+      },
+    },
+    async ({ courseId }) => {
+      try {
+        if (!context.userId) {
+          throw new Error("Missing userId in MCP request context.");
+        }
+
+        const result = await getCurrentCourseQuizResult({
+          userId: context.userId,
+          courseId,
+        });
+
+        return toStructuredToolResult(result);
+      } catch (error) {
+        return toToolErrorResult(error);
+      }
+    },
+  );
+}
+
 function toStructuredToolResult<TData>(data: TData) {
   return {
     content: [
@@ -323,13 +355,6 @@ function toStructuredToolResult<TData>(data: TData) {
   };
 }
 
-/**
- * Standardiserad MCP error response.
- *
- * Viktigt:
- * Vi returnerar isError: true i stället för att kasta vidare,
- * så MCP-klienten får ett kontrollerat felsvar.
- */
 function toToolErrorResult(error: unknown) {
   const message =
     error instanceof Error ? error.message : "Unknown MCP tool error";

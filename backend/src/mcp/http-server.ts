@@ -6,19 +6,6 @@ import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import createAdultingMcpServer from "./create-mcp-server";
-/**
- * Adulting MCP HTTP server.
- *
- * Kör MCP-servern över Streamable HTTP.
- *
- * Lokal URL:
- *
- * http://localhost:3003/mcp
- *
- * Viktigt:
- * MCP Inspector kan göra både GET och POST mot /mcp.
- * Därför hanterar vi GET, POST och DELETE via samma transport.
- */
 
 const DEFAULT_PORT = 3003;
 const DEFAULT_HOST = "0.0.0.0";
@@ -28,12 +15,6 @@ const host = process.env.MCP_HOST ?? DEFAULT_HOST;
 
 const internalToken = process.env.MCP_INTERNAL_TOKEN;
 
-/**
- * Stateful transports.
- *
- * MCP Inspector fungerar ofta bättre när servern stödjer sessioner.
- * Vi sparar transport per sessionId.
- */
 const transports = new Map<string, StreamableHTTPServerTransport>();
 
 const app = createMcpExpressApp({
@@ -61,21 +42,13 @@ app.get("/", (_req: Request, res: Response) => {
       "generate_quiz_from_lesson_blocks",
       "get_lesson_context",
       "calculate_block_priorities",
-    ],
-    mockLessonIds: ["lesson_bolan_001", "lesson_hyreskontrakt_001"],
-  });
+      "get_current_course",
+      "get_current_course_quiz_result",
+      "get_current_course_learning_context",
+      "get_course_quiz_result_by_course_id",
+    ]  });
 });
 
-/**
- * MCP endpoint.
- *
- * Viktigt:
- * app.all gör att GET, POST och DELETE alla går genom MCP-transporten.
- *
- * Detta löser felet:
- *
- * Cannot GET /mcp
- */
 app.all("/mcp", async (req: Request, res: Response) => {
   if (!isAuthorizedMcpRequest(req)) {
     res.status(401).json({
@@ -103,10 +76,6 @@ app.all("/mcp", async (req: Request, res: Response) => {
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
 
-        /**
-         * Viktigt för Inspector:
-         * Låt transporten hantera både JSON och eventuella stream/SSE-flöden.
-         */
         enableJsonResponse: true,
 
         onsessioninitialized: (newSessionId) => {
