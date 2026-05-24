@@ -36,27 +36,9 @@ type Message = {
 };
 
 type AiChatProps = {
-  /**
-   * Används när chatten ligger i en modal.
-   * Då ska stäng-knappen stänga modal, inte köra router.back().
-   */
-  onClose?: () => void;
-
-  /**
-   * Optional learning context.
-   *
-   * Om denna skickas med blir befintlig AI-chat lesson-aware.
-   */
-  learningContext?: AiLearningContext;
-
-  /**
-   * standalone:
-   * AiChat renderar egen overlay.
-   *
-   * embedded:
-   * AiChat ligger redan inuti en modal och ska inte skapa extra overlay.
-   */
   variant?: "standalone" | "embedded";
+  onClose?: () => void;
+  learningContext?: AiLearningContext;
 };
 
 export default function AiChat({
@@ -252,87 +234,78 @@ export default function AiChat({
   }
 
   async function handleSendMessage() {
-    const cleanMessage = messageInput.trim();
+  const cleanMessage = messageInput.trim();
 
-    if (!cleanMessage || sending) return;
+  if (!cleanMessage || sending) return;
 
-    setError("");
-    setSending(true);
-    setView("ai");
+  setError("");
+  setSending(true);
+  setView("ai");
 
-    let threadId = activeThreadId;
+  let threadId = activeThreadId;
+
+  if (!threadId) {
+    threadId = await createThread();
 
     if (!threadId) {
-      threadId = await createThread();
-      if (!threadId) {
-        setSending(false);
-        return;
-      }
-    }
-
-    const optimisticUserMessage: Message = {
-      id: `temp-${Date.now()}`,
-      threadId,
-      role: "user",
-      content: cleanMessage,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, optimisticUserMessage]);
-    setMessageInput("");
-
-    try {
-      const response = await fetch(
-        `${API_BASE}/api/ai/threads/${threadId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-          message: cleanMessage,
-
-          /**
-           * Om AiChat får learningContext via props skickar vi den till backend.
-           *
-           * Backend använder då:
-           * - courseId
-           * - lessonId
-           * - mode
-           * - quizAnswers
-           *
-           * för att göra assistenten lesson-aware.
-           */
-          ...(learningContext ? { learningContext } : {}),
-        }),
-        }
-      );
-
-      const data = await safeJson(response);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "AI-assistenten kunde inte svara just nu."
-        );
-      }
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "AI-assistenten kunde inte svara just nu.";
-
-      setError(message);
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } finally {
       setSending(false);
+      return;
     }
   }
+
+  const optimisticUserMessage: Message = {
+    id: `temp-${Date.now()}`,
+    threadId,
+    role: "user",
+    content: cleanMessage,
+    createdAt: new Date().toISOString(),
+  };
+
+  setMessages((prev) => [...prev, optimisticUserMessage]);
+  setMessageInput("");
+
+  const payload = {
+    message: cleanMessage,
+    ...(learningContext ? { learningContext } : {}),
+  };
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/ai/threads/${threadId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      },
+    );
+
+    const data = await safeJson(response);
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "AI-assistenten kunde inte svara just nu.",
+      );
+    }
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } catch (err) {
+    const message =
+      err instanceof Error
+        ? err.message
+        : "AI-assistenten kunde inte svara just nu.";
+
+    setError(message);
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } finally {
+    setSending(false);
+  }
+}
 
   function handleTextareaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>
