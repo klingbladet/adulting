@@ -129,10 +129,7 @@ export default async function BlockPage({
             href={`/courses/${courseId}/blocks/${previousBlock.id}`}
             className="flex-2"
           >
-            <CourseButton
-              variant="primary"
-              fullWidth
-            >
+            <CourseButton variant="primary" fullWidth>
               Tillbaka
             </CourseButton>
           </Link>
@@ -143,28 +140,18 @@ export default async function BlockPage({
             href={`/courses/${courseId}/blocks/${nextBlock.id}`}
             courseId={courseId}
             progress={progress}
-            className="flex-2"
+            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
           >
-            <CourseButton
-              variant="primary"
-              fullWidth
-            >
-              Nästa
-            </CourseButton>
+            Nästa
           </ProgressLink>
         ) : (
           <ProgressLink
             href={`/courses/${courseId}/summary/${block.id}`}
             courseId={courseId}
             progress={100}
-            className="flex-2"
+            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
           >
-            <CourseButton
-              variant="primary"
-              fullWidth
-            >
-              Slutför kurs
-            </CourseButton>
+            Slutför kurs
           </ProgressLink>
         )}
       </div>

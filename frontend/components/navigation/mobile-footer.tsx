@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AiChatModal from "@/components/chat/ai-chat-modal";
+import type { AiLearningContext } from "@/lib/learning-context";
 
 // Skapa React-komponenter av dina SVG-filer!
 // Klistra in innehållet från dina .svg-filer istället för <path ... />
@@ -55,8 +56,27 @@ const links = [
   { href: "/profile", label: "Om mig", Icon: ProfileIcon },
 ];
 
+function getLearningContextFromPathname(
+  pathname: string,
+): AiLearningContext | undefined {
+  const parts = pathname.split("/").filter(Boolean);
+
+  const coursesIndex = parts.indexOf("courses");
+  const courseId = coursesIndex >= 0 ? parts[coursesIndex + 1] : undefined;
+
+  if (!courseId) {
+    return undefined;
+  }
+
+  return {
+    courseId,
+    mode: "course_recommendation",
+  };
+}
+
 export default function MobileFooter() {
   const pathname = usePathname();
+  const learningContext = getLearningContextFromPathname(pathname);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-4 lg:hidden">
@@ -89,6 +109,7 @@ export default function MobileFooter() {
 
           <li className="h-12 rounded-3xl transition-all text-gray-400 dark:text-gray-500">
             <AiChatModal
+              learningContext={learningContext}
               trigger={(open) => (
                 <button
                   type="button"
