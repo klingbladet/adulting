@@ -27,9 +27,12 @@ type ProfileCourse = {
   id: string;
   title: string;
   progress: number;
+  category: {
+    name: string;
+    iconName: string | null;
+  } | null;
   totalSteps: number;
   completedSteps: number;
-  image?: string | null;
 };
 
 type ProfileBadge = {

@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "../../utils/auth";
 import { db } from "../../db";
 import { user, session, account, userOnboarding } from "../../db/auth-schema";
-import { courses, userCourses } from "../../db/course-schema";
+import { courses, userCourses, categories } from "../../db/course-schema";
 
 const router = Router();
 
@@ -20,21 +20,6 @@ async function requireSession(req: Request, res: Response) {
   }
 
   return currentSession;
-}
-
-function getCourseImage(title: string) {
-  const lower = title.toLowerCase();
-
-  if (lower.includes("jobb")) return "/images/icons/jobb.jpg";
-  if (lower.includes("körkort")) return "/images/icons/korkort.jpg";
-  if (lower.includes("ekonomi")) return "/images/icons/ekonomi.jpg";
-  if (lower.includes("boende")) return "/images/icons/bostad.jpg";
-  if (lower.includes("utbild")) return "/images/icons/utbildning.jpg";
-  if (lower.includes("skatt")) return "/images/icons/skatt.png";
-  if (lower.includes("csn")) return "/images/icons/CSN.png";
-
-  // Ta bort den felaktiga default-ikonen så profilsidan kan få en fallback-bok
-  return null;
 }
 
 function getProgress(status: string, score: number | null) {
@@ -77,9 +62,12 @@ router.get("/me", async (req, res) => {
         score: userCourses.score,
         totalSteps: courses.blocks,
         isPublished: courses.isPublished,
+        categoryName: categories.name,
+        categoryIconName: categories.iconName,
       })
       .from(userCourses)
       .innerJoin(courses, eq(userCourses.courseId, courses.id))
+      .leftJoin(categories, eq(courses.categoryId, categories.id))
       .where(eq(userCourses.userId, userId));
 
     const profileCourses = userCourseRows
@@ -96,7 +84,10 @@ router.get("/me", async (req, res) => {
           progress,
           totalSteps,
           completedSteps,
-          image: getCourseImage(item.title),
+          category: {
+            name: item.categoryName ?? "",
+            iconName: item.categoryIconName ?? null,
+          }
         };
       });
 

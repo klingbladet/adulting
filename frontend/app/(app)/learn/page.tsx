@@ -3,6 +3,8 @@ import { getServerSession } from '@/lib/session';
 import { getCourses } from '@/lib/api';
 import SearchComponent from '@/components/navigation/searchComponent';
 import CategoryCard from '@/components/courses/category-cards';
+import ContinueCard from '@/components/courses/continue-card';
+import { cookies } from 'next/headers';
 
 function getFirstLetter(name?: string) {
   return name?.trim().charAt(0).toUpperCase() || "O";
@@ -10,7 +12,12 @@ function getFirstLetter(name?: string) {
 
 const UserDashboardPage = async () => {
   const session = await getServerSession()
-  const courses = await getCourses();
+  const cookieStore = await cookies();
+  const courses = await getCourses({
+    headers: {
+      cookie: cookieStore.toString()
+    }
+  });
   return (
     <div className="relative w-full min-h-screen bg-background">
       <div className="md:hidden">
@@ -107,18 +114,7 @@ const UserDashboardPage = async () => {
           {/* Continue Section */}
           <section className="md:mt-30 flex flex-col md:max-w-5xl md:mx-auto md:px-8 md:pb-16 w-full">
             <h2 className="text-base md:text-2xl font-extrabold text-foreground mb-3 md:mb-8">Fortsätt där du slutade</h2>
-
-            <div className="bg-muted md:bg-[#EBF2F9] dark:md:bg-slate-800 rounded-xl pl-4 pr-4 mb-4 flex justify-between items-center md:w-[calc(50%-1rem)]">
-              <div className="flex flex-col gap-1 w-full pr-2">
-                <span className="font-bold text-sm md:text-lg text-foreground">Bostadskurs</span>
-                <p className="text-xs md:text-sm text-muted-foreground md:text-foreground/70">Innan du skriver på ett bostadskontrakt</p>
-              </div>
-              <img
-                src="/images/continue/continue-bostad.png"
-                alt="Bostadskurs"
-                className="w-16 h-16 md:w-20 md:h-20 object-contain flex-shrink-0"
-              />
-            </div>
+            <ContinueCard />
             <div className="flex justify-between items-center md:w-[calc(50%-1rem)]">
               <span className="font-extrabold text-sm md:text-lg text-foreground">My courses</span>
               <Link href={`/courses/`}>
