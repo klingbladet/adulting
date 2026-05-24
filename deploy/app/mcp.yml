@@ -21,12 +21,12 @@ spec:
       imagePullSecrets:
         - name: registry-credentials
       resources:
-        # requests:
-        #   cpu: 5m
-        #   memory: 65Mi
-        # limits:
-        #   cpu: 300m
-        #   memory: 200Mi
+        requests:
+          cpu: 5m
+          memory: 65Mi
+        limits:
+          cpu: 300m
+          memory: 200Mi
       containers:
         - name: backend
           image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/mcp:latest
