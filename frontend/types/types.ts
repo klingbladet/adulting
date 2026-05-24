@@ -20,6 +20,8 @@ export interface Course {
   status: string | null;
   isPublished: boolean;
   blocksList?: Block[];
+  enrollments?: UserCourse[];
+  userCourses?: UserCourse[];
 }
 
 export interface Block {
@@ -49,6 +51,7 @@ export interface UserCourse {
   enrolledAt: string;
   completedAt: string | null;
   score: number | null;
+  updatedAt?: string | null;
   course?: Course;
 }
 

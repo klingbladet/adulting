@@ -52,7 +52,7 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
     editorProps: {
       attributes: {
         spellcheck: 'false',
-        class: 'min-h-[150px] w-full p-4 border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400',
+        class: 'min-h-[150px] w-full p-4 border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400 [&_iframe]:block [&_iframe]:mx-auto',
       },
     },
   })
@@ -78,7 +78,14 @@ export default function RichTextEditor ({ content, onChange }:RichTextEditorProp
           </div>
           </DragHandle>
         </div>
-        {preview ? <div dangerouslySetInnerHTML={{__html:editor.getHTML()}} ></div> : <EditorContent editor={editor}/> }
+        {preview ? (
+          <div 
+            className="min-h-[150px] w-full p-4 [&_p:empty]:min-h-[1.5rem] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_iframe]:block [&_iframe]:mx-auto"
+            dangerouslySetInnerHTML={{__html:editor.getHTML()}} 
+          ></div>
+        ) : (
+          <EditorContent editor={editor}/>
+        )}
           <div className='flex justify-end gap-1'>
           {preview && 
             <button 

@@ -28,6 +28,22 @@ router.get("", async (req, res) => {
   try {
     const categoryName = req.query.category as string | undefined;
     const allCourses = await courseService.getAllCourses(categoryName);
+
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers)
+    });
+
+    if (session?.user?.id && allCourses.length > 0) {
+      const userEnrollments = await db
+        .select()
+        .from(userCourses)
+        .where(eq(userCourses.userId, session.user.id));
+
+      allCourses.forEach((c: any) => {
+        c.enrollments = userEnrollments.filter(e => e.courseId === c.id);
+      });
+    }
+
     res.json(allCourses) 
   } catch (error) {
     console.error("Fel vid hämtningen av kurser", error);
@@ -47,6 +63,20 @@ router.get("/:id", async (req, res) => {
       res.status(404).json({ error: "Course not found" });
       return;
     }
+
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers)
+    });
+
+    if (session?.user?.id) {
+      const userEnrollments = await db
+        .select()
+        .from(userCourses)
+        .where(and(eq(userCourses.courseId, id), eq(userCourses.userId, session.user.id)));
+      
+      (course as any).enrollments = userEnrollments;
+    }
+
     res.json(course);
   } catch (error) {
     console.error("Fel vid hämtningen av kurs", error);
@@ -223,6 +253,7 @@ router.patch("/:courseId/progress", async (req, res) => {
         status,
         score: progress,
         completedAt: progress >= 100 ? new Date() : null,
+        updatedAt: new Date(),
       })
       .where(
         and(

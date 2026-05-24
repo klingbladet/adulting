@@ -145,6 +145,7 @@ export const userCourses = pgTable("user_courses", {
   score: integer("score"),
   // Personalisering: "beginner" | "intermediate" | "advanced"
   knowledgeLevel: varchar("knowledge_level", { length: 50 }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const userAchievements = pgTable("user_achievements", {
