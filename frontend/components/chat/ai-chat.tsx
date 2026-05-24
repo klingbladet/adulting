@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import type { AiLearningContext } from "@/lib/learning-context";
 
-import { BACKEND_URL } from "./backend-url";
+import { BACKEND_URL } from "./../../lib/backend-url";
 
 type Thread = {
   id: string;
