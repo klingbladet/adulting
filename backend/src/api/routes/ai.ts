@@ -3,7 +3,15 @@ import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "../../db";
-import { aiMessages, aiThreads } from "../../db/schema";
+import {
+  aiMessages,
+  aiThreads,
+  courses,
+  blocks,
+  quizAttempts,
+  quizAnswers,
+  quizQuestions,
+} from "../../db/schema";
 import { auth } from "../../utils/auth";
 import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
 import {
@@ -11,70 +19,19 @@ import {
   defaultAssistantContextService,
 } from "../../services/learning/assistant-context-service";
 
-/**
- * Existing AI chat route, now with optional learning context.
- *
- * Detta är fortfarande er vanliga AI-chat:
- * - threads
- * - messages
- * - auth
- * - OpenRouter
- *
- * Nytt:
- * Frontend kan nu skicka learningContext när användaren är inne på en kurs/lektion.
- *
- * Exempel body till:
- * POST /api/ai/threads/:threadId/messages
- *
- * {
- *   "message": "Kan du förklara kontantinsats enklare?",
- *   "learningContext": {
- *     "courseId": "course_bostad_001",
- *     "lessonId": "lesson_bolan_001",
- *     "mode": "lesson_help",
- *     "quizAnswers": [
- *       {
- *         "blockId": "block_bolan_text_004",
- *         "isCorrect": false
- *       },
- *       {
- *         "blockId": "block_bolan_text_004",
- *         "isCorrect": false
- *       }
- *     ]
- *   }
- * }
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - lessonId ska komma från riktig kurs/lektion i frontend.
- * - LEARNING_LESSON_PROVIDER kan bytas från mock till database.
- *
- * TODO när quiz_attempts finns:
- * - Sluta skicka quizAnswers från frontend.
- * - Hämta senaste quiz attempt från DB baserat på userId + lessonId.
- */
-
 const router = Router();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL =
-  process.env.OPENROUTER_MODEL ||
-  "meta-llama/llama-3.1-8b-instruct:free";
+  process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free";
 
 const aiLearningContextSchema = z
   .object({
     courseId: z.string().optional(),
     lessonId: z.string().optional(),
+    currentBlockId: z.string().optional(),
     mode: z
       .enum(["general", "lesson_help", "quiz_review", "course_recommendation"])
-      .optional(),
-    quizAnswers: z
-      .array(
-        z.object({
-          blockId: z.string(),
-          isCorrect: z.boolean(),
-        }),
-      )
       .optional(),
   })
   .optional();
@@ -100,6 +57,178 @@ function makeHeadersFromRequest(req: Request) {
   return headers;
 }
 
+async function getCoursePromptContext(courseId?: string) {
+  if (!courseId) return "";
+
+  const numericCourseId = Number(courseId);
+
+  if (Number.isNaN(numericCourseId)) {
+    return [`Aktuell kurs:`, `- Course ID: ${courseId}`].join("\n");
+  }
+
+  const course = await db.query.courses.findFirst({
+    where: eq(courses.id, numericCourseId),
+  });
+
+  if (!course) {
+    return [
+      "Aktuell kurs:",
+      `- Course ID: ${courseId}`,
+      "- Kursen hittades inte i databasen.",
+    ].join("\n");
+  }
+
+  return [
+    "Aktuell kurs:",
+    `- Course ID: ${course.id}`,
+    `- Kursnamn: ${course.title}`,
+    course.textContent ? `- Beskrivning: ${course.textContent}` : null,  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
+}
+
+async function getCourseQuizPromptContext(input: {
+  userId: string;
+  courseId?: string;
+}) {
+  const { userId, courseId } = input;
+
+  if (!courseId) {
+    return "";
+  }
+
+  const numericCourseId = Number(courseId);
+
+  if (Number.isNaN(numericCourseId)) {
+    return [
+      "Quizresultat:",
+      "- Inget quizresultat kunde hämtas eftersom courseId inte är numeriskt.",
+    ].join("\n");
+  }
+
+  const latestAttempt = await db.query.quizAttempts.findFirst({
+    where: and(
+      eq(quizAttempts.userId, userId),
+      eq(quizAttempts.courseId, numericCourseId),
+    ),
+    orderBy: desc(quizAttempts.completedAt),
+  });
+
+  if (!latestAttempt) {
+    return [
+      "Quizresultat:",
+      "- Inget quizresultat finns för den här kursen ännu.",
+    ].join("\n");
+  }
+
+  const answers = await db
+    .select({
+      questionId: quizAnswers.questionId,
+      selectedOptionId: quizAnswers.selectedOptionId,
+      isCorrect: quizAnswers.isCorrect,
+      blockId: quizAnswers.blockId,
+      blockTitle: blocks.title,
+      question: quizQuestions.question,
+    })
+    .from(quizAnswers)
+    .leftJoin(blocks, eq(quizAnswers.blockId, blocks.id))
+    .leftJoin(quizQuestions, eq(quizAnswers.questionId, quizQuestions.id))
+    .where(eq(quizAnswers.attemptId, latestAttempt.id));
+
+  const totalAnswers = answers.length;
+  const correctAnswers = answers.filter((answer) => answer.isCorrect).length;
+  const incorrectAnswers = totalAnswers - correctAnswers;
+
+  const scorePercent =
+    latestAttempt.maxScore > 0
+      ? Math.round((latestAttempt.score / latestAttempt.maxScore) * 100)
+      : totalAnswers > 0
+        ? Math.round((correctAnswers / totalAnswers) * 100)
+        : 0;
+
+  const blockStats = new Map<
+    number,
+    {
+      blockId: number;
+      blockTitle: string;
+      correctCount: number;
+      incorrectCount: number;
+    }
+  >();
+
+  for (const answer of answers) {
+    const current = blockStats.get(answer.blockId) ?? {
+      blockId: answer.blockId,
+      blockTitle: answer.blockTitle ?? `Block ${answer.blockId}`,
+      correctCount: 0,
+      incorrectCount: 0,
+    };
+
+    if (answer.isCorrect) {
+      current.correctCount += 1;
+    } else {
+      current.incorrectCount += 1;
+    }
+
+    blockStats.set(answer.blockId, current);
+  }
+
+  const blockPriorities = Array.from(blockStats.values())
+    .map((block) => {
+      const totalForBlock = block.correctCount + block.incorrectCount;
+      const incorrectRatio =
+        totalForBlock === 0 ? 0 : block.incorrectCount / totalForBlock;
+
+      const priority =
+        incorrectRatio >= 0.6
+          ? "high"
+          : incorrectRatio >= 0.3
+            ? "medium"
+            : "low";
+
+      return {
+        ...block,
+        priority,
+      };
+    })
+    .sort((a, b) => b.incorrectCount - a.incorrectCount);
+
+  const missedQuestions = answers
+    .filter((answer) => !answer.isCorrect)
+    .slice(0, 5);
+
+  return [
+    "Quizresultat:",
+    `- Senaste quiz attempt ID: ${latestAttempt.id}`,
+    `- Quiz ID: ${latestAttempt.quizId}`,
+    `- Status: ${latestAttempt.status}`,
+    `- Resultat: ${latestAttempt.score} av ${latestAttempt.maxScore}`,
+    `- Procent: ${scorePercent}%`,
+    `- Antal svar: ${totalAnswers}`,
+    `- Rätt svar: ${correctAnswers}`,
+    `- Fel svar: ${incorrectAnswers}`,
+    `- Genomfördes: ${latestAttempt.completedAt.toISOString()}`,
+    "",
+    blockPriorities.length
+      ? [
+          "Blockprioritering baserat på quiz:",
+          ...blockPriorities.map((block) => {
+            return `- ${block.blockTitle}: ${block.correctCount} rätt, ${block.incorrectCount} fel, prioritet: ${block.priority}`;
+          }),
+        ].join("\n")
+      : "Blockprioritering baserat på quiz: ingen blockdata hittades.",
+    "",
+    missedQuestions.length
+      ? [
+          "Frågor användaren svarade fel på:",
+          ...missedQuestions.map((answer) => {
+            return `- ${answer.question ?? `Fråga ${answer.questionId}`}`;
+          }),
+        ].join("\n")
+      : "Frågor användaren svarade fel på: inga fel hittades.",
+  ].join("\n");
+}
+
 async function getCurrentUserId(req: Request) {
   const session = await auth.api.getSession({
     headers: makeHeadersFromRequest(req),
@@ -115,53 +244,87 @@ async function requireUser(req: Request, res: Response) {
     res.status(401).json({
       error: "Du måste vara inloggad.",
     });
+
     return null;
   }
 
   return userId;
 }
 
-/**
- * Bygger systemprompt.
- *
- * Utan learningContext:
- * - använder vanliga SYSTEM_PROMPT
- *
- * Med learningContext:
- * - kombinerar vanliga SYSTEM_PROMPT med lesson-aware context
- */
+function hasLearningContext(learningContext?: LearningContext) {
+  return Boolean(
+    learningContext?.courseId ||
+      learningContext?.lessonId ||
+      learningContext?.currentBlockId,
+  );
+}
+
+function buildCurrentBlockPrompt(currentBlockId?: string) {
+  if (!currentBlockId) return "";
+
+  return [
+    "",
+    "Aktuellt block:",
+    `- currentBlockId: ${currentBlockId}`,
+    "",
+    "Om användaren frågar om aktuell del av kursen, ta hänsyn till detta block.",
+  ].join("\n");
+}
+
 async function buildLearningAwareSystemPrompt(input: {
   userId: string;
   learningContext?: LearningContext;
 }) {
   const { userId, learningContext } = input;
 
-  if (!learningContext?.lessonId && !learningContext?.courseId) {
+  if (!hasLearningContext(learningContext)) {
     return SYSTEM_PROMPT;
   }
 
   const assistantContext =
     await defaultAssistantContextService.buildAssistantContext({
       userId,
-      courseId: learningContext.courseId,
-      lessonId: learningContext.lessonId,
-      mode: learningContext.mode ?? "lesson_help",
-      quizAnswers: learningContext.quizAnswers,
+      courseId: learningContext?.courseId,
+      lessonId: learningContext?.lessonId,
+      currentBlockId: learningContext?.currentBlockId,
+      mode: learningContext?.mode ?? "lesson_help",
     });
 
   const learningSystemPrompt = buildAssistantSystemPrompt(
     assistantContext.promptContext,
   );
 
+  const coursePromptContext = await getCoursePromptContext(
+    learningContext?.courseId,
+  );
+
+  const quizPromptContext = await getCourseQuizPromptContext({
+  userId,
+  courseId: learningContext?.courseId,
+});
+
   return [
-    SYSTEM_PROMPT,
-    "",
-    "========================",
-    "EXTRA LEARNING CONTEXT",
-    "========================",
-    "",
-    learningSystemPrompt,
-  ].join("\n");
+  SYSTEM_PROMPT,
+  "",
+  "========================",
+  "AKTUELL BACKEND-CONTEXT",
+  "========================",
+  "",
+  coursePromptContext,
+  "",
+  quizPromptContext,
+  "",
+  learningSystemPrompt,
+  buildCurrentBlockPrompt(learningContext?.currentBlockId),
+  "",
+  "Viktigt:",
+  "- Om användaren frågar vilken kurs hen jobbar med, svara med kursnamnet från 'Aktuell kurs'.",
+  "- Om kursnamn finns i backend-context, säg inte att du saknar kursnamnet.",
+  "- Om användaren frågar hur det gick på quizet, svara med resultatet från 'Quizresultat'.",
+  "- Om quizresultat finns i backend-context, säg inte att du saknar quizresultat.",
+  "- Om quizresultat saknas i backend-context, säg att du inte kan se quizresultatet ännu.",
+  "- Gissa aldrig quizresultat.",
+].join("\n");
 }
 
 async function callOpenRouter(
@@ -177,30 +340,27 @@ async function callOpenRouter(
     throw new Error("OPENROUTER_API_KEY saknas");
   }
 
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
-        "X-Title": "Adulting App",
-      },
-      body: JSON.stringify({
-        model: OPENROUTER_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: options?.systemPrompt ?? SYSTEM_PROMPT,
-          },
-          ...history,
-        ],
-        temperature: 0.7,
-        max_tokens: 700,
-      }),
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:3000",
+      "X-Title": "Adulting App",
     },
-  );
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: options?.systemPrompt ?? SYSTEM_PROMPT,
+        },
+        ...history,
+      ],
+      temperature: 0.7,
+      max_tokens: 700,
+    }),
+  });
 
   const rawText = await response.text();
 
@@ -216,13 +376,10 @@ async function callOpenRouter(
   }
 
   if (!response.ok) {
-    throw new Error(
-      data?.error?.message || "OpenRouter kunde inte svara",
-    );
+    throw new Error(data?.error?.message || "OpenRouter kunde inte svara");
   }
 
-  const text =
-    data?.choices?.[0]?.message?.content?.trim() || "";
+  const text = data?.choices?.[0]?.message?.content?.trim() || "";
 
   if (!text) {
     throw new Error("AI svarade tomt");
@@ -300,12 +457,7 @@ router.delete("/threads/:threadId", async (req, res) => {
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -313,13 +465,8 @@ router.delete("/threads/:threadId", async (req, res) => {
       });
     }
 
-    await db
-      .delete(aiMessages)
-      .where(eq(aiMessages.threadId, threadId));
-
-    await db
-      .delete(aiThreads)
-      .where(eq(aiThreads.id, threadId));
+    await db.delete(aiMessages).where(eq(aiMessages.threadId, threadId));
+    await db.delete(aiThreads).where(eq(aiThreads.id, threadId));
 
     res.json({
       ok: true,
@@ -348,12 +495,7 @@ router.get("/threads/:threadId/messages", async (req, res) => {
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -392,23 +534,18 @@ router.post("/threads/:threadId/messages", async (req, res) => {
     const parsedBody = sendMessageBodySchema.parse(req.body ?? {});
     const { message, learningContext } = parsedBody;
 
-    if (!message?.trim()) {
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
       return res.status(400).json({
         error: "Skriv något först",
       });
     }
 
-    const cleanMessage = message.trim();
-
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -422,11 +559,8 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       content: cleanMessage,
     });
 
-    let newTitle = thread.title;
-
-    if (thread.title === "Ny AI-chatt") {
-      newTitle = cleanMessage.slice(0, 40);
-    }
+    const newTitle =
+      thread.title === "Ny AI-chatt" ? cleanMessage.slice(0, 40) : thread.title;
 
     await db
       .update(aiThreads)
@@ -447,11 +581,10 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       content: msg.content,
     }));
 
-    const learningAwareSystemPrompt =
-      await buildLearningAwareSystemPrompt({
-        userId,
-        learningContext,
-      });
+    const learningAwareSystemPrompt = await buildLearningAwareSystemPrompt({
+      userId,
+      learningContext,
+    });
 
     let aiReply = "";
 
@@ -483,16 +616,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       ok: true,
       threadTitle: newTitle,
       assistantMessage: aiReply,
-
-      /**
-       * Bra för debug just nu.
-       *
-       * TODO production:
-       * Ta eventuellt bort detta fält om ni inte vill exponera det.
-       */
-      learningContextUsed: Boolean(
-        learningContext?.lessonId || learningContext?.courseId,
-      ),
+      learningContextUsed: hasLearningContext(learningContext),
     });
   } catch (error) {
     console.error(error);

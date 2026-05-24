@@ -71,7 +71,7 @@ export default async function AdminReviewDetailPage({
             <p className="text-lg font-medium text-foreground">{course.time} minuter</p>
           </div>
           <div className="p-4 bg-muted rounded-lg">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase">Antal block</h4>
+            <h4 className="text-xs font-bold text-muted-foreground uppercase">Antal steg</h4>
             <p className="text-lg font-medium text-foreground">{course.blocks} st</p>
           </div>
         </div>
