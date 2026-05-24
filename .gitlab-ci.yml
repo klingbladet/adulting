@@ -31,10 +31,28 @@ workflow:
     - mkdir "$HOME/.kube"
     - echo "$KUBECONFIG_CONTENT" | base64 -d > "$HOME/.kube/config"
 
-build util image:
-  stage: build before
+
+.build template:
+  stage: build
   image: docker:29
   extends: .docker login
+  rules:
+    - if: $VERSION
+
+.lint template:
+  stage: lint
+  before_script: cd /app
+  script:
+    - pnpm lint
+  allow_failure: true # TODO: remove once issues are fixed
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: $VERSION
+
+build util image:
+  stage: build before
+  extends: .build template
   script:
     - >
       docker buildx build
@@ -68,80 +86,53 @@ check git size diff:
 
 build backend base:
   stage: build before
-  image: docker:29
-  extends: .docker login
+  extends: .build template
   script:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
       --push --provenance=false --target base ./backend
-  rules:
-    - if: $VERSION
 
 build frontend base:
   stage: build before
-  image: docker:29
-  extends: .docker login
+  extends: .build template
   script: 
     - >
       docker buildx build 
       -t $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
       --push --provenance=false --target base ./frontend
-  rules:
-    - if: $VERSION
 
 
-
-
-.lint base:
-  stage: lint
-  before_script: cd /app
-  script:
-    - pnpm lint
-  allow_failure: true # TODO: remove once issues are fixed
-  variables:
-    GIT_STRATEGY: none
-  rules:
-    - if: $VERSION
 
 lint frontend:
-  extends: .lint base
+  extends: .lint template
   image: $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
 
 lint backend:
-  extends: .lint base
+  extends: .lint template
   image: $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
 
 
+
 build backend:
-  stage: build
-  image: docker:29
-  extends: .docker login
+  extends: .build template
   script: 
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
       --push --provenance=false --target backend ./backend
-  rules:
-    - if: $VERSION
 
 build mcp:
-  stage: build
-  image: docker:29
-  extends: .docker login
+  extends: .build template
   script:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
       --push --provenance=false --target mcp ./backend
-  rules:
-    - if: $VERSION
 
 
 build frontend:
-  stage: build
-  image: docker:29
-  extends: .docker login
+  extends: .build template
   variables:
     NEXT_PUBLIC_API_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/backend
     NEXT_PUBLIC_AUTH_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/backend/api/auth
@@ -154,8 +145,6 @@ build frontend:
       --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
       -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
       --push --provenance=false ./frontend
-  rules:
-    - if: $VERSION
 
 
 deploy app static:
