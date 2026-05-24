@@ -1,21 +1,10 @@
 import { Router, Request, Response } from "express";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-import {
-  formatCourseContextForPrompt,
-  formatQuizResultForPrompt,
-  getCurrentCourseContext,
-  getCurrentCourseQuizResult,
-} from "../../services/ai-context/course-ai-context-service";
 import { db } from "../../db";
 import {
   aiMessages,
   aiThreads,
-  courses,
-  blocks,
-  quizAttempts,
-  quizAnswers,
-  quizQuestions,
 } from "../../db/schema";
 import { auth } from "../../utils/auth";
 import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
@@ -61,10 +50,6 @@ function makeHeadersFromRequest(req: Request) {
 
   return headers;
 }
-
-
-
-
 
 async function getCurrentUserId(req: Request) {
   const session = await auth.api.getSession({
@@ -115,7 +100,25 @@ async function buildLearningAwareSystemPrompt(input: {
   const { userId, learningContext } = input;
 
   if (!hasLearningContext(learningContext)) {
-    return SYSTEM_PROMPT;
+    return [
+      SYSTEM_PROMPT,
+      "",
+      "========================",
+      "MCP TOOL-INSTRUKTIONER",
+      "========================",
+      "",
+      "Du har tillgång till MCP-tools för kurs- och quizdata.",
+      "",
+      "Använd tools när användaren frågar om:",
+      "- aktuell kurs",
+      "- quizresultat",
+      "- vad användaren bör fokusera på",
+      "- kursprogression eller lärläge",
+      "",
+      "Viktigt:",
+      "- Gissa aldrig kursnamn, quizresultat eller progression.",
+      "- Om du saknar context, säg det tydligt.",
+    ].join("\n");
   }
 
   const assistantContext =
@@ -131,45 +134,40 @@ async function buildLearningAwareSystemPrompt(input: {
     assistantContext.promptContext,
   );
 
-  const courseContext = await getCurrentCourseContext({
-    courseId: learningContext?.courseId,
-  });
-
-  const quizResult = await getCurrentCourseQuizResult({
-    userId,
-    courseId: learningContext?.courseId,
-  });
-
-  const coursePromptContext = formatCourseContextForPrompt(courseContext);
-  const quizPromptContext = formatQuizResultForPrompt(quizResult);
-
   return [
     SYSTEM_PROMPT,
     "",
     "========================",
-    "AKTUELL BACKEND-CONTEXT",
+    "MCP TOOL-INSTRUKTIONER",
     "========================",
     "",
-    coursePromptContext,
+    "Du har tillgång till MCP-tools för kurs- och quizdata.",
     "",
-    quizPromptContext,
+    "Använd dessa tools när det passar:",
+    "- get_current_course: när användaren frågar vilken kurs hen jobbar med.",
+    "- get_current_course_quiz_result: när användaren frågar hur det gick på quizet.",
+    "- get_current_course_learning_context: när användaren frågar vad hen bör fokusera på eller repetera.",
+    "",
+    "Aktuell frontend-context:",
+    learningContext?.courseId ? `- courseId: ${learningContext.courseId}` : null,
+    learningContext?.lessonId ? `- lessonId: ${learningContext.lessonId}` : null,
+    learningContext?.currentBlockId
+      ? `- currentBlockId: ${learningContext.currentBlockId}`
+      : null,
+    learningContext?.mode ? `- mode: ${learningContext.mode}` : null,
     "",
     learningSystemPrompt,
     buildCurrentBlockPrompt(learningContext?.currentBlockId),
     "",
     "Viktigt:",
-    "- Om användaren frågar vilken kurs hen jobbar med, svara med kursnamnet från 'Aktuell kurs'.",
-    "- Om användaren frågar hur det gick på quizet, svara med resultatet från 'Quizresultat'.",
-    "- Om quizresultat finns i backend-context, säg inte att du saknar quizresultat.",
-    "- Om quizresultat saknas i backend-context, säg att du inte kan se quizresultatet ännu.",
-    "- Gissa aldrig kursnamn, quizresultat eller progression.",
-    "Du har tillgång till MCP-tools för kurs- och quizdata.",
-    "Använd tools när användaren frågar om aktuell kurs, quizresultat eller vad hen bör fokusera på.",
     "- Om användaren frågar om aktuell kurs, använd MCP-toolen get_current_course.",
     "- Om användaren frågar om quizresultat, använd MCP-toolen get_current_course_quiz_result.",
     "- Om användaren frågar vad hen bör fokusera på, använd MCP-toolen get_current_course_learning_context.",
     "- Gissa aldrig kursnamn, quizresultat eller progression.",
-  ].join("\n");
+    "- Om ett MCP-tool saknar data, säg det tydligt och hjälp användaren vidare.",
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }
 
 async function callOpenRouter(
