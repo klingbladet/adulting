@@ -91,9 +91,10 @@ build frontend base:
     - if: $VERSION
 
 
-lint frontend:
+
+
+.lint base:
   stage: lint
-  image: $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
   before_script: cd /app
   script:
     - pnpm lint
@@ -103,17 +104,13 @@ lint frontend:
   rules:
     - if: $VERSION
 
+lint frontend:
+  extends: .lint base
+  image: $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
+
 lint backend:
-  stage: lint
+  extends: .lint base
   image: $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
-  before_script: cd /app
-  script: 
-    - pnpm eslint
-  allow_failure: true # TODO: remove once issues are fixed
-  variables:
-    GIT_STRATEGY: none
-  rules:
-    - if: $VERSION
 
 
 build backend:
@@ -124,7 +121,7 @@ build backend:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-      --push --provenance=false ./backend
+      --push --provenance=false --target backend ./backend
   rules:
     - if: $VERSION
 
