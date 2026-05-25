@@ -69,7 +69,9 @@ services:
           path: ./backend/package.json
 
   mcp:
-    build: ./backend
+    build:
+      context: ./backend
+      target: base
     ports:
       - 3003:3003
     command: ["pnpm", "run", "mcp:dev"]
@@ -94,6 +96,14 @@ services:
 
       LEARNING_LESSON_PROVIDER: database
       LEARNING_PROFILE_PROVIDER: mock
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f localhost:3003/health || exit 1"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
     depends_on:
       backend:
