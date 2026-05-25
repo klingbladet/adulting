@@ -1,8 +1,5 @@
 import "dotenv/config";
 
-console.log("forcing unbuffered output")
-process.stderr._handle.setBlocking(true);
-process.stdout._handle.setBlocking(true);
 console.log("test log")
 console.error("test error")
 
