@@ -184,6 +184,8 @@ delete env:
   environment:
     name: review/$VERSION
     action: stop
+  needs: 
+    - deploy app dynamic
   rules:
     - if: $VERSION
       when: manual
