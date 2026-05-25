@@ -157,7 +157,7 @@ deploy app static:
   rules:
     - if: $VERSION == "main" && $VERSION == "latest"
   script:
-    - ./scripts/apply-secrets-if-not-exist.sh
+    - ./scripts/generate-secrets.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
