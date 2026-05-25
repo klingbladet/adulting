@@ -1,16 +1,10 @@
 import { Router, Request, Response } from "express";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-
 import { db } from "../../db";
 import {
   aiMessages,
   aiThreads,
-  courses,
-  blocks,
-  quizAttempts,
-  quizAnswers,
-  quizQuestions,
 } from "../../db/schema";
 import { auth } from "../../utils/auth";
 import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
@@ -18,7 +12,7 @@ import {
   buildAssistantSystemPrompt,
   defaultAssistantContextService,
 } from "../../services/learning/assistant-context-service";
-
+import { callOpenRouterWithMcpTools } from "../../services/ai/mcp-openrouter-bridge";
 const router = Router();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -55,178 +49,6 @@ function makeHeadersFromRequest(req: Request) {
   }
 
   return headers;
-}
-
-async function getCoursePromptContext(courseId?: string) {
-  if (!courseId) return "";
-
-  const numericCourseId = Number(courseId);
-
-  if (Number.isNaN(numericCourseId)) {
-    return [`Aktuell kurs:`, `- Course ID: ${courseId}`].join("\n");
-  }
-
-  const course = await db.query.courses.findFirst({
-    where: eq(courses.id, numericCourseId),
-  });
-
-  if (!course) {
-    return [
-      "Aktuell kurs:",
-      `- Course ID: ${courseId}`,
-      "- Kursen hittades inte i databasen.",
-    ].join("\n");
-  }
-
-  return [
-    "Aktuell kurs:",
-    `- Course ID: ${course.id}`,
-    `- Kursnamn: ${course.title}`,
-    course.textContent ? `- Beskrivning: ${course.textContent}` : null,  ]
-    .filter((line): line is string => Boolean(line))
-    .join("\n");
-}
-
-async function getCourseQuizPromptContext(input: {
-  userId: string;
-  courseId?: string;
-}) {
-  const { userId, courseId } = input;
-
-  if (!courseId) {
-    return "";
-  }
-
-  const numericCourseId = Number(courseId);
-
-  if (Number.isNaN(numericCourseId)) {
-    return [
-      "Quizresultat:",
-      "- Inget quizresultat kunde hämtas eftersom courseId inte är numeriskt.",
-    ].join("\n");
-  }
-
-  const latestAttempt = await db.query.quizAttempts.findFirst({
-    where: and(
-      eq(quizAttempts.userId, userId),
-      eq(quizAttempts.courseId, numericCourseId),
-    ),
-    orderBy: desc(quizAttempts.completedAt),
-  });
-
-  if (!latestAttempt) {
-    return [
-      "Quizresultat:",
-      "- Inget quizresultat finns för den här kursen ännu.",
-    ].join("\n");
-  }
-
-  const answers = await db
-    .select({
-      questionId: quizAnswers.questionId,
-      selectedOptionId: quizAnswers.selectedOptionId,
-      isCorrect: quizAnswers.isCorrect,
-      blockId: quizAnswers.blockId,
-      blockTitle: blocks.title,
-      question: quizQuestions.question,
-    })
-    .from(quizAnswers)
-    .leftJoin(blocks, eq(quizAnswers.blockId, blocks.id))
-    .leftJoin(quizQuestions, eq(quizAnswers.questionId, quizQuestions.id))
-    .where(eq(quizAnswers.attemptId, latestAttempt.id));
-
-  const totalAnswers = answers.length;
-  const correctAnswers = answers.filter((answer) => answer.isCorrect).length;
-  const incorrectAnswers = totalAnswers - correctAnswers;
-
-  const scorePercent =
-    latestAttempt.maxScore > 0
-      ? Math.round((latestAttempt.score / latestAttempt.maxScore) * 100)
-      : totalAnswers > 0
-        ? Math.round((correctAnswers / totalAnswers) * 100)
-        : 0;
-
-  const blockStats = new Map<
-    number,
-    {
-      blockId: number;
-      blockTitle: string;
-      correctCount: number;
-      incorrectCount: number;
-    }
-  >();
-
-  for (const answer of answers) {
-    const current = blockStats.get(answer.blockId) ?? {
-      blockId: answer.blockId,
-      blockTitle: answer.blockTitle ?? `Block ${answer.blockId}`,
-      correctCount: 0,
-      incorrectCount: 0,
-    };
-
-    if (answer.isCorrect) {
-      current.correctCount += 1;
-    } else {
-      current.incorrectCount += 1;
-    }
-
-    blockStats.set(answer.blockId, current);
-  }
-
-  const blockPriorities = Array.from(blockStats.values())
-    .map((block) => {
-      const totalForBlock = block.correctCount + block.incorrectCount;
-      const incorrectRatio =
-        totalForBlock === 0 ? 0 : block.incorrectCount / totalForBlock;
-
-      const priority =
-        incorrectRatio >= 0.6
-          ? "high"
-          : incorrectRatio >= 0.3
-            ? "medium"
-            : "low";
-
-      return {
-        ...block,
-        priority,
-      };
-    })
-    .sort((a, b) => b.incorrectCount - a.incorrectCount);
-
-  const missedQuestions = answers
-    .filter((answer) => !answer.isCorrect)
-    .slice(0, 5);
-
-  return [
-    "Quizresultat:",
-    `- Senaste quiz attempt ID: ${latestAttempt.id}`,
-    `- Quiz ID: ${latestAttempt.quizId}`,
-    `- Status: ${latestAttempt.status}`,
-    `- Resultat: ${latestAttempt.score} av ${latestAttempt.maxScore}`,
-    `- Procent: ${scorePercent}%`,
-    `- Antal svar: ${totalAnswers}`,
-    `- Rätt svar: ${correctAnswers}`,
-    `- Fel svar: ${incorrectAnswers}`,
-    `- Genomfördes: ${latestAttempt.completedAt.toISOString()}`,
-    "",
-    blockPriorities.length
-      ? [
-          "Blockprioritering baserat på quiz:",
-          ...blockPriorities.map((block) => {
-            return `- ${block.blockTitle}: ${block.correctCount} rätt, ${block.incorrectCount} fel, prioritet: ${block.priority}`;
-          }),
-        ].join("\n")
-      : "Blockprioritering baserat på quiz: ingen blockdata hittades.",
-    "",
-    missedQuestions.length
-      ? [
-          "Frågor användaren svarade fel på:",
-          ...missedQuestions.map((answer) => {
-            return `- ${answer.question ?? `Fråga ${answer.questionId}`}`;
-          }),
-        ].join("\n")
-      : "Frågor användaren svarade fel på: inga fel hittades.",
-  ].join("\n");
 }
 
 async function getCurrentUserId(req: Request) {
@@ -278,7 +100,25 @@ async function buildLearningAwareSystemPrompt(input: {
   const { userId, learningContext } = input;
 
   if (!hasLearningContext(learningContext)) {
-    return SYSTEM_PROMPT;
+    return [
+      SYSTEM_PROMPT,
+      "",
+      "========================",
+      "MCP TOOL-INSTRUKTIONER",
+      "========================",
+      "",
+      "Du har tillgång till MCP-tools för kurs- och quizdata.",
+      "",
+      "Använd tools när användaren frågar om:",
+      "- aktuell kurs",
+      "- quizresultat",
+      "- vad användaren bör fokusera på",
+      "- kursprogression eller lärläge",
+      "",
+      "Viktigt:",
+      "- Gissa aldrig kursnamn, quizresultat eller progression.",
+      "- Om du saknar context, säg det tydligt.",
+    ].join("\n");
   }
 
   const assistantContext =
@@ -294,37 +134,40 @@ async function buildLearningAwareSystemPrompt(input: {
     assistantContext.promptContext,
   );
 
-  const coursePromptContext = await getCoursePromptContext(
-    learningContext?.courseId,
-  );
-
-  const quizPromptContext = await getCourseQuizPromptContext({
-  userId,
-  courseId: learningContext?.courseId,
-});
-
   return [
-  SYSTEM_PROMPT,
-  "",
-  "========================",
-  "AKTUELL BACKEND-CONTEXT",
-  "========================",
-  "",
-  coursePromptContext,
-  "",
-  quizPromptContext,
-  "",
-  learningSystemPrompt,
-  buildCurrentBlockPrompt(learningContext?.currentBlockId),
-  "",
-  "Viktigt:",
-  "- Om användaren frågar vilken kurs hen jobbar med, svara med kursnamnet från 'Aktuell kurs'.",
-  "- Om kursnamn finns i backend-context, säg inte att du saknar kursnamnet.",
-  "- Om användaren frågar hur det gick på quizet, svara med resultatet från 'Quizresultat'.",
-  "- Om quizresultat finns i backend-context, säg inte att du saknar quizresultat.",
-  "- Om quizresultat saknas i backend-context, säg att du inte kan se quizresultatet ännu.",
-  "- Gissa aldrig quizresultat.",
-].join("\n");
+    SYSTEM_PROMPT,
+    "",
+    "========================",
+    "MCP TOOL-INSTRUKTIONER",
+    "========================",
+    "",
+    "Du har tillgång till MCP-tools för kurs- och quizdata.",
+    "",
+    "Använd dessa tools när det passar:",
+    "- get_current_course: när användaren frågar vilken kurs hen jobbar med.",
+    "- get_current_course_quiz_result: när användaren frågar hur det gick på quizet.",
+    "- get_current_course_learning_context: när användaren frågar vad hen bör fokusera på eller repetera.",
+    "",
+    "Aktuell frontend-context:",
+    learningContext?.courseId ? `- courseId: ${learningContext.courseId}` : null,
+    learningContext?.lessonId ? `- lessonId: ${learningContext.lessonId}` : null,
+    learningContext?.currentBlockId
+      ? `- currentBlockId: ${learningContext.currentBlockId}`
+      : null,
+    learningContext?.mode ? `- mode: ${learningContext.mode}` : null,
+    "",
+    learningSystemPrompt,
+    buildCurrentBlockPrompt(learningContext?.currentBlockId),
+    "",
+    "Viktigt:",
+    "- Om användaren frågar om aktuell kurs, använd MCP-toolen get_current_course.",
+    "- Om användaren frågar om quizresultat, använd MCP-toolen get_current_course_quiz_result.",
+    "- Om användaren frågar vad hen bör fokusera på, använd MCP-toolen get_current_course_learning_context.",
+    "- Gissa aldrig kursnamn, quizresultat eller progression.",
+    "- Om ett MCP-tool saknar data, säg det tydligt och hjälp användaren vidare.",
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }
 
 async function callOpenRouter(
@@ -588,16 +431,25 @@ router.post("/threads/:threadId/messages", async (req, res) => {
 
     let aiReply = "";
 
-    try {
-      aiReply = await callOpenRouter(history, {
-        systemPrompt: learningAwareSystemPrompt,
-      });
-    } catch (error) {
-      console.error("AI ERROR:", error);
+      try {
+        if (!OPENROUTER_API_KEY) {
+          throw new Error("OPENROUTER_API_KEY saknas");
+        }
 
-      aiReply =
-        "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
-    }
+        aiReply = await callOpenRouterWithMcpTools({
+          history,
+          systemPrompt: learningAwareSystemPrompt,
+          userId,
+          courseId: learningContext?.courseId,
+          openRouterApiKey: OPENROUTER_API_KEY,
+          openRouterModel: OPENROUTER_MODEL,
+        });
+      } catch (error) {
+        console.error("AI ERROR:", error);
+
+        aiReply =
+          "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
+      }
 
     await db.insert(aiMessages).values({
       threadId,

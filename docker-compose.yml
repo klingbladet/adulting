@@ -49,6 +49,9 @@ services:
       LEARNING_LESSON_PROVIDER: database
       LEARNING_PROFILE_PROVIDER: mock
 
+      MCP_SERVER_URL: http://mcp:3003/mcp
+      MCP_INTERNAL_TOKEN: ${MCP_INTERNAL_TOKEN:-}
+
     depends_on:
       migrate-db:
         condition: service_completed_successfully
