@@ -4,7 +4,8 @@ kind: Deployment
 metadata:
   name: mcp
 spec:
-  replicas: 3
+  replicas: 1 # backend gives errors if there are more that one replicas
+              # guess backend needs to communicate with same mcp server?
   selector:
     matchLabels:
       adulting: mcp 
