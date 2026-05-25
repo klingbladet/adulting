@@ -225,7 +225,7 @@ export default function CourseQuizPage({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col p-6">
+    <main className="mt-10 mx-auto flex min-h-screen max-w-3xl flex-col">
       <div className="mb-6">
         <button
           type="button"
@@ -252,7 +252,7 @@ export default function CourseQuizPage({
 
       {currentQuestion && (
         <section className="flex flex-col gap-6">
-              <div>
+          <div>
             <h1 className="text-2xl font-extrabold leading-tight text-foreground">
               {currentQuestion.question}
             </h1>
@@ -273,20 +273,18 @@ export default function CourseQuizPage({
                   onClick={() =>
                     handleSelectAnswer(currentQuestion.id, option.id)
                   }
-                  className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-left transition-all ${
-                    isSelected
-                      ? "border-primary bg-secondary"
-                      : "border-border bg-card hover:border-ring"
-                  }`}
+                  className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-left transition-all ${isSelected
+                    ? "border-primary bg-secondary"
+                    : "border-border bg-card hover:border-ring"
+                    }`}
                 >
                   <span className="text-sm font-medium text-foreground">
                     {option.text}
                   </span>
 
                   <CheckCircle2
-                    className={`h-5 w-5 text-primary transition-opacity ${
-                      isSelected ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`h-5 w-5 text-primary transition-opacity ${isSelected ? "opacity-100" : "opacity-0"
+                      }`}
                   />
                 </button>
               );
