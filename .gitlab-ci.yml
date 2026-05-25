@@ -21,6 +21,9 @@ workflow:
         VERSION: mr$CI_MERGE_REQUEST_IID
     - when: always
 
+
+### templates
+
 .docker login:
   before_script:
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
@@ -46,28 +49,9 @@ workflow:
     - docker run --rm lint pnpm eslint
   allow_failure: true # TODO: remove once issues are fixed
 
-build util image:
-  stage: before
-  extends: .build template
-  script:
-    - >
-      docker buildx build
-      -t $CI_REGISTRY_IMAGE/util:latest
-      --push --provenance=false -f ./docker/util.Dockerfile .
-  rules:
-    - changes: 
-      - docker/util.Dockerfile
 
-build drizzle image:
-  stage: before
-  extends: .build template
-  script:
-    - >
-      docker buildx build
-      -t $CI_REGISTRY_IMAGE/migrate:latest
-      --push --provenance=false -f ./backend/Dockerfile 
-      --target migrate ./backend
 
+### git checks
 
 check gitignore:
   stage: before
@@ -92,6 +76,8 @@ check git size diff:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 
+
+### lint
 
 lint frontend:
   extends: .lint template
@@ -122,6 +108,30 @@ lint shell scripts:
     - if: $VERSION
       changes: 
         - "**/*.sh"
+
+
+
+### build
+
+build util image:
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/util:latest
+      --push --provenance=false -f ./docker/util.Dockerfile .
+  rules:
+    - changes: 
+      - docker/util.Dockerfile
+
+build drizzle image:
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/migrate:latest
+      --push --provenance=false -f ./backend/Dockerfile 
+      --target migrate ./backend
 
 
 build backend:
@@ -156,6 +166,8 @@ build frontend:
       -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
       --push --provenance=false ./frontend
 
+
+### deploy
 
 deploy app static:
   stage: deploy
