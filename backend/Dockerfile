@@ -92,4 +92,4 @@ RUN pnpm install --frozen-lockfile
 
 COPY ./drizzle.config.ts ./
 COPY ./drizzle/ ./drizzle/
-COPY ./src/db ./src/db
+COPY ./src/db/ ./src/db/
