@@ -8,7 +8,7 @@ export default async function CreatorToolsPage() {
   await requireRole(["creator", "admin"]);
 
   return (
-    <div>
+    <div className="relative w-full min-h-screen bg-white dark:bg-background font-sans text-foreground pb-28 md:max-w-5xl md:mx-auto md:px-8 md:py-14 px-5 pt-6">
       <CreateBlocks />
     </div>
   );
