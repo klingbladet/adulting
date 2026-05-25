@@ -69,4 +69,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3001
 
-CMD ["stdbuf", "-oL", "-eL", "node", "dist/server.js"]
+CMD ["node", "dist/server.js"]
