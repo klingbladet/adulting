@@ -116,7 +116,7 @@ export default function ProfilePage() {
           <header className="shrink-0 bg-[#EAF7FF] px-5 pb-5 pt-4 dark:bg-[#0E3A5F]">
             <div className="flex items-center justify-between">
               <Link
-                href="/dashboard"
+                href="/learn"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-[#2563EB] dark:bg-white/15 dark:text-white"
                 aria-label="Tillbaka"
               >
@@ -342,9 +342,8 @@ function BadgeItem({ badge }: { badge: ProfileBadge }) {
   return (
     <div className="flex flex-col items-center text-center">
       <div
-        className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white ${
-          unlocked ? "border-[#7C8A22]" : "border-gray-300 opacity-50 grayscale"
-        }`}
+        className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white ${unlocked ? "border-[#7C8A22]" : "border-gray-300 opacity-50 grayscale"
+          }`}
       >
         {badge.image ? (
           <img

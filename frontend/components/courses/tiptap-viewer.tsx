@@ -18,9 +18,13 @@ const extensions = [
   StarterKit,
   Image,
   Youtube.configure({
-    controls: false,
+    controls: true,
     nocookie: true,
-    allowFullscreen: false,
+    allowFullscreen: true,
+    HTMLAttributes: {
+      playsinline: 'true',
+      'webkit-playsinline': 'true',
+    },
   }),
   TextAlign.configure({
     types: ['heading', 'paragraph'],
@@ -52,9 +56,9 @@ export default function TipTapViewer({ content }: TipTapViewerProps) {
     }
   }, [parsedContent, editor]);
 
-  if (!editor) {
-    return null
-  }
-
-  return <EditorContent editor={editor} />
-}
+  return (
+    <div className="[&_iframe]:block [&_iframe]:mx-auto">
+      <EditorContent editor={editor} />
+    </div>
+  )
+}

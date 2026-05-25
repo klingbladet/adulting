@@ -11,20 +11,20 @@ export default async function UserDashboardPage() {
   const publishedCourses = allCourses.filter((course: CourseWithPublishStatus) => course.isPublished === true);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Housing</h1>
+    <div className="mt-10">
+      <h1 className="text-4xl font-bold">Bostad</h1>
       <p className="mt-2 mb-10 text-muted-foreground">
         Välj vilken kurs du vill göra
       </p>
-      
+
       <div className="flex flex-col gap-4">
         {publishedCourses.length > 0 ? (
           publishedCourses.map((course: CourseWithPublishStatus) => (
             <Link key={course.id} href={`/courses/${course.id}`}>
               <BlockCard
-                  icon={getCourseIcon(course)}
-                  title={course.title}
-                  time={course.time}
+                icon={getCourseIcon(course)}
+                title={course.title}
+                time={course.time}
               />
             </Link>
           ))

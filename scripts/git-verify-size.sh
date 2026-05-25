@@ -2,8 +2,8 @@
 
 set -e
 
-# 512000 = 500KiB
-max=512000
+# 2097152 = 2 MiB
+max=2097152
 
 human() {
     # takes in bytes

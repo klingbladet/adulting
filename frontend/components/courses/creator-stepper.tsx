@@ -14,13 +14,13 @@ export default function CreatorStepper({ currentStep }: StepperProps) {
   ];
 
   return (
-    <div className="w-full mb-8 relative">
-      {/* Bakgrundslinje (grå) */}
-      <div className="absolute top-4 left-0 w-full h-1 bg-gray-200 -translate-y-1/2 z-0 rounded-full"></div>
+    <div className="w-full mb-12 relative">
+      {/* Bakgrundslinje */}
+      <div className="absolute top-4 left-0 w-full h-1 bg-border -translate-y-1/2 z-0 rounded-full"></div>
       
-      {/* Aktiv linje (blå) */}
+      {/* Aktiv linje */}
       <div 
-        className="absolute top-4 left-0 h-1 bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
+        className="absolute top-4 left-0 h-1 bg-primary -translate-y-1/2 z-0 rounded-full"
         style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
       ></div>
 
@@ -31,10 +31,10 @@ export default function CreatorStepper({ currentStep }: StepperProps) {
           
           return (
             <div key={step.id} className="flex flex-col items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-colors duration-300 ${isActive ? 'bg-blue-500 border-blue-500 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 ${isActive ? 'bg-primary border-primary text-primary-foreground' : 'bg-background border-border text-muted-foreground'}`}>
                 {step.id}
               </div>
-              <span className={`text-xs sm:text-sm font-medium transition-colors duration-300 bg-white/80 px-1 rounded ${isCurrent ? 'text-blue-600' : isActive ? 'text-gray-800' : 'text-gray-400'}`}>
+              <span className={`text-xs sm:text-sm font-semibold px-1 rounded bg-background ${isCurrent ? 'text-primary' : isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {step.name}
               </span>
             </div>
