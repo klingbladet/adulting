@@ -174,8 +174,8 @@ deploy app static:
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
-    - sed -i "s/asdf/${VERSION}/g" *
-    - echo "replaced 'asdf' with '${VERSION}'"
+    - sed -i "s/rlversion/${VERSION}/g" *
+    - echo "replaced 'rlversion' with '${VERSION}'"
     - cd -
     - kubectl apply -k deploy
 
