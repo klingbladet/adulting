@@ -38,3 +38,8 @@ secretGenerator:
       - BETTER_AUTH_SECRET=BETTER_AUTH_SECRET.txt
     options:
       disableNameSuffixHash: true
+  - name: env-mcp
+    files:
+      - MCP_INTERNAL_TOKEN.txt
+    options:
+      disableNameSuffixHash: true

@@ -64,6 +64,9 @@ spec:
             - configMapRef:
                 name: env-openrouter
                 optional: false
+            - secretRef:
+                name: env-mcp
+                optional: false
           startupProbe:
             httpGet:
               port: 3003

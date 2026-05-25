@@ -31,3 +31,4 @@ get_previous_password() {
 
 get_previous_password env-postgres POSTGRES_PASSWORD
 get_previous_password env-auth BETTER_AUTH_SECRET
+get_previous_password env-mcp MCP_INTERNAL_TOKEN
