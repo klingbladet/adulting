@@ -96,7 +96,7 @@ lint backend:
 lint dockerfiles:
   stage: lint
   image: hadolint/hadolint:v2.14.0-alpine
-  script: hadolint --ignore DL3018 **/*Dockerfile
+  script: hadolint **/*Dockerfile
 
 lint shell scripts:
   stage: lint
