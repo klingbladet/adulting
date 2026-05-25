@@ -11,8 +11,6 @@ resources:
 - database-ui.yml
 - ingress.yml
 images:
-- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base
-  newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
   newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend

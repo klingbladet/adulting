@@ -14,7 +14,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: postgres-migration
-          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend-base:latest
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/migrate:latest
           imagePullPolicy: Always
           command: ["sh", "-c"]
           args:

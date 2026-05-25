@@ -58,6 +58,16 @@ build util image:
     - changes: 
       - docker/util.Dockerfile
 
+build drizzle image:
+  stage: before
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/migrate:latest
+      --push --provenance=false -f ./backend/Dockerfile --target migrate .
+
+
 check gitignore:
   stage: before
   image: alpine:latest
