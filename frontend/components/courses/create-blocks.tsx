@@ -373,7 +373,9 @@ export default function CreateBlocks() {
 
       <h1 className="text-2xl font-bold text-foreground">Skapa en kurs</h1>
 
-      <div className="space-y-3">
+      <div className="bg-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Grundläggande information</h2>
+        <div className="space-y-3">
         <input
           type="text"
           value={courseTitle}
@@ -392,7 +394,7 @@ export default function CreateBlocks() {
           }}
           placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
           rows={3}
-          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+          className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 
@@ -425,8 +427,9 @@ export default function CreateBlocks() {
           }}
           placeholder="Uppskattad tid (minuter)"
           min="1"
-          className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
+      </div>
       </div>
 
       {blocks.map((block, index) => (
@@ -443,7 +446,7 @@ export default function CreateBlocks() {
                 value={block.title || ""}
                 onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                 placeholder="Skriv en rubrik (minst 5 tecken)"
-                className="w-full font-semibold text-foreground bg-transparent px-2 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
+                className="w-full font-semibold text-foreground bg-background border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
               />
             </div>
 
@@ -465,7 +468,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={addBlock}
           disabled={loading}
-          className="border border-primary rounded-xl py-3 px-5 text-primary hover:bg-primary/10 font-semibold disabled:opacity-50"
+          className="border border-primary bg-primary/5 rounded-xl py-3 px-6 text-primary hover:bg-primary hover:text-white transition-colors font-semibold disabled:opacity-50"
         >
           + Lägg till steg
         </button>
@@ -474,7 +477,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={handleSave}
           disabled={loading}
-          className="border border-border rounded-xl py-3 px-5 text-muted-foreground hover:bg-border hover:text-foreground font-semibold disabled:opacity-50"
+          className="border border-border rounded-xl py-3 px-6 text-muted-foreground hover:bg-border hover:text-foreground transition-colors font-semibold disabled:opacity-50"
         >
           {loading ? "Väntar..." : saved ? "Sparad" : "Spara"}
         </button>

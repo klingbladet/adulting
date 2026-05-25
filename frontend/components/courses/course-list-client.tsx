@@ -120,8 +120,8 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
         {newDraft && (
           <div className="flex gap-2 items-stretch">
             <Link href={`/create/creator-tools/create-blocks`} className="flex-grow">
-              <div className="flex flex-row justify-between items-center gap-3 rounded-2xl bg-category-one dark:bg-[#1a2f5a] p-3 shadow-sm h-full">
-                <div className="w-10 h-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shrink-0">
+              <div className="flex flex-row justify-between items-center gap-4 rounded-2xl bg-card border border-border p-4 shadow-sm hover:shadow-md transition-all hover:border-primary/40 h-full group">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
                   {getCourseIcon({ category: { name: 'Draft' } } as unknown as Course)}
                 </div>
                 <div className="flex flex-col flex-grow min-w-0">
@@ -136,7 +136,7 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
             </Link>
             <button
               onClick={() => { setCourseToDelete('new'); setDeleteInput(''); setDeleteError(''); }}
-              className="px-4 text-red-500 bg-red-50 dark:bg-red-950/30 rounded-2xl border border-transparent flex items-center justify-center shadow-sm shrink-0"
+              className="px-4 text-red-500 bg-red-50/50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-900/40 rounded-2xl border border-red-100 dark:border-red-900/30 transition-colors flex items-center justify-center shadow-sm shrink-0"
               title="Kasta utkast"
             >
               <Trash2 size={20} />
@@ -148,8 +148,8 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
           courses.map((course) => (
             <div key={course.id} className="flex gap-2 items-stretch">
               <Link href={`/create/creator-tools/create-blocks?courseId=${course.id}`} className="flex-grow">
-                <div className="flex flex-row justify-between items-center gap-3 rounded-2xl bg-category-one dark:bg-[#1a2f5a] p-3 shadow-sm h-full">
-                  <div className="w-10 h-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shrink-0">
+                <div className="flex flex-row justify-between items-center gap-4 rounded-2xl bg-card border border-border p-4 shadow-sm hover:shadow-md transition-all hover:border-primary/40 h-full group">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
                     {getCourseIcon(course)}
                   </div>
                   <div className="flex flex-col flex-grow min-w-0">
@@ -166,7 +166,7 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
               </Link>
               <button
                 onClick={() => { setCourseToDelete(course); setDeleteInput(''); setDeleteError(''); }}
-                className="px-4 text-red-500 bg-red-50 dark:bg-red-950/30 rounded-2xl border border-transparent flex items-center justify-center shadow-sm shrink-0"
+                className="px-4 text-red-500 bg-red-50/50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-900/40 rounded-2xl border border-red-100 dark:border-red-900/30 transition-colors flex items-center justify-center shadow-sm shrink-0"
                 title="Radera kurs"
               >
                 <Trash2 size={20} />
