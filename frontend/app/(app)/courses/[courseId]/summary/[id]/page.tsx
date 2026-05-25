@@ -34,11 +34,11 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
   }
 
   return (
-    <main className="flex flex-col justify-around min-h-screen bg-background p-6 text-center my-4"
+    <main className="flex flex-col justify-around min-h-screen bg-background p-6 text-center my-4
+    bg-position-[50%_-20%] md:bg-position-[50%_10%] bg-[length: 150%] md:bg-[length: 100%]"
     style={{
       backgroundImage: "url('/images/backgrounds/fyrverkerier.gif')", 
       backgroundSize: "150%", 
-      backgroundPosition: "50% -10%", 
       backgroundRepeat: "no-repeat"
     }}>
 

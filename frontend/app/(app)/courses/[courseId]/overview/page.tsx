@@ -155,8 +155,8 @@ export default async function CourseOverview({
       <div className="relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
 
         {/* Header Section */}
-        <header className="h-auto min-h-45 md:min-h-60 w-screen -mx-6 p-16 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-18 px-6 relative md:pb-6">
-          <div className="flex justify-start items-center gap-4  md:flex-col md:justify-center md:text-center">
+        <header className="md:flex md:justify-start h-auto min-h-45 md:min-h-60 w-screen -mx-6 p-16 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-18 px-6 md:pb-6">
+          <div className="flex justify-start items-center gap-4 md:flex-col md:justify-start md:text-center">
             <div className="flex flex-col gap-4 md:mt-4">
               <Link href={`/learn`}>
                 <ArrowLeft
@@ -164,11 +164,11 @@ export default async function CourseOverview({
                   className="text-secondary-foreground"
                 />
               </Link>
-              <div className="flex flex-col md:mt-4">
-                <p className="text-xs md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md mx-auto">
-                  {course.categoryId}
+              <div className="flex flex-col md:justify-start md:items-start md:mt-4">
+                <p className="text-xs md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
+                  {course.category?.name}
                 </p>
-                <p className="text-xl md:text-lg font-semibold leading-tight mt-1 md:max-w-md mx-auto">
+                <p className="text-xl md:text-3xl font-semibold leading-tight mt-1 md:max-w-md">
                   {course.title}
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default async function CourseOverview({
 
         <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col bg-background p-6">
           <div className="my-5">
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg md:text-2xl font-semibold">
               Introduktion:
             </h3>
             <p className="text-sm font-medium text-muted-foreground">
@@ -243,15 +243,8 @@ export default async function CourseOverview({
                           icon={<span className="font-semibold text-xs">{index + 1}</span>}
                           title={block.title || `Steg ${index + 1}`}
                           description={shortDesc}
+                          badge={priority ? <CoursePriorityBadge priority={priority.priority} label={priority.label} /> : undefined}
                         />
-                        {priority && (
-                        <div className="px-2">
-                          <CoursePriorityBadge
-                            priority={priority.priority}
-                            label={priority.label}
-                          />
-                        </div>
-                        )}
                       </div>
                     </div>
                   </Link>

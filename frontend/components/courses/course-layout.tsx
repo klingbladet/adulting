@@ -14,6 +14,7 @@ interface BlockCardProps {
   isClickable?: boolean;
   onClick?: () => void;
   className?: string;
+  badge?: React.ReactNode; 
 }
 
 const BlockCard = ({
@@ -25,7 +26,8 @@ const BlockCard = ({
   description,
   isClickable = true,
   onClick,
-  className
+  className,
+  badge
 }: BlockCardProps) => {
   const interactiveStyles = isClickable
   ? "cursor-pointer hover:border-secondary-800 hover:border-2 transition-all active:scale-[0.98]"
@@ -35,11 +37,9 @@ const BlockCard = ({
   if (time) details.push(typeof time === 'number' ? `${time} min` : time);
   if (steps !== undefined && steps !== null) details.push(`${steps} steg`);
 
-  const displaySubtitle = description || details.join(' • ');
-
    const variants = {
     primary: "bg-secondary text-white rounded-2xl",
-    secondary: "bg-bland-foreground text-[#1F2937] hover:bg-[#E5E7EB]",
+    secondary: "bg-overview-box text-[#1F2937] hover:bg-overview-hover transition duration-300",
   };
 
   return(
@@ -53,9 +53,7 @@ const BlockCard = ({
         </div>
         <div className="flex flex-col">
           <h3 className="font-semibold text-foreground text-sm">{title}</h3>
-          {displaySubtitle && (
-            <p className="text-sm text-foreground mt-0.5">{displaySubtitle}</p>
-          )}
+          {badge && badge}
         </div>
       </div>
       {isClickable && (

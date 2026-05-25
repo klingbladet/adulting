@@ -28,7 +28,8 @@
   --input: #e5e7eb;
   --ring: #818cf8;
 
-  --bland-foreground: #FAFAFA;
+  --overview-box: #FAFAFA;
+  --overview-hover: #E5E7EB;
   --button: #4981F2;
 
   --category-one: #DCE9FD;
@@ -39,6 +40,12 @@
   --category-three-text: #6460A2;
   --category-drop: #4BBDE540;
 
+  --badge-high: #fca5a5cc;
+  --badge-high-txt: #7f1d1db3;
+  --badge-medium: #fde68acc;
+  --badge-medium-txt: #713f12b3;
+  --badge-low: #86efaccc;
+  --badge-low-txt: #14532db3;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.625rem;
@@ -70,7 +77,8 @@
   --input: #374151;
   --ring: #a5b4fc;
 
-  --bland-foreground: var(--color-card);
+  --overview-box: #192952;
+  --overview-hover: #213787;
 
   --category-one: #213787;
   --category-one-text: #4981F2;
@@ -78,6 +86,14 @@
   --category-two-text: #8CA653;
   --category-three: #6460A2;
   --category-three-text: #BDC4E4;
+
+  --badge-high: #7f1d1db3;
+  --badge-high-txt: #fca5a5cc;
+  --badge-medium: #713f12b3;
+  --badge-medium-txt: #fde68acc;
+  --badge-low: #14532db3;
+  --badge-low-txt: #86efaccc;
+
 
   --font-summary: #D4DEB8;
 }
@@ -109,7 +125,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-bland-foreground: var(--bland-foreground);
+  --color-overview-box: var(--overview-box);
+  --color-overview-hover: var(--overview-hover);
   --color-button: var(--button);
 
   --color-category-one: var(--category-one);
@@ -119,6 +136,13 @@
   --color-category-three: var(--category-three);
   --color-category-three-text: var(--category-three-text);
   --color-category-drop: var(--category-drop);
+
+  --color-badge-high: var(--badge-high);
+  --color-badge-high-txt: var(--badge-high-txt);
+  --color-badge-medium: var(--badge-medium);
+  --color-badge-medium-txt: var(--badge-medium-txt);
+  --color-badge-low: var(--badge-low);
+  --color-badge-low-txt: var(--badge-low-txt);
   
   --color-summary: var(--font-summary);
 

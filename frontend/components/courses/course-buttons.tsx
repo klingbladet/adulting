@@ -15,7 +15,7 @@ const CourseButton = ({
 }: ButtonProps) => {
   
   // Bas-stilar som alla knappar delar
-  const baseStyles = "rounded-4xl flex items-center justify-center gap-2";
+  const baseStyles = "rounded-4xl flex items-center justify-center gap-2 transition duration-300";
   
   // Specifika stilar för dina varianter från designen
   const variants = {

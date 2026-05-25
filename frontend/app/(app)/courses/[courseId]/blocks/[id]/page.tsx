@@ -88,7 +88,7 @@ export default async function BlockPage({
   return (
     <main className="flex w-full min-h-screen flex-col bg-background -mt-12">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
+      <div className="flex items-center justify-between md:justify-start p-6 relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
           <header className="h-auto min-h-45 md:min-h-60 w-screen -mx-12 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-14 pb-6 px-6 relative">
             <div className="flex justify-start items-center md:flex-col md:justify-center md:text-center">
               <div className="flex flex-col gap-4 md:mt-4">
@@ -155,7 +155,7 @@ export default async function BlockPage({
               href={`/courses/${courseId}/blocks/${nextBlock.id}`}
               courseId={courseId}
               progress={progress}
-              className="text-md rounded-4xl px-6 py-4 font-semibold transition hover:opacity-90 bg-button text-white hover:bg-[#6696F4]"
+              className="flex justify-center items-center text-md rounded-4xl px-6 py-4 font-semibold transition hover:opacity-90 bg-button text-white hover:bg-[#649EF6]"
             >
               Gå vidare till: {nextBlock.title}
             </ProgressLink>
@@ -164,7 +164,7 @@ export default async function BlockPage({
               href={`/courses/${courseId}/summary/${block.id}`}
               courseId={courseId}
               progress={100}
-              className="flex-2 rounded-2xl bg-button px-6 py-4 font-semibold text-white transition hover:opacity-90"
+              className="flex-2 rounded-4xl bg-button px-6 py-4 font-semibold text-white transition hover:opacity-90"
             >
               Slutför kurs
             </ProgressLink>
