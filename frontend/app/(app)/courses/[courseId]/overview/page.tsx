@@ -151,74 +151,24 @@ export default async function CourseOverview({
   const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
-<<<<<<< HEAD
     <div className="relative w-full min-h-screen bg-background -mt-6">
       <div className="relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
 
         {/* Header Section */}
-        <header className="md:flex md:justify-start h-auto min-h-45 md:min-h-60 w-screen -mx-6 p-16 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-18 px-6 md:pb-6">
-          <div className="flex justify-start items-center gap-4 md:flex-col md:justify-start md:text-center">
-            <div className="flex flex-col gap-4 md:mt-4">
+        <header className="md:flex md:justify-start  h-auto min-h-45 md:min-h-60 w-screen -mx-6 p-16 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-18 px-6 md:pb-6 relative">
+          <div className="flex justify-start items-center gap-4">
+            <div className="flex flex-col gap-4 md:mt-4 px-4 md:px-8 lg:px-16 max-w-5xl relative">
               <Link href={`/learn`}>
                 <ArrowLeft
                   size={20}
                   className="text-secondary-foreground"
-=======
-    <>
-      <h1 className="mb-10 mt-10 text-center text-4xl">{course.title}</h1>
-
-      <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col gap-4 bg-background">
-        {personalization?.latestAttempt && (
-          <section className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-sm font-medium text-muted-foreground">
-              Ditt quizresultat
-            </p>
-
-            <h2 className="mt-1 text-2xl font-bold text-foreground">
-              {personalization.latestAttempt.score} av{' '}
-              {personalization.latestAttempt.maxScore} rätt
-            </h2>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Vi har markerat vilka steg du bör fokusera extra på.
-            </p>
-
-            <Link href={`/courses/${courseId}/quiz`} className="mt-4 inline-block">
-              <CourseButton variant="secondary">
-                Gör om quiz
-              </CourseButton>
-            </Link>
-          </section>
-        )}
-
-        {blocksError && (
-          <p className="mb-4 text-sm text-red-500">
-            Fel vid hämtning av block: {blocksError}
-          </p>
-        )}
-
-        {sortedBlocks.map((block, index) => {
-          const plainText = extractPlainText(block.content);
-          const shortDesc =
-            plainText.length > 40 ? plainText.substring(0, 40) + '...' : plainText;
-
-          const priority = prioritiesByBlockId.get(block.id);
-
-          return (
-            <Link key={block.id} href={`/courses/${courseId}/blocks/${block.id}`}>
-              <div className="space-y-2">
-                <BlockCard
-                  icon={<span className="text-lg font-bold">{index + 1}</span>}
-                  title={block.title || `Steg ${index + 1}`}
-                  description={shortDesc}
->>>>>>> 9782cbde6c70d91caa932844123de6d59418b490
                 />
               </Link>
               <div className="flex flex-col md:justify-start md:items-start md:mt-4">
-                <p className="text-xs md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
+                <p className="text-xs sm:text-sm md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
                   {course.category?.name}
                 </p>
-                <p className="text-xl md:text-3xl font-semibold leading-tight mt-1 md:max-w-md">
+                <p className="text-xl sm:text-xl md:text-3xl font-semibold leading-tight mt-1 md:max-w-md">
                   {course.title}
                 </p>
               </div>
@@ -226,7 +176,6 @@ export default async function CourseOverview({
           </div>
         </header>
 
-<<<<<<< HEAD
         <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col bg-background p-6">
           <div className="my-5">
             <h3 className="text-lg md:text-2xl font-semibold">
@@ -312,15 +261,6 @@ export default async function CourseOverview({
           )}
         
         </div>
-=======
-        {sortedBlocks.length > 0 && (
-          <Link href={`/courses/${courseId}/blocks/${sortedBlocks[0].id}`}>
-            <CourseButton className="mt-5 mb-20" variant="primary">
-              Starta kursen
-            </CourseButton>
-          </Link>
-        )}
->>>>>>> 9782cbde6c70d91caa932844123de6d59418b490
       </div>
     </div>
   );

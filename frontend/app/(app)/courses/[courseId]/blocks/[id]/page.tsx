@@ -86,12 +86,12 @@ export default async function BlockPage({
       : 0;
 
   return (
-    <main className="flex w-full min-h-screen flex-col bg-background -mt-12">
+    <main className="flex w-full min-h-screen flex-col bg-background -mt-12 mr-10 relative">
       {/* Header */}
-      <div className="flex items-center justify-between md:justify-start p-6 relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground">
-          <header className="h-auto min-h-45 md:min-h-60 w-screen -mx-12 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-14 pb-6 px-6 relative">
-            <div className="flex justify-start items-center md:flex-col md:justify-center md:text-center">
-              <div className="flex flex-col gap-4 md:mt-4">
+      <div className="flex items-center justify-between md:justify-start relative z-10 max-w-screen min-h-full font-sans text-foreground">
+          <header className="md:flex md:justify-center md:items-center h-auto min-h-45 md:min-h-60 w-screen -mx-6 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-14 pb-12 relative">
+            <div className="flex justify-start items-center md:flex-col md:items-start md:text-center">
+              <div className="flex flex-col gap-4 justify-center pl-6 items-start md:mt-4 md:items-start">
 
                 {previousBlock ? (
                    <Link href={`/courses/${courseId}/blocks/${previousBlock.id}`}>
@@ -113,14 +113,14 @@ export default async function BlockPage({
                   <p className="text-sm md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
                     {course.title}
                   </p>
-                  <p className="text-xl md:text-lg font-semibold leading-tight mt-1 md:max-w-md">
+                  <p className="text-lg md:text-3xl font-semibold leading-tight mt-1 md:max-w-md">
                     {block.title}
                   </p>
                 </div>
-                <div className="flex justify-start items-start w-100">
+                <div className="flex justify-start items-start w-full">
                   
                   {/* Progress bar */}
-                  <div className="mr-12 h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                  <div className="md:-mr-100 h-1 w-85 md:w-100 overflow-hidden rounded-full bg-secondary">
                     <div
                       className="h-full bg-button transition-all duration-300"
                       style={{
@@ -138,13 +138,10 @@ export default async function BlockPage({
         </div>
 
         {/* Content */}
-        <div className="mb-10 flex flex-col p-6">
-
-          <div className="prose prose-slate max-w-none text-lg leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
+        <div className="mb-6 flex flex-col justify-center items-center pt-6 pl-4">
+          <div className="md:flex md:justify-center md:items-start md:text-left prose prose-slate w-90 md:w-200 text-md leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
             <TipTapViewer content={block.content} />
           </div>
-
-          <div className="flex justify-center" />
         </div>
 
         {/* Footer navigation */}
