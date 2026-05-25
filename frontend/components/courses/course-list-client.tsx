@@ -166,7 +166,7 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
               </Link>
               <button
                 onClick={() => { setCourseToDelete(course); setDeleteInput(''); setDeleteError(''); }}
-                className="px-4 text-red-500 bg-red-50/50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-900/40 rounded-2xl border border-red-100 dark:border-red-900/30 transition-colors flex items-center justify-center shadow-sm shrink-0"
+                className="px-4 text-foreground bg-red-50/50 hover:bg-red-50 dark:bg-red-950/20 dark:hover:bg-red-900/40 rounded-2xl border border-red-100 dark:border-red-900/30 transition-colors flex items-center justify-center shadow-sm shrink-0"
                 title="Radera kurs"
               >
                 <Trash2 size={20} />

@@ -439,21 +439,21 @@ export default function CreateBlocks() {
         >
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 flex-grow max-w-lg">
-              <span className="font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">#{index + 1}</span>
+              <span className="font-bold text-foreground px-3 py-1 rounded-lg">{index + 1}</span>
 
               <input
                 type="text"
                 value={block.title || ""}
                 onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                 placeholder="Skriv en rubrik (minst 5 tecken)"
-                className="w-full font-semibold text-foreground bg-background border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
+                className="w-full text-foreground bg-background border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
               />
             </div>
 
             {blocks.length > 1 && (
               <button
                 type="button"
-                className="text-red-500 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/50"
+                className="text-background-secondary bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/50"
                 onClick={() => removeBlock(block.id)}
               >
                 Ta bort
