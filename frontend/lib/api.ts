@@ -1,5 +1,5 @@
 import { Block, Course, UserCourse } from "@/types/types";
-import { BACKEND_URL } from "./backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 
 export type Category = {
   id: string;
