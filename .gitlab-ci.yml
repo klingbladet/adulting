@@ -71,13 +71,13 @@ lint backend:
 
 lint dockerfiles:
   stage: lint
-  image: hadolint/hadolint
+  image: hadolint/v2.14.0-alpine
   script: hadolint **/*.Dockerfile
 
 lint shell scripts:
   stage: lint
   image: koalaman/shellcheck:stable
-  script: shellcheck --severity=style --check-sourced **/*.sh
+  script: --severity=style --check-sourced **/*.sh
 
 
 build backend:
