@@ -40,6 +40,6 @@ secretGenerator:
       disableNameSuffixHash: true
   - name: env-mcp
     files:
-      - MCP_INTERNAL_TOKEN.txt
+      - MCP_INTERNAL_TOKEN=MCP_INTERNAL_TOKEN.txt
     options:
       disableNameSuffixHash: true
