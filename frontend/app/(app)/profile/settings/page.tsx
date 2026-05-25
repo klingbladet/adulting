@@ -139,7 +139,7 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC] dark:bg-black">
+      <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC] ">
         <p className="text-sm text-gray-500 dark:text-gray-300">
           Laddar inställningar...
         </p>
@@ -151,8 +151,8 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="h-dvh overflow-hidden bg-[#F8FAFC] text-gray-950 dark:bg-black dark:text-white">
-        <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-white dark:bg-black">
+      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background">
+        <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background">
           <header className="shrink-0 px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
               <Link
