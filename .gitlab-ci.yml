@@ -43,10 +43,9 @@ workflow:
   stage: lint
   before_script: cd /app
   script:
-    - pnpm lint
+    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
+    - docker run --rm lint pnpm eslint
   allow_failure: true # TODO: remove once issues are fixed
-  variables:
-    GIT_STRATEGY: none
   rules:
     - if: $VERSION
 
@@ -84,33 +83,17 @@ check git size diff:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-build backend base:
-  stage: build before
-  extends: .build template
-  script:
-    - >
-      docker buildx build
-      -t $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
-      --push --provenance=false --target base ./backend
-
-build frontend base:
-  stage: build before
-  extends: .build template
-  script: 
-    - >
-      docker buildx build 
-      -t $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
-      --push --provenance=false --target base ./frontend
-
 
 
 lint frontend:
   extends: .lint template
-  image: $CI_REGISTRY_IMAGE/frontend-base:$IMAGE_VERSION
+  variables:
+    DIR: frontend
 
 lint backend:
   extends: .lint template
-  image: $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
+  variables:
+    DIR: backend
 
 
 
