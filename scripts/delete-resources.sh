@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-if [[ -z "$VERSION" ]]; then
-    echo "VERSION variable not set"
-    exit 1
-fi
-
 delete-resource () {
     local kind=$1
     local resources=""
@@ -19,17 +14,27 @@ delete-resource () {
     fi
 }
 
+if [[ -z "$VERSION" ]]; then
+    echo "VERSION variable not set"
+    exit 1
+fi
 
-resources_delete=(
-    "jobs"
-    "secret"
-    "configmap"
-    "deploy"
-    "statefulset"
-    "service"
-    "ingress"
-    "middleware"
-)
+if [[ "$1" == "--only" ]]; then
+    resources_delete=()
+    shift
+else
+    resources_delete=(
+        "jobs"
+        "secret"
+        "configmap"
+        "deploy"
+        "statefulset"
+        "service"
+        "ingress"
+        "middleware"
+    )
+fi
+
 
 for extra in "${@}"; do
     resources_delete+=("$extra")

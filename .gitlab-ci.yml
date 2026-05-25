@@ -167,6 +167,7 @@ deploy app static:
   rules:
     - if: $VERSION == "main" && $VERSION == "latest"
   script:
+    - ./scripts/delete-resources.sh --only jobs
     - ./scripts/generate-secrets.sh
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
