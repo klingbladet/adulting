@@ -27,7 +27,7 @@ export default function PreviewClient({ blocks }: PreviewClientProps) {
   return (
     <div className="bg-card p-6 rounded-lg shadow-sm border border-border mt-6">
       <div className="mb-6">
-        <label className="block text-sm font-medium text-foreground mb-2">Välj block att granska</label>
+        <label className="block text-sm font-medium text-foreground mb-2">Välj steg att granska</label>
         <select
           value={selectedBlockId || ''}
           onChange={(e) => setSelectedBlockId(Number(e.target.value))}

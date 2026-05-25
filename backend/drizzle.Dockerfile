@@ -2,7 +2,7 @@ FROM node:25-alpine
 
 WORKDIR /app
 
-RUN npm install --global pnpm@latest
+RUN npm install --global pnpm@10.32.0
 
 COPY ./package.json ./pnpm-lock.yaml* pnpm-workspace.yaml ./
 

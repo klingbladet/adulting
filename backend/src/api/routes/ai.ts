@@ -1,80 +1,31 @@
 import { Router, Request, Response } from "express";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
-
 import { db } from "../../db";
-import { aiMessages, aiThreads } from "../../db/schema";
+import {
+  aiMessages,
+  aiThreads,
+} from "../../db/schema";
 import { auth } from "../../utils/auth";
 import { SYSTEM_PROMPT } from "../../utils/ai-prompt";
 import {
   buildAssistantSystemPrompt,
   defaultAssistantContextService,
 } from "../../services/learning/assistant-context-service";
-
-/**
- * Existing AI chat route, now with optional learning context.
- *
- * Detta är fortfarande er vanliga AI-chat:
- * - threads
- * - messages
- * - auth
- * - OpenRouter
- *
- * Nytt:
- * Frontend kan nu skicka learningContext när användaren är inne på en kurs/lektion.
- *
- * Exempel body till:
- * POST /api/ai/threads/:threadId/messages
- *
- * {
- *   "message": "Kan du förklara kontantinsats enklare?",
- *   "learningContext": {
- *     "courseId": "course_bostad_001",
- *     "lessonId": "lesson_bolan_001",
- *     "mode": "lesson_help",
- *     "quizAnswers": [
- *       {
- *         "blockId": "block_bolan_text_004",
- *         "isCorrect": false
- *       },
- *       {
- *         "blockId": "block_bolan_text_004",
- *         "isCorrect": false
- *       }
- *     ]
- *   }
- * }
- *
- * TODO när lessonbuilder-teamet är ikapp:
- * - lessonId ska komma från riktig kurs/lektion i frontend.
- * - LEARNING_LESSON_PROVIDER kan bytas från mock till database.
- *
- * TODO när quiz_attempts finns:
- * - Sluta skicka quizAnswers från frontend.
- * - Hämta senaste quiz attempt från DB baserat på userId + lessonId.
- */
-
+import { callOpenRouterWithMcpTools } from "../../services/ai/mcp-openrouter-bridge";
 const router = Router();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_MODEL =
-  process.env.OPENROUTER_MODEL ||
-  "meta-llama/llama-3.1-8b-instruct:free";
+  process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct:free";
 
 const aiLearningContextSchema = z
   .object({
     courseId: z.string().optional(),
     lessonId: z.string().optional(),
+    currentBlockId: z.string().optional(),
     mode: z
       .enum(["general", "lesson_help", "quiz_review", "course_recommendation"])
-      .optional(),
-    quizAnswers: z
-      .array(
-        z.object({
-          blockId: z.string(),
-          isCorrect: z.boolean(),
-        }),
-      )
       .optional(),
   })
   .optional();
@@ -127,38 +78,68 @@ async function requireUser(req: Request, res: Response) {
     res.status(401).json({
       error: "Du måste vara inloggad.",
     });
+
     return null;
   }
 
   return userId;
 }
 
-/**
- * Bygger systemprompt.
- *
- * Utan learningContext:
- * - använder vanliga SYSTEM_PROMPT
- *
- * Med learningContext:
- * - kombinerar vanliga SYSTEM_PROMPT med lesson-aware context
- */
+function hasLearningContext(learningContext?: LearningContext) {
+  return Boolean(
+    learningContext?.courseId ||
+      learningContext?.lessonId ||
+      learningContext?.currentBlockId,
+  );
+}
+
+function buildCurrentBlockPrompt(currentBlockId?: string) {
+  if (!currentBlockId) return "";
+
+  return [
+    "",
+    "Aktuellt block:",
+    `- currentBlockId: ${currentBlockId}`,
+    "",
+    "Om användaren frågar om aktuell del av kursen, ta hänsyn till detta block.",
+  ].join("\n");
+}
+
 async function buildLearningAwareSystemPrompt(input: {
   userId: string;
   learningContext?: LearningContext;
 }) {
   const { userId, learningContext } = input;
 
-  if (!learningContext?.lessonId && !learningContext?.courseId) {
-    return SYSTEM_PROMPT;
+  if (!hasLearningContext(learningContext)) {
+    return [
+      SYSTEM_PROMPT,
+      "",
+      "========================",
+      "MCP TOOL-INSTRUKTIONER",
+      "========================",
+      "",
+      "Du har tillgång till MCP-tools för kurs- och quizdata.",
+      "",
+      "Använd tools när användaren frågar om:",
+      "- aktuell kurs",
+      "- quizresultat",
+      "- vad användaren bör fokusera på",
+      "- kursprogression eller lärläge",
+      "",
+      "Viktigt:",
+      "- Gissa aldrig kursnamn, quizresultat eller progression.",
+      "- Om du saknar context, säg det tydligt.",
+    ].join("\n");
   }
 
   const assistantContext =
     await defaultAssistantContextService.buildAssistantContext({
       userId,
-      courseId: learningContext.courseId,
-      lessonId: learningContext.lessonId,
-      mode: learningContext.mode ?? "lesson_help",
-      quizAnswers: learningContext.quizAnswers,
+      courseId: learningContext?.courseId,
+      lessonId: learningContext?.lessonId,
+      currentBlockId: learningContext?.currentBlockId,
+      mode: learningContext?.mode ?? "lesson_help",
     });
 
   const learningSystemPrompt = buildAssistantSystemPrompt(
@@ -169,11 +150,36 @@ async function buildLearningAwareSystemPrompt(input: {
     SYSTEM_PROMPT,
     "",
     "========================",
-    "EXTRA LEARNING CONTEXT",
+    "MCP TOOL-INSTRUKTIONER",
     "========================",
     "",
+    "Du har tillgång till MCP-tools för kurs- och quizdata.",
+    "",
+    "Använd dessa tools när det passar:",
+    "- get_current_course: när användaren frågar vilken kurs hen jobbar med.",
+    "- get_current_course_quiz_result: när användaren frågar hur det gick på quizet.",
+    "- get_current_course_learning_context: när användaren frågar vad hen bör fokusera på eller repetera.",
+    "",
+    "Aktuell frontend-context:",
+    learningContext?.courseId ? `- courseId: ${learningContext.courseId}` : null,
+    learningContext?.lessonId ? `- lessonId: ${learningContext.lessonId}` : null,
+    learningContext?.currentBlockId
+      ? `- currentBlockId: ${learningContext.currentBlockId}`
+      : null,
+    learningContext?.mode ? `- mode: ${learningContext.mode}` : null,
+    "",
     learningSystemPrompt,
-  ].join("\n");
+    buildCurrentBlockPrompt(learningContext?.currentBlockId),
+    "",
+    "Viktigt:",
+    "- Om användaren frågar om aktuell kurs, använd MCP-toolen get_current_course.",
+    "- Om användaren frågar om quizresultat, använd MCP-toolen get_current_course_quiz_result.",
+    "- Om användaren frågar vad hen bör fokusera på, använd MCP-toolen get_current_course_learning_context.",
+    "- Gissa aldrig kursnamn, quizresultat eller progression.",
+    "- Om ett MCP-tool saknar data, säg det tydligt och hjälp användaren vidare.",
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }
 
 function buildAiSettingsPrompt(aiSettings?: z.infer<typeof aiSettingsSchema>) {
@@ -238,30 +244,27 @@ async function callOpenRouter(
     throw new Error("OPENROUTER_API_KEY saknas");
   }
 
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
-        "X-Title": "Adulting App",
-      },
-      body: JSON.stringify({
-        model: OPENROUTER_MODEL,
-        messages: [
-          {
-            role: "system",
-            content: options?.systemPrompt ?? SYSTEM_PROMPT,
-          },
-          ...history,
-        ],
-        temperature: 0.7,
-        max_tokens: 700,
-      }),
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:3000",
+      "X-Title": "Adulting App",
     },
-  );
+    body: JSON.stringify({
+      model: OPENROUTER_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: options?.systemPrompt ?? SYSTEM_PROMPT,
+        },
+        ...history,
+      ],
+      temperature: 0.7,
+      max_tokens: 700,
+    }),
+  });
 
   const rawText = await response.text();
 
@@ -277,13 +280,10 @@ async function callOpenRouter(
   }
 
   if (!response.ok) {
-    throw new Error(
-      data?.error?.message || "OpenRouter kunde inte svara",
-    );
+    throw new Error(data?.error?.message || "OpenRouter kunde inte svara");
   }
 
-  const text =
-    data?.choices?.[0]?.message?.content?.trim() || "";
+  const text = data?.choices?.[0]?.message?.content?.trim() || "";
 
   if (!text) {
     throw new Error("AI svarade tomt");
@@ -361,12 +361,7 @@ router.delete("/threads/:threadId", async (req, res) => {
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -374,13 +369,8 @@ router.delete("/threads/:threadId", async (req, res) => {
       });
     }
 
-    await db
-      .delete(aiMessages)
-      .where(eq(aiMessages.threadId, threadId));
-
-    await db
-      .delete(aiThreads)
-      .where(eq(aiThreads.id, threadId));
+    await db.delete(aiMessages).where(eq(aiMessages.threadId, threadId));
+    await db.delete(aiThreads).where(eq(aiThreads.id, threadId));
 
     res.json({
       ok: true,
@@ -409,12 +399,7 @@ router.get("/threads/:threadId/messages", async (req, res) => {
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -453,23 +438,18 @@ router.post("/threads/:threadId/messages", async (req, res) => {
     const parsedBody = sendMessageBodySchema.parse(req.body ?? {});
     const { message, learningContext, aiSettings } = parsedBody;
 
-    if (!message?.trim()) {
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
       return res.status(400).json({
         error: "Skriv något först",
       });
     }
 
-    const cleanMessage = message.trim();
-
     const [thread] = await db
       .select()
       .from(aiThreads)
-      .where(
-        and(
-          eq(aiThreads.id, threadId),
-          eq(aiThreads.userId, userId),
-        ),
-      );
+      .where(and(eq(aiThreads.id, threadId), eq(aiThreads.userId, userId)));
 
     if (!thread) {
       return res.status(404).json({
@@ -483,11 +463,8 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       content: cleanMessage,
     });
 
-    let newTitle = thread.title;
-
-    if (thread.title === "Ny AI-chatt") {
-      newTitle = cleanMessage.slice(0, 40);
-    }
+    const newTitle =
+      thread.title === "Ny AI-chatt" ? cleanMessage.slice(0, 40) : thread.title;
 
     await db
       .update(aiThreads)
@@ -508,11 +485,10 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       content: msg.content,
     }));
 
-    const learningAwareSystemPrompt =
-      await buildLearningAwareSystemPrompt({
-        userId,
-        learningContext,
-      });
+    const learningAwareSystemPrompt = await buildLearningAwareSystemPrompt({
+      userId,
+      learningContext,
+    });
 
     const aiSettingsPrompt = buildAiSettingsPrompt(aiSettings);
 
@@ -523,16 +499,25 @@ router.post("/threads/:threadId/messages", async (req, res) => {
 
     let aiReply = "";
 
-    try {
-      aiReply = await callOpenRouter(history, {
-        systemPrompt: finalSystemPrompt,
-      });
-    } catch (error) {
-      console.error("AI ERROR:", error);
+      try {
+        if (!OPENROUTER_API_KEY) {
+          throw new Error("OPENROUTER_API_KEY saknas");
+        }
 
-      aiReply =
-        "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
-    }
+        aiReply = await callOpenRouterWithMcpTools({
+          history,
+          systemPrompt: finalSystemPrompt,
+          userId,
+          courseId: learningContext?.courseId,
+          openRouterApiKey: OPENROUTER_API_KEY,
+          openRouterModel: OPENROUTER_MODEL,
+        });
+      } catch (error) {
+        console.error("AI ERROR:", error);
+
+        aiReply =
+          "AI är upptagen just nu men ditt meddelande sparades. Försök igen snart.";
+      }
 
     await db.insert(aiMessages).values({
       threadId,
@@ -551,16 +536,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       ok: true,
       threadTitle: newTitle,
       assistantMessage: aiReply,
-
-      /**
-       * Bra för debug just nu.
-       *
-       * TODO production:
-       * Ta eventuellt bort detta fält om ni inte vill exponera det.
-       */
-      learningContextUsed: Boolean(
-        learningContext?.lessonId || learningContext?.courseId,
-      ),
+      learningContextUsed: hasLearningContext(learningContext),
     });
   } catch (error) {
     console.error(error);

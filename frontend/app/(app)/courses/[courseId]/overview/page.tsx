@@ -104,8 +104,12 @@ export default async function CourseOverview({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
 
-  const course = await getCourseById(courseId).catch((err) => {
+  const course = await getCourseById(courseId, {
+    headers: { cookie: cookieHeader }
+  }).catch((err) => {
     console.error('getCourseById failed:', err);
     return null;
   });
@@ -126,7 +130,9 @@ export default async function CourseOverview({
   let blocksError: string | null = null;
 
   try {
-    blocks = await getBlocksByCourseId(courseId);
+    blocks = await getBlocksByCourseId(courseId, {
+      headers: { cookie: cookieHeader }
+    });
   } catch (err) {
     console.error('getBlocksByCourseId failed:', err);
     blocksError = err instanceof Error ? err.message : String(err);
@@ -208,7 +214,7 @@ export default async function CourseOverview({
 
         {sortedBlocks.length > 0 && (
           <Link href={`/courses/${courseId}/blocks/${sortedBlocks[0].id}`}>
-            <CourseButton className="mt-10" variant="primary">
+            <CourseButton className="mt-10 mb-20" variant="primary">
               Starta kursen
             </CourseButton>
           </Link>

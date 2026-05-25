@@ -4,8 +4,8 @@ import { BookOpen } from 'lucide-react'; // Fallback-ikon om ingen bild matchar
 export interface CourseIconData {
   title?: string;
   category?: {
-    name?: string;
-    iconName?: string;
+    name?: string | null;
+    iconName?: string | null;
   } | null;
 }
 

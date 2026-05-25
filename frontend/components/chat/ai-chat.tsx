@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
@@ -240,9 +241,7 @@ export default function AiChat({
 
       const response = await fetch(
         `${API_BASE}/api/ai/threads/${threadId}/messages`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
 
       const data = await safeJson(response);
@@ -326,81 +325,79 @@ export default function AiChat({
     await fetchMessages(threadId);
   }
 
-  async function handleSendMessage() {
-    const cleanMessage = messageInput.trim();
+async function handleSendMessage() {
+  const cleanMessage = messageInput.trim();
 
-    if (!cleanMessage || sending) return;
+  if (!cleanMessage || sending) return;
 
-    setError("");
-    setSending(true);
+  setError("");
+  setSending(true);
 
-    let threadId = activeThreadId;
+  let threadId = activeThreadId;
+
+  if (!threadId) {
+    threadId = await createThread();
 
     if (!threadId) {
-      threadId = await createThread();
-
-      if (!threadId) {
-        setSending(false);
-        return;
-      }
-    }
-
-    const optimisticUserMessage: Message = {
-      id: `temp-${Date.now()}`,
-      threadId,
-      role: "user",
-      content: cleanMessage,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, optimisticUserMessage]);
-    setMessageInput("");
-
-    try {
-      const response = await fetch(
-        `${API_BASE}/api/ai/threads/${threadId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            message: cleanMessage,
-            aiSettings:
-              typeof window !== "undefined"
-                ? JSON.parse(
-                    localStorage.getItem("ai-assistant-settings") || "null"
-                  )
-                : null,
-            ...(learningContext ? { learningContext } : {}),
-          }),
-        }
-      );
-
-      const data = await safeJson(response);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "AI-assistenten kunde inte svara just nu."
-        );
-      }
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "AI-assistenten kunde inte svara just nu."
-      );
-
-      await fetchThreads();
-      await fetchMessages(threadId);
-    } finally {
       setSending(false);
+      return;
     }
   }
+
+  const optimisticUserMessage: Message = {
+    id: `temp-${Date.now()}`,
+    threadId,
+    role: "user",
+    content: cleanMessage,
+    createdAt: new Date().toISOString(),
+  };
+
+  setMessages((prev) => [...prev, optimisticUserMessage]);
+  setMessageInput("");
+
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/ai/threads/${threadId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          message: cleanMessage,
+          aiSettings:
+            typeof window !== "undefined"
+              ? JSON.parse(localStorage.getItem("ai-assistant-settings") || "null")
+              : null,
+          ...(learningContext ? { learningContext } : {}),
+        }),
+      }
+    );
+
+    const data = await safeJson(response);
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "AI-assistenten kunde inte svara just nu."
+      );
+    }
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "AI-assistenten kunde inte svara just nu."
+    );
+
+    await fetchThreads();
+    await fetchMessages(threadId);
+  } finally {
+    setSending(false);
+  }
+}
 
   function handleTextareaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -685,7 +682,7 @@ export default function AiChat({
                     </div>
                   </div>
 
-                  <h2 className="mt-4 text-[24px] font-extrabold tracking-tight text-foreground md : mt-8 md:text-4xl">
+                  <h2 className="mt-4 text-[24px] font-extrabold tracking-tight text-foreground md:mt-8 md:text-4xl">
                     Hur kan jag hjälpa dig?
                   </h2>
 
@@ -693,7 +690,7 @@ export default function AiChat({
                     Skriv din fråga så hjälper jag dig på bästa sätt.
                   </p>
 
-                  <div className="mx-auto mt-5 grid max-w-4xl gap-4 text-left md : mt-8 md:grid-cols-3 md : gap-4">
+                  <div className="mx-auto mt-5 grid max-w-4xl gap-4 text-left md:mt-8 md:grid-cols-3 md:gap-4">
                     {suggestions.map((item) => {
                       const Icon = item.icon;
 
@@ -702,7 +699,7 @@ export default function AiChat({
                           key={item.title}
                           type="button"
                           onClick={() => useSuggestion(item.prompt)}
-                          className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-sm transition hover:bg-secondary  md:rounded-3xl md :p-5"
+                          className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-sm transition hover:bg-secondary  md:rounded-3xl md:p-5"
                         >
                           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] transition group-hover:scale-105 dark:bg-white/10 dark:text-[#A78BFA]">
                             <Icon size={26} />
