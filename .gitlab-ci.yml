@@ -1,6 +1,5 @@
 stages:
-  - check
-  - build before
+  - before
   - lint
   - build
   - deploy
@@ -48,7 +47,7 @@ workflow:
   allow_failure: true # TODO: remove once issues are fixed
 
 build util image:
-  stage: build before
+  stage: before
   extends: .build template
   script:
     - >
@@ -60,7 +59,7 @@ build util image:
       - docker/util.Dockerfile
 
 check gitignore:
-  stage: check
+  stage: before
   image: alpine:latest
   script:
     - apk add --no-cache git
@@ -69,7 +68,7 @@ check gitignore:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 check git size diff:
-  stage: check
+  stage: before
   image: alpine:latest
   script:
     - apk add --no-cache git
