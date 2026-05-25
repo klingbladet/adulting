@@ -1,3 +1,5 @@
+'use server';
+
 import { Block, Course, UserCourse } from "@/types/types";
 import { BACKEND_URL } from "@/lib/backend-url";
 
