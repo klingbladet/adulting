@@ -84,9 +84,9 @@ export default async function BlockPage({
       : 0;
 
   return (
-    <main className="flex min-h-screen flex-col bg-background">
+    <main className="mt-5 flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-6">
+      <div className="flex items-center justify-between pt-6 pb-6">
         <Link href={`/courses/${courseId}/overview`}>
           <X
             size={24}
@@ -110,8 +110,8 @@ export default async function BlockPage({
       </div>
 
       {/* Content */}
-      <div className="mb-10 flex flex-col p-6">
-        <h1 className="mb-6 text-2xl font-bold text-foreground">
+      <div className="mb-10 mt-10 flex flex-col">
+        <h1 className="mb-10 text-2xl font-bold text-foreground">
           {block.title}
         </h1>
 
@@ -123,36 +123,42 @@ export default async function BlockPage({
       </div>
 
       {/* Footer navigation */}
-      <div className="mb-20 flex justify-center gap-4 border-t border-border p-6 pb-10">
+      <div className="mb-20 flex justify-between gap-4 border-t border-border pb-10 pt-6">
         {previousBlock && (
-          <Link
-            href={`/courses/${courseId}/blocks/${previousBlock.id}`}
-            className="flex-2"
-          >
-            <CourseButton variant="primary" fullWidth>
-              Tillbaka
-            </CourseButton>
-          </Link>
+          <div className="flex-1">
+            <Link
+              href={`/courses/${courseId}/blocks/${previousBlock.id}`}
+              className="block w-full"
+            >
+              <CourseButton variant="secondary" fullWidth>
+                Föregående
+              </CourseButton>
+            </Link>
+          </div>
         )}
 
         {nextBlock ? (
-          <ProgressLink
-            href={`/courses/${courseId}/blocks/${nextBlock.id}`}
-            courseId={courseId}
-            progress={progress}
-            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
-          >
-            Nästa
-          </ProgressLink>
+          <div className="flex-1">
+            <ProgressLink
+              href={`/courses/${courseId}/blocks/${nextBlock.id}`}
+              courseId={courseId}
+              progress={progress}
+              className="w-full py-4 px-6 rounded-2xl bg-primary font-semibold text-white transition hover:opacity-90 flex items-center justify-center gap-2"
+            >
+              Nästa
+            </ProgressLink>
+          </div>
         ) : (
-          <ProgressLink
-            href={`/courses/${courseId}/summary/${block.id}`}
-            courseId={courseId}
-            progress={100}
-            className="flex-2 rounded-2xl bg-primary px-6 py-4 font-semibold text-primary-foreground transition hover:opacity-90"
-          >
-            Slutför kurs
-          </ProgressLink>
+          <div className="flex-1">
+            <ProgressLink
+              href={`/courses/${courseId}/summary/${block.id}`}
+              courseId={courseId}
+              progress={100}
+              className="w-full py-4 px-6 rounded-2xl bg-primary font-semibold text-white transition hover:opacity-90 flex items-center justify-center gap-2"
+            >
+              Slutför kurs
+            </ProgressLink>
+          </div>
         )}
       </div>
     </main>

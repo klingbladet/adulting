@@ -93,6 +93,17 @@ lint backend:
     DIR: backend
 
 
+lint dockerfiles:
+  stage: lint
+  image: hadolint/hadolint:v2.14.0-alpine
+  script: hadolint **/*.Dockerfile
+
+lint shell scripts:
+  stage: lint
+  image: 
+    name: koalaman/shellcheck-alpine:stable
+  script: shellcheck --severity=style --check-sourced **/*.sh
+
 
 build backend:
   extends: .build template

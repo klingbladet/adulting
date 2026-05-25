@@ -19,27 +19,44 @@ const UserDashboardPage = async () => {
     }
   });
   return (
-    <div className="relative w-full min-h-screen bg-background">
+    <div className="relative w-full min-h-screen bg-white dark:bg-background">
       <div className="md:hidden">
-        {/* Light mode background */}
+        {/* Light mode figures in bottom corners */}
         <div
-          className="absolute inset-0 dark:hidden bg-cover bg-bottom pointer-events-none"
-          style={{ backgroundImage: 'url(/images/backgrounds/home-screen-background.png)' }}
+          className="absolute left-0 bottom-0 w-32 h-32 dark:hidden bg-contain bg-left-bottom bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: 'url(/images/backgrounds/home-screen-figure-left.png)' }}
         />
-        {/* Dark mode background */}
         <div
-          className="absolute inset-0 hidden dark:block bg-cover bg-bottom pointer-events-none"
-          style={{ backgroundImage: 'url(/images/backgrounds/dark-home-screen-background.png)' }}
+          className="absolute right-0 bottom-0 w-32 h-32 dark:hidden bg-contain bg-right-bottom bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: 'url(/images/backgrounds/home-screen-figure-right.png)' }}
+        />
+        {/* Dark mode figures in bottom corners */}
+        <div
+          className="absolute left-0 bottom-0 w-32 h-32 hidden dark:block bg-contain bg-left-bottom bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: 'url(/images/backgrounds/dark-home-screen-figure-left.png)' }}
+        />
+        <div
+          className="absolute right-0 bottom-0 w-32 h-32 hidden dark:block bg-contain bg-right-bottom bg-no-repeat pointer-events-none"
+          style={{ backgroundImage: 'url(/images/backgrounds/dark-home-screen-figure-right.png)' }}
         />
       </div>
 
       <div className="relative z-10 mx-auto max-w-auto min-h-full font-sans text-foreground pb-24">
 
         {/* Header Section */}
-        <header className="h-auto min-h-[180px] md:min-h-[240px] bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-12 pb-2 px-6 relative md:pb-6">
-          <div className="flex items-center gap-4 mt-6 md:flex-col md:justify-center md:text-center">
+        <header className="h-auto min-h-[180px] md:min-h-[240px] bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-8 pb-6 px-6 relative md:pb-8 flex flex-col items-center md:justify-center text-center">
+
+          {/* Profile Picture in Top Right */}
+          <div className="mb-4 mt-2 flex justify-center w-full">
+            <img
+              src="/images/logotype/adulting-logotype.png"
+              alt="Adulting Logotyp"
+              className="h-15 md:h-14 object-contain"
+            />
+          </div>
+          <div className='flex flex-row items-center gap-3'>
             <Link href="/profile" className="flex flex-col items-center hover:opacity-80 transition-opacity">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-xl overflow-hidden shadow-sm">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg md:text-xl overflow-hidden shadow-md border-2 border-white/50 dark:border-white/10">
                 {session?.user?.image ? (
                   <img
                     src={session.user.image}
@@ -50,11 +67,10 @@ const UserDashboardPage = async () => {
                   getFirstLetter(session?.user?.name || undefined)
                 )}
               </div>
-              <span className="text-[10px] font-bold mt-1">profil</span>
             </Link>
-            <div className="md:mt-4">
-              <h1 className="text-xl md:text-4xl font-extrabold text-foreground">Hi {session?.user?.name}!</h1>
-              <p className="text-sm md:text-lg text-muted-foreground leading-tight mt-1 max-w-[200px] md:max-w-md mx-auto">
+            <div className="flex flex-col gap-2 w-full items-start">
+              <h1 className="text-xl md:text-4xl font-extrabold text-foreground">Hej {session?.user?.name}!</h1>
+              <p className="text-sm md:text-lg text-muted-foreground leading-tight max-w-[250px] md:max-w-md">
                 Välkommen, vad vill du lära dig idag?
               </p>
             </div>
@@ -102,8 +118,8 @@ const UserDashboardPage = async () => {
               </Link>
               <Link href={`/courses/category/jobs`} className="block cursor-pointer h-full">
                 <CategoryCard
-                  name="Jobs"
-                  description="Find jobs and contracts"
+                  name="Jobb"
+                  description="Söka jobb, rekrytering, CV"
                   logoImage="/images/backgrounds/jobb-bakgrund.png"
                   colorClass="bg-[#F2F2F2] dark:bg-[#1A1A1A]"
                 />

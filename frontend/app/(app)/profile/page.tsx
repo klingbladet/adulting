@@ -342,9 +342,8 @@ function BadgeItem({ badge }: { badge: ProfileBadge }) {
   return (
     <div className="flex flex-col items-center text-center">
       <div
-        className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white ${
-          unlocked ? "border-[#7C8A22]" : "border-gray-300 opacity-50 grayscale"
-        }`}
+        className={`flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border bg-white ${unlocked ? "border-[#7C8A22]" : "border-gray-300 opacity-50 grayscale"
+          }`}
       >
         {badge.image ? (
           <img

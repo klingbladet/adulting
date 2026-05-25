@@ -225,77 +225,77 @@ export default function AiChat({
   }
 
   async function handleSendMessage() {
-  const cleanMessage = messageInput.trim();
+    const cleanMessage = messageInput.trim();
 
-  if (!cleanMessage || sending) return;
+    if (!cleanMessage || sending) return;
 
-  setError("");
-  setSending(true);
+    setError("");
+    setSending(true);
 
-  let threadId = activeThreadId;
-
-  if (!threadId) {
-    threadId = await createThread();
+    let threadId = activeThreadId;
 
     if (!threadId) {
-      setSending(false);
-      return;
+      threadId = await createThread();
+
+      if (!threadId) {
+        setSending(false);
+        return;
+      }
     }
-  }
 
-  const optimisticUserMessage: Message = {
-    id: `temp-${Date.now()}`,
-    threadId,
-    role: "user",
-    content: cleanMessage,
-    createdAt: new Date().toISOString(),
-  };
+    const optimisticUserMessage: Message = {
+      id: `temp-${Date.now()}`,
+      threadId,
+      role: "user",
+      content: cleanMessage,
+      createdAt: new Date().toISOString(),
+    };
 
-  setMessages((prev) => [...prev, optimisticUserMessage]);
-  setMessageInput("");
+    setMessages((prev) => [...prev, optimisticUserMessage]);
+    setMessageInput("");
 
-  const payload = {
-    message: cleanMessage,
-    ...(learningContext ? { learningContext } : {}),
-  };
+    const payload = {
+      message: cleanMessage,
+      ...(learningContext ? { learningContext } : {}),
+    };
 
-  try {
-    const response = await fetch(
-      `${BACKEND_URL}/api/ai/threads/${threadId}/messages`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/ai/threads/${threadId}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
         },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      },
-    );
-
-    const data = await safeJson(response);
-
-    if (!response.ok) {
-      throw new Error(
-        data?.error || "AI-assistenten kunde inte svara just nu.",
       );
+
+      const data = await safeJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "AI-assistenten kunde inte svara just nu.",
+        );
+      }
+
+      await fetchThreads();
+      await fetchMessages(threadId);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "AI-assistenten kunde inte svara just nu.";
+
+      setError(message);
+
+      await fetchThreads();
+      await fetchMessages(threadId);
+    } finally {
+      setSending(false);
     }
-
-    await fetchThreads();
-    await fetchMessages(threadId);
-  } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "AI-assistenten kunde inte svara just nu.";
-
-    setError(message);
-
-    await fetchThreads();
-    await fetchMessages(threadId);
-  } finally {
-    setSending(false);
   }
-}
 
   function handleTextareaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -371,9 +371,8 @@ export default function AiChat({
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -418,9 +417,8 @@ export default function AiChat({
                   return (
                     <div
                       key={thread.id}
-                      className={`group flex items-center gap-2 rounded-2xl px-2 py-2 transition ${
-                        isActive ? "bg-secondary" : "hover:bg-secondary/70"
-                      }`}
+                      className={`group flex items-center gap-2 rounded-2xl px-2 py-2 transition ${isActive ? "bg-secondary" : "hover:bg-secondary/70"
+                        }`}
                     >
                       <button
                         onClick={() => handleSelectThread(thread.id)}
@@ -575,9 +573,8 @@ export default function AiChat({
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex items-end gap-2 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"
+                      }`}
                   >
                     {message.role === "assistant" && (
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
@@ -586,11 +583,10 @@ export default function AiChat({
                     )}
 
                     <div
-                      className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border bg-card text-foreground"
-                      }`}
+                      className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border bg-card text-foreground"
+                        }`}
                     >
                       {message.content}
                     </div>
@@ -626,14 +622,14 @@ export default function AiChat({
           </div>
 
           <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
-            <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
+            <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
               <textarea
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder="Skriv din fråga här..."
                 rows={1}
-                className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+                className="flex justify-center max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
               />
 
               <button

@@ -376,7 +376,7 @@ export default function CreateBlocks() {
             setSaved(false);
           }}
           placeholder="Kursnamn"
-          className="w-full font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
+          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
@@ -387,7 +387,7 @@ export default function CreateBlocks() {
             setCategoryId(e.target.value);
             setSaved(false);
           }}
-          className="w-full sm:w-1/2 font-medium text-foreground bg-background border-b border-dashed border-border px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
           <option value="" disabled>
             Välj kategori
@@ -409,35 +409,35 @@ export default function CreateBlocks() {
           }}
           placeholder="Uppskattad tid (minuter)"
           min="1"
-          className="w-full sm:w-1/2 font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
 
       {blocks.map((block, index) => (
         <div
           key={block.id}
-          className="border border-border p-4 rounded-lg relative bg-card shadow-sm"
+          className="border border-border p-5 rounded-2xl relative bg-card shadow-sm"
         >
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2 flex-grow max-w-sm">
-              <span className="font-medium text-muted-foreground">#{index + 1}</span>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3 flex-grow max-w-lg">
+              <span className="font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">#{index + 1}</span>
 
               <input
                 type="text"
                 value={block.title || ""}
                 onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                 placeholder="Skriv en rubrik (minst 5 tecken)"
-                className="w-full font-medium text-foreground bg-transparent border-b border-dashed border-border px-1 py-1 focus:outline-none focus:border-primary transition-colors"
+                className="w-full font-semibold text-foreground bg-transparent px-2 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
               />
             </div>
 
             {blocks.length > 1 && (
               <button
                 type="button"
-                className="text-red-400 hover:text-red-600 text-sm font-medium transition"
+                className="text-red-500 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/50"
                 onClick={() => removeBlock(block.id)}
               >
-                ✕ Remove
+                Ta bort
               </button>
             )}
           </div>
@@ -449,7 +449,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={addBlock}
           disabled={loading}
-          className="border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50"
+          className="border border-primary rounded-xl py-3 px-5 text-primary hover:bg-primary/10 font-semibold disabled:opacity-50"
         >
           + Lägg till steg
         </button>
@@ -458,9 +458,9 @@ export default function CreateBlocks() {
           type="button"
           onClick={handleSave}
           disabled={loading}
-          className="border rounded-sm border-border py-2 px-4 text-muted-foreground hover:bg-border hover:text-foreground transition disabled:opacity-50"
+          className="border border-border rounded-xl py-3 px-5 text-muted-foreground hover:bg-border hover:text-foreground font-semibold disabled:opacity-50"
         >
-          {loading ? "Wait..." : saved ? "Sparad" : "Spara"}
+          {loading ? "Väntar..." : saved ? "Sparad" : "Spara"}
         </button>
       </div>
 
