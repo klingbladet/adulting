@@ -47,7 +47,7 @@ spec:
             - name: DATABASE_URL
               value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
             - name: MCP_SERVER_URL
-              value: http://$(VERSION)-adulting-mcp.doe25-group-1.svc.cluster.local:8080
+              value: http://$(VERSION)-adulting-mcp.doe25-group-1.svc.cluster.local:8080/mcp
           envFrom:
             - secretRef:
                 name: env-auth
