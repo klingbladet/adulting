@@ -74,6 +74,11 @@ lint dockerfiles:
   image: hadolint/hadolint
   script: hadolint **/*.Dockerfile
 
+lint shell scripts:
+  stage: lint
+  image: koalaman/shellcheck:stable
+  script: shellcheck --severity=style --check-sourced **/*.sh
+
 
 build backend:
   stage: build
