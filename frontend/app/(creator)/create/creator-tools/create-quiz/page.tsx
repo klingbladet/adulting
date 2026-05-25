@@ -18,7 +18,7 @@ export default async function CreatorToolsPage({
   const courseId = params.courseId;
 
   return (
-    <>
+    <div className="relative w-full min-h-screen bg-white dark:bg-background font-sans text-foreground pb-28 md:max-w-5xl md:mx-auto md:px-8 md:py-14 px-5 pt-6">
       <CreatorStepper currentStep={3} />
       
       {/* Resten av quiz-innehållet kommer här... */}
@@ -30,6 +30,6 @@ export default async function CreatorToolsPage({
         backPath="/create/creator-tools/create-content"
         nextPath="/create/creator-tools/preview"
       />
-    </>
+    </div>
   );
 }

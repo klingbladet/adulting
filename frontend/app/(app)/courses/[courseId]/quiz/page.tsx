@@ -228,7 +228,7 @@ export default function CourseQuizPage({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col p-6">
+    <main className="mt-10 mx-auto flex min-h-screen max-w-3xl flex-col">
       <div className="mb-6">
         <button
           type="button"

@@ -5,15 +5,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-const CourseButton = ({ 
-  children, 
-  variant = 'primary', 
-  fullWidth = true, 
-  className = '', 
-  ...props 
-  
+const CourseButton = ({
+  children,
+  variant = 'primary',
+  fullWidth = true,
+  className = '',
+  ...props
+
 }: ButtonProps) => {
-  
+
   // Bas-stilar som alla knappar delar
   const baseStyles = "rounded-4xl flex items-center justify-center gap-2 transition duration-300";
   
@@ -29,7 +29,7 @@ const CourseButton = ({
   const widthStyle = fullWidth ? "w-full" : "w-auto";
 
   return (
-    <button 
+    <button
       className={`${baseStyles} ${variants[variant]} ${widthStyle} ${className}`}
       {...props}
     >

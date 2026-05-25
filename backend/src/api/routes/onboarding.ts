@@ -3,15 +3,13 @@ import { eq } from "drizzle-orm";
 import { fromNodeHeaders } from "better-auth/node";
 
 import { db } from "../../db";
-import { user, userOnboarding  } from "../../db/auth-schema";
+import { user, userOnboarding } from "../../db/auth-schema";
 import { auth } from "../../utils/auth";
 import {
   getPostAuthRedirectPath,
   isOnboardingStatus,
   OnboardingStatus,
 } from "../../utils/onboarding";
-
-
 
 const router = Router();
 
@@ -47,10 +45,10 @@ router.get("/status", async (req, res) => {
       return res.status(404).json({ error: "Användaren hittades inte." });
     }
 
-const status: OnboardingStatus = isOnboardingStatus(currentUser.onboardingStatus)
-  ? currentUser.onboardingStatus
-  : "not_started";
-  
+    const status: OnboardingStatus = isOnboardingStatus(currentUser.onboardingStatus)
+      ? currentUser.onboardingStatus
+      : "not_started";
+
     return res.json({
       onboardingStatus: status,
       redirectTo: getPostAuthRedirectPath(status),
@@ -136,7 +134,6 @@ router.get("/", async (req, res) => {
       currentStep: onboarding?.currentStep ?? 1,
       stepOneData: onboarding?.stepOneData ?? {},
       stepTwoData: onboarding?.stepTwoData ?? {},
-      stepThreeData: onboarding?.stepThreeData ?? {},
     });
   } catch (error) {
     console.error("GET ONBOARDING ERROR:", error);
@@ -153,7 +150,7 @@ router.patch("/step", async (req, res) => {
 
     const { step, data } = req.body;
 
-    if (![1, 2, 3].includes(step)) {
+    if (![1, 2].includes(step)) {
       return res.status(400).json({ error: "Ogiltigt onboarding-steg." });
     }
 
@@ -166,15 +163,13 @@ router.patch("/step", async (req, res) => {
       .from(userOnboarding)
       .where(eq(userOnboarding.userId, userId));
 
-    const nextStep = step === 3 ? 3 : step + 1;
-    const nextStatus = step === 3 ? "completed" : "in_progress";
+    const isLastStep = step === 2;
+    const nextStep = isLastStep ? 2 : step + 1;
+    const nextStatus = isLastStep ? "completed" : "in_progress";
 
-    const updateData =
-      step === 1
-        ? { stepOneData: data }
-        : step === 2
-          ? { stepTwoData: data }
-          : { stepThreeData: data };
+    const updateData = step === 1
+      ? { stepOneData: data }
+      : { stepTwoData: data };
 
     if (existing) {
       await db
@@ -204,7 +199,7 @@ router.patch("/step", async (req, res) => {
     return res.json({
       onboardingStatus: nextStatus,
       currentStep: nextStep,
-      redirectTo: step === 3 ? "/learn" : "/onboarding",
+      redirectTo: isLastStep ? "/learn" : "/onboarding",
     });
   } catch (error) {
     console.error("PATCH ONBOARDING STEP ERROR:", error);
