@@ -3,7 +3,7 @@ import { Hind, Montserrat } from "next/font/google";
 import "./globals.css";
 import Header from "../components/navigation/header";
 import Footer from "../components/navigation/footer";
-import ThemeProvider from "@/components/theme-provider";
+import ThemeProvider from "@/components/theme/theme-provider";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
