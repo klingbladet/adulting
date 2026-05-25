@@ -97,12 +97,20 @@ lint dockerfiles:
   stage: lint
   image: hadolint/hadolint:v2.14.0-alpine
   script: hadolint **/*Dockerfile
+  rules:
+    - if: $VERSION
+      changes: 
+        - "**/*Dockerfile"
 
 lint shell scripts:
   stage: lint
   image: 
     name: koalaman/shellcheck-alpine:stable
   script: shellcheck --severity=style --check-sourced **/*.sh
+  rules:
+    - if: $VERSION
+      changes: 
+        - "**/*.sh"
 
 
 build backend:
