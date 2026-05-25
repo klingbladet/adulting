@@ -40,13 +40,12 @@ workflow:
     - if: $VERSION
 
 .lint template:
+  extends: build template
   stage: lint
   script:
     - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
     - docker run --rm lint pnpm eslint
   allow_failure: true # TODO: remove once issues are fixed
-  rules:
-    - if: $VERSION
 
 build util image:
   stage: build before
