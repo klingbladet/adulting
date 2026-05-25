@@ -12,10 +12,10 @@
   --card: #ffffff;
   --card-foreground: #111827;
 
-  --primary: #4f46e5;
+  --primary: #4981F2;
   --primary-foreground: #ffffff;
 
-  --secondary: #C0E7F7;
+  --secondary: #E1F0FD;
   --secondary-foreground: #312e81;
 
   --muted: #E3F3FB;
@@ -30,7 +30,7 @@
 
   --category-one: #DCE9FD;
   --category-one-text: #4981F2;
-    --category-two: #F5F7EE;
+  --category-two: #F5F7EE;
   --category-two-text: #8CA653;
   --category-three: #BDC4E4;
   --category-three-text: #6460A2;
@@ -51,7 +51,7 @@
   --card: #111827;
   --card-foreground: #f8fafc;
 
-  --primary: #818cf8;
+  --primary: #4981F2;
   --primary-foreground: #111827;
 
   --secondary: #1f2937;
@@ -111,7 +111,7 @@
   --color-category-three: var(--category-three);
   --color-category-three-text: var(--category-three-text);
   --color-category-drop: var(--category-drop);
-  
+
   --color-summary: var(--font-summary);
 
   --radius-sm: var(--radius-sm);

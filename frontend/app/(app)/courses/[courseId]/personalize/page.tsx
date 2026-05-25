@@ -36,10 +36,10 @@ export default function Personalize({ params }: { params: Promise<{ courseId: st
   }
 
   return (
-    <div className="flex flex-col gap-4 relative mx-auto max-w-5xl">
-      <h1 className="text-3xl">Anpassa kursen till dig</h1>
-      <p className="text-sm">Svara på några korta frågor så anpassar vi innehållet. Du kan hoppa över ifall du vill</p>
-      <h3 className="text-sm"><strong>Hur mycket vet du om att hyra bostad?</strong></h3>
+    <div className="mt-30 flex flex-col gap-4 relative mx-auto max-w-5xl">
+      <h1 className="text-3xl font-bold">Anpassa kursen till dig</h1>
+      <p className="text-sm mb-15">Svara på några korta frågor så anpassar vi innehållet. Du kan hoppa över ifall du vill</p>
+      <h3 className="text-l"><strong>Hur mycket vet du om att hyra bostad?</strong></h3>
       <div className="flex flex-col gap-3 text-sm">
         {levelOptions.map((option) => (
           <label key={option.value} className="cursor-pointer group">
