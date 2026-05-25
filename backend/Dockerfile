@@ -42,7 +42,7 @@ ENV NODE_ENV=production
 
 EXPOSE 3001
 
-CMD ["node", "--unbuffered", "dist/server.js"]
+CMD ["stdbuf", "-oL", "-eL", "node", "dist/server.js"]
 
 
 #
@@ -69,4 +69,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3001
 
-CMD ["node", "--unbuffered", "dist/server.js"]
+CMD ["stdbuf", "-oL", "-eL", "node", "dist/server.js"]

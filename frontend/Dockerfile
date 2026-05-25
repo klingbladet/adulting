@@ -49,4 +49,4 @@ COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-CMD ["node", "--unbuffered", "server.js"]
+CMD ["stdbuf", "-oL", "-eL", "node", "server.js"]
