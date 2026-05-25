@@ -1,8 +1,6 @@
 import { Block, Course, UserCourse } from "@/types/types";
 import { BACKEND_URL } from "./backend-url";
 
-const BASE_URL = `${BACKEND_URL}/api`;
-
 export type Category = {
   id: string;
   name: string;
@@ -56,7 +54,7 @@ export type SubmitQuizAttemptResponse = {
 };
 
 export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${BASE_URL}/courses/categories`, { 
+  const res = await fetch(`${BACKEND_URL}/api/courses/categories`, { 
     cache: 'no-store' 
   });
   if (!res.ok) throw new Error("Misslyckades att hämta kategorier");
@@ -65,7 +63,7 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function getCourseQuiz(courseId: string): Promise<CourseQuiz> {
   const response = await fetch(
-    `${BASE_URL}/learning/courses/${courseId}/quiz`,
+    `${BACKEND_URL}/api/learning/courses/${courseId}/quiz`,
     {
       method: "GET",
       credentials: "include",
@@ -93,7 +91,7 @@ export async function submitQuizAttempt(
   payload: SubmitQuizAttemptPayload,
 ): Promise<SubmitQuizAttemptResponse> {
   const response = await fetch(
-    `${BASE_URL}/learning/quizzes/${quizId}/attempts`,
+    `${BACKEND_URL}/api/learning/quizzes/${quizId}/attempts`,
     {
       method: "POST",
       credentials: "include",
@@ -120,25 +118,25 @@ export async function submitQuizAttempt(
 }
 
 export async function getCourses(options?: RequestInit): Promise<Course[]> {
-  const res = await fetch(`${BASE_URL}/courses`, { cache: 'no-store', ...options });
+  const res = await fetch(`${BACKEND_URL}/api/courses`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error("Misslyckades att hämta kurser");
   return res.json();
 }
 
 export async function getCourseById(id: string, options?: RequestInit): Promise<Course> {
-  const res = await fetch(`${BASE_URL}/courses/${id}`, { cache: 'no-store', ...options });
+  const res = await fetch(`${BACKEND_URL}/api/courses/${id}`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error(`Misslyckades att hämta kurs ${id}`);
   return res.json();
 }
 
 export async function getCoursesByCategory(categoryName: string, options?: RequestInit): Promise<Course[]> {
-  const res = await fetch(`${BASE_URL}/courses?category=${encodeURIComponent(categoryName)}`, { cache: 'no-store', ...options });
+  const res = await fetch(`${BACKEND_URL}/api/courses?category=${encodeURIComponent(categoryName)}`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error("Misslyckades att hämta kurser för kategori");
   return res.json();
 }
 
 export async function getBlocksByCourseId(courseId: string, options?: RequestInit): Promise<Block[]> {
-  const res = await fetch(`${BASE_URL}/courses/${courseId}/blocks`, { cache: 'no-store', ...options });
+  const res = await fetch(`${BACKEND_URL}/api/courses/${courseId}/blocks`, { cache: 'no-store', ...options });
   if (!res.ok) throw new Error(`Misslyckades att hämta block för kurs ${courseId}`);
   const data = await res.json();
   // Backend returnerar { message: "...", blocks: [...] }
@@ -149,7 +147,7 @@ export async function enrollInCourse(
   courseId: string,
   knowledgeLevel?: "beginner" | "intermediate" | "advanced"
 ): Promise<{ message: string; userCourse: UserCourse }> {
-  const res = await fetch(`${BASE_URL}/courses/${courseId}/enroll`, {
+  const res = await fetch(`${BACKEND_URL}/api/courses/${courseId}/enroll`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
