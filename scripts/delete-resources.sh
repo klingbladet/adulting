@@ -32,6 +32,7 @@ else
         "service"
         "ingress"
         "middleware"
+        "horizontalpodautoscalers"
     )
 fi
 
