@@ -45,7 +45,7 @@ export default async function HomePage() {
             </Link>
 
             <Link
-              href="/chat"
+              href="/learn"
               className="mt-7 block text-center text-sm font-bold text-gray-900"
             >
               Eller utforska som gäst
