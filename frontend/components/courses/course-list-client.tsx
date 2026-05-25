@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
-import BlockCard from "@/components/courses/course-layout";
 import getCourseIcon from "@/components/courses/course-dynamic-icon";
 import { Course } from "@/types/types";
 import { Trash2 } from "lucide-react";
@@ -117,24 +116,30 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {newDraft && (
           <div className="flex gap-2 items-stretch">
             <Link href={`/create/creator-tools/create-blocks`} className="flex-grow">
-              <BlockCard
-                icon={getCourseIcon({ category: { name: 'Draft' } } as unknown as Course)}
-                title={newDraft.courseTitle || "Osparat utkast"}
-                time={newDraft.courseTime}
-                steps={getSteps(newDraft.blocks)}
-                description="LOKALT UTKAST (ej sparad i databasen)"
-              />
+              <div className="flex flex-row justify-between items-center gap-3 rounded-2xl bg-category-one dark:bg-[#1a2f5a] p-3 shadow-sm h-full">
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shrink-0">
+                  {getCourseIcon({ category: { name: 'Draft' } } as unknown as Course)}
+                </div>
+                <div className="flex flex-col flex-grow min-w-0">
+                  <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
+                    {newDraft.courseTitle || "Osparat utkast"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    LOKALT UTKAST (ej sparad i databasen)
+                  </p>
+                </div>
+              </div>
             </Link>
             <button
               onClick={() => { setCourseToDelete('new'); setDeleteInput(''); setDeleteError(''); }}
-              className="px-5 text-red-400 hover:text-red-600 bg-secondary hover:bg-red-50 rounded-2xl transition-all border border-transparent hover:border-red-200 flex items-center justify-center shadow-sm"
+              className="px-4 text-red-500 bg-red-50 dark:bg-red-950/30 rounded-2xl border border-transparent flex items-center justify-center shadow-sm shrink-0"
               title="Kasta utkast"
             >
-              <Trash2 size={24} />
+              <Trash2 size={20} />
             </button>
           </div>
         )}
@@ -143,24 +148,28 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
           courses.map((course) => (
             <div key={course.id} className="flex gap-2 items-stretch">
               <Link href={`/create/creator-tools/create-blocks?courseId=${course.id}`} className="flex-grow">
-                <BlockCard
-                  icon={getCourseIcon(course)}
-                  title={course.title}
-                  time={course.time}
-                  steps={getSteps(course.blocks)}
-                  description={
-                    course.hasDraft 
-                      ? "Har osparade ändringar lokalt" 
-                      : (course.isPublished ? "✅ Publicerad" : "📝 Draft (Utkast)")
-                  }
-                />
+                <div className="flex flex-row justify-between items-center gap-3 rounded-2xl bg-category-one dark:bg-[#1a2f5a] p-3 shadow-sm h-full">
+                  <div className="w-10 h-10 rounded-full bg-white dark:bg-white/10 flex items-center justify-center shrink-0">
+                    {getCourseIcon(course)}
+                  </div>
+                  <div className="flex flex-col flex-grow min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground leading-tight truncate">
+                      {course.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {course.hasDraft 
+                        ? "Har osparade ändringar lokalt" 
+                        : (course.isPublished ? "✅ Publicerad" : "📝 Draft (Utkast)")}
+                    </p>
+                  </div>
+                </div>
               </Link>
               <button
                 onClick={() => { setCourseToDelete(course); setDeleteInput(''); setDeleteError(''); }}
-                className="px-5 text-red-400 hover:text-red-600 bg-secondary hover:bg-red-50 rounded-2xl transition-all border border-transparent hover:border-red-200 flex items-center justify-center shadow-sm"
+                className="px-4 text-red-500 bg-red-50 dark:bg-red-950/30 rounded-2xl border border-transparent flex items-center justify-center shadow-sm shrink-0"
                 title="Radera kurs"
               >
-                <Trash2 size={24} />
+                <Trash2 size={20} />
               </button>
             </div>
           ))
