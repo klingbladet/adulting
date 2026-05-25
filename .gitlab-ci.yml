@@ -40,7 +40,7 @@ workflow:
     - if: $VERSION
 
 .lint template:
-  extends: build template
+  extends: .build template
   stage: lint
   script:
     - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
