@@ -9,14 +9,14 @@ export default function CoursePriorityBadge({
 }: CoursePriorityBadgeProps) {
   const className =
     priority === "high"
-      ? "bg-red-100 text-red-700"
+      ? "bg-badge-high text-badge-high-txt"
       : priority === "medium"
-        ? "bg-yellow-100 text-yellow-700"
-        : "bg-green-100 text-green-700";
+        ? "bg-badge-medium text-badge-medium-txt"
+        : "bg-badge-low text-badge-low-txt";
 
   return (
     <span
-      className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${className}`}
+      className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium mt-2 ${className}`}
     >
       {label}
     </span>

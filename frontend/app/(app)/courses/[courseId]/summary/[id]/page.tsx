@@ -70,6 +70,6 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
           </Link>
         </div>
       </section>
-    </main>
+    </main >
   );
 }

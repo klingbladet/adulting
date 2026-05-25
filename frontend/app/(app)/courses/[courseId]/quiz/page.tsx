@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
 import CourseButton from "@/components/courses/course-buttons";
 import {
@@ -181,7 +181,7 @@ export default function CourseQuizPage({
             Quiz klart
           </p>
 
-          <h1 className="mb-4 text-3xl font-extrabold text-foreground">
+          <h1 className="mb-4 text-xl md:text-3xl font-semibold md:font-bold text-foreground">
             Du fick {result.score} av {result.maxScore} rätt
           </h1>
 
@@ -192,7 +192,7 @@ export default function CourseQuizPage({
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-lg font-bold">Din kursprioritering</h2>
+          <h2 className="text-base md:text-lg font-semibold md:font-bold">Din kursprioritering</h2>
 
           {result.blockPriorities.map((block) => (
             <div
@@ -201,7 +201,7 @@ export default function CourseQuizPage({
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-sm font-medium md:font-semibold text-foreground">
                     {block.blockTitle ?? `Block ${block.blockId}`}
                   </p>
 
@@ -216,7 +216,10 @@ export default function CourseQuizPage({
           ))}
         </section>
 
-        <CourseButton onClick={() => router.push(`/courses/${courseId}/overview`)}>
+        <CourseButton 
+          onClick={() => router.push(`/courses/${courseId}/overview`)}
+          variant="third"
+        >
           Se kursöversikt
           <ChevronRight size={20} />
         </CourseButton>
@@ -230,34 +233,37 @@ export default function CourseQuizPage({
         <button
           type="button"
           onClick={() => router.push(`/courses/${courseId}/personalize`)}
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground"
+          className="mb-6 inline-flex items-center gap-2 text-sm"
         >
-          <ChevronLeft size={18} />
-          Tillbaka
+        <ArrowLeft size={20} />
         </button>
 
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm md:text-base font-medium text-muted-foreground mb-2">
           Fråga {currentIndex + 1} av {totalQuestions}
         </p>
 
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{
+        <div className="flex justify-start items-start w-full">
+                  
+          {/* Progress bar */}
+          <div className=" h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full bg-button transition-all duration-300"
+              style={{
               width: `${((currentIndex + 1) / totalQuestions) * 100}%`,
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </div>
 
       {currentQuestion && (
-        <section className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-2xl font-extrabold leading-tight text-foreground">
+        <section className="flex flex-col gap-2">
+              <div>
+            <h1 className="text-2xl font-bold leading-tight text-foreground">
               {currentQuestion.question}
             </h1>
 
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-6 text-sm text-muted-foreground">
               Välj det alternativ som passar bäst.
             </p>
           </div>
@@ -273,18 +279,20 @@ export default function CourseQuizPage({
                   onClick={() =>
                     handleSelectAnswer(currentQuestion.id, option.id)
                   }
-                  className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-left transition-all ${isSelected
-                    ? "border-primary bg-secondary"
-                    : "border-border bg-card hover:border-ring"
-                    }`}
+                  className={`flex w-full items-center justify-between rounded-4xl border-2 p-4 text-left transition-all ${
+                    isSelected
+                      ? "border-[#4981F2] bg-muted"
+                      : "border-[#223CAB] bg-card hover:border-[#96C0FA] transition duration-300"
+                  }`}
                 >
                   <span className="text-sm font-medium text-foreground">
                     {option.text}
                   </span>
 
                   <CheckCircle2
-                    className={`h-5 w-5 text-primary transition-opacity ${isSelected ? "opacity-100" : "opacity-0"
-                      }`}
+                    className={`h-5 w-5 text-[#649EF6] transition-opacity ${
+                      isSelected ? "opacity-100" : "opacity-0"
+                    }`}
                   />
                 </button>
               );
@@ -293,10 +301,10 @@ export default function CourseQuizPage({
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="mt-auto flex gap-3 pt-6">
+          <div className="flex gap-3 pt-6">
             <CourseButton
               type="button"
-              variant="secondary"
+              variant="third"
               onClick={handlePrevious}
               disabled={currentIndex === 0 || isSubmitting}
             >
@@ -308,6 +316,7 @@ export default function CourseQuizPage({
                 type="button"
                 onClick={handleNext}
                 disabled={!selectedOptionId || isSubmitting}
+                variant="third"
               >
                 Nästa
                 <ChevronRight size={20} />
@@ -317,6 +326,7 @@ export default function CourseQuizPage({
                 type="button"
                 onClick={handleSubmit}
                 disabled={answeredCount < totalQuestions || isSubmitting}
+                variant="third"
               >
                 {isSubmitting ? "Skickar..." : "Skicka in quiz"}
               </CourseButton>
@@ -337,13 +347,13 @@ function PriorityBadge({
 }) {
   const className =
     priority === "high"
-      ? "bg-red-100 text-red-700"
+      ? "bg-badge-high text-badge-high-txt"
       : priority === "medium"
-        ? "bg-yellow-100 text-yellow-700"
-        : "bg-green-100 text-green-700";
+        ? "bg-badge-medium text-badge-medium-txt"
+        : "bg-badge-low text-badge-low-txt";
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium ${className}`}>
+    <span className={`flex justify-center rounded-full w-44 md:w-38 px-3 py-1 text-[8px] md:text-xs font-medium ${className}`}>
       {label}
     </span>
   );

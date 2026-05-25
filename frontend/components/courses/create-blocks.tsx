@@ -24,6 +24,7 @@ export default function CreateBlocks() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(courseId ? Number(courseId) : null);
   const [courseTitle, setCourseTitle] = useState('');
+  const [courseTextContent, setCourseTextContent] = useState('');
   const [courseTime, setCourseTime] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -99,6 +100,7 @@ export default function CreateBlocks() {
 
           if (!useLocal) {
             setCourseTitle(courseData.title);
+            if (courseData.textContent) setCourseTextContent(courseData.textContent);
             // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
             const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
             if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
@@ -129,6 +131,7 @@ export default function CreateBlocks() {
         try {
           const parsed = JSON.parse(localDraft);
           if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
+          if (parsed.courseTextContent !== undefined) setCourseTextContent(parsed.courseTextContent);
           if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
           if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
           if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
@@ -148,12 +151,13 @@ export default function CreateBlocks() {
       const draftKey = activeCourseId ? `course-draft-${activeCourseId}` : 'course-draft-new';
       localStorage.setItem(draftKey, JSON.stringify({
         courseTitle,
+        courseTextContent,
         courseTime,
         categoryId,
         blocks
       }));
     }
-  }, [courseTitle, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
+  }, [courseTitle, courseTextContent, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
 
   const addBlock = () => {
     const newBlock: Block = {
@@ -215,6 +219,7 @@ export default function CreateBlocks() {
           `${baseUrl}/api/courses`,
           {
             title: courseTitle,
+            textContent: courseTextContent,
             categoryId,
             time: Number(courseTime),
             status: "draft",
@@ -237,6 +242,7 @@ export default function CreateBlocks() {
             `${baseUrl}/api/courses/${targetCourseId}`,
             {
               title: courseTitle,
+              textContent: courseTextContent,
               categoryId,
               time: Number(courseTime),
             },
@@ -367,7 +373,7 @@ export default function CreateBlocks() {
 
       <h1 className="text-2xl font-bold text-foreground">Skapa en kurs</h1>
 
-      <div>
+      <div className="space-y-3">
         <input
           type="text"
           value={courseTitle}
@@ -377,6 +383,16 @@ export default function CreateBlocks() {
           }}
           placeholder="Kursnamn"
           className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <textarea
+          value={courseTextContent}
+          onChange={(e) => {
+            setCourseTextContent(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
+          rows={3}
+          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 
