@@ -23,7 +23,7 @@ EXPOSE 3001
 #
 FROM base AS builder
 
-RUN npm install --global esbuild
+RUN npm install --global esbuild@0.28.0
 
 RUN npx esbuild src/server.ts --bundle --platform=node --target=node25 --outfile=dist/server.js
 
@@ -50,7 +50,7 @@ CMD ["node", "dist/server.js"]
 #
 FROM base AS builder-mcp
 
-RUN npm install --global esbuild
+RUN npm install --global esbuild@0.28.0
 
 RUN npx esbuild ./src/mcp/http-server.ts --bundle --platform=node --target=node25 --outfile=dist/server.js
 
