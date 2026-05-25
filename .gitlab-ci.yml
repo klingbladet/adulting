@@ -69,6 +69,11 @@ lint backend:
   variables:
     GIT_STRATEGY: none
 
+lint dockerfiles:
+  stage: lint
+  image: hadolint/hadolint
+  script: hadolint **/*.Dockerfile
+
 
 build backend:
   stage: build
