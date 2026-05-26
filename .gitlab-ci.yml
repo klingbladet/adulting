@@ -41,15 +41,6 @@ workflow:
   rules:
     - if: $VERSION
 
-.lint template:
-  extends: .build template
-  stage: lint
-  script:
-    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
-    - docker run --rm lint pnpm eslint
-  allow_failure: true # TODO: remove once issues are fixed
-
-
 
 ### git checks
 
@@ -79,16 +70,16 @@ check git size diff:
 
 ### lint
 
-lint frontend:
-  extends: .lint template
-  variables:
-    DIR: frontend
-
-lint backend:
-  extends: .lint template
-  variables:
-    DIR: backend
-
+lint fullstack:
+  extends: .build template
+  stage: lint
+  script:
+    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
+    - docker run --rm lint pnpm eslint
+  allow_failure: true # TODO: remove once issues are fixed
+  parallel:
+    matrix:
+      - DIR: [backend, frontend]
 
 lint dockerfiles:
   stage: lint
