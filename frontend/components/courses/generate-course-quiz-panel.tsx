@@ -277,7 +277,7 @@ export default function GenerateCourseQuizPanel({
               setQuestionCountPerBlock(Number(event.target.value))
             }
             disabled={isBusy}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+            className="rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
           >
             <option value={1}>1 fråga</option>
             <option value={2}>2 frågor</option>
@@ -300,7 +300,7 @@ export default function GenerateCourseQuizPanel({
               setDifficulty(event.target.value as "easy" | "medium" | "hard")
             }
             disabled={isBusy}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+            className="rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
           >
             <option value="easy">Lätt</option>
             <option value="medium">Medium</option>
@@ -313,7 +313,7 @@ export default function GenerateCourseQuizPanel({
             type="button"
             onClick={handleGenerateQuiz}
             disabled={isBusy || !courseId}
-            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {generating
               ? "Genererar quiz..."
@@ -385,7 +385,7 @@ export default function GenerateCourseQuizPanel({
 
               <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                 {result.status === "published" ? (
-                  <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
+                  <div className="rounded-xl border border-green-200 bg-green-50 px-6 py-3 text-sm font-semibold text-green-700">
                     Quizet är publicerat
                   </div>
                 ) : (
@@ -393,7 +393,7 @@ export default function GenerateCourseQuizPanel({
                     type="button"
                     onClick={handlePublishQuiz}
                     disabled={publishing || generating || !result.quizId}
-                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {publishing ? "Publicerar..." : "Publicera quiz"}
                   </button>

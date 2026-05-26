@@ -24,6 +24,7 @@ export default function CreateBlocks() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeCourseId, setActiveCourseId] = useState<number | null>(courseId ? Number(courseId) : null);
   const [courseTitle, setCourseTitle] = useState('');
+  const [courseTextContent, setCourseTextContent] = useState('');
   const [courseTime, setCourseTime] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -99,6 +100,7 @@ export default function CreateBlocks() {
 
           if (!useLocal) {
             setCourseTitle(courseData.title);
+            if (courseData.textContent) setCourseTextContent(courseData.textContent);
             // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
             const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
             if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
@@ -129,6 +131,7 @@ export default function CreateBlocks() {
         try {
           const parsed = JSON.parse(localDraft);
           if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
+          if (parsed.courseTextContent !== undefined) setCourseTextContent(parsed.courseTextContent);
           if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
           if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
           if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
@@ -148,12 +151,13 @@ export default function CreateBlocks() {
       const draftKey = activeCourseId ? `course-draft-${activeCourseId}` : 'course-draft-new';
       localStorage.setItem(draftKey, JSON.stringify({
         courseTitle,
+        courseTextContent,
         courseTime,
         categoryId,
         blocks
       }));
     }
-  }, [courseTitle, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
+  }, [courseTitle, courseTextContent, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
 
   const addBlock = () => {
     const newBlock: Block = {
@@ -215,6 +219,7 @@ export default function CreateBlocks() {
           `${baseUrl}/api/courses`,
           {
             title: courseTitle,
+            textContent: courseTextContent,
             categoryId,
             time: Number(courseTime),
             status: "draft",
@@ -237,6 +242,7 @@ export default function CreateBlocks() {
             `${baseUrl}/api/courses/${targetCourseId}`,
             {
               title: courseTitle,
+              textContent: courseTextContent,
               categoryId,
               time: Number(courseTime),
             },
@@ -367,7 +373,9 @@ export default function CreateBlocks() {
 
       <h1 className="text-2xl font-bold text-foreground">Skapa en kurs</h1>
 
-      <div>
+      <div className="bg-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Grundläggande information</h2>
+        <div className="space-y-3">
         <input
           type="text"
           value={courseTitle}
@@ -377,6 +385,16 @@ export default function CreateBlocks() {
           }}
           placeholder="Kursnamn"
           className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <textarea
+          value={courseTextContent}
+          onChange={(e) => {
+            setCourseTextContent(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
+          rows={3}
+          className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 
@@ -409,8 +427,9 @@ export default function CreateBlocks() {
           }}
           placeholder="Uppskattad tid (minuter)"
           min="1"
-          className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          className="w-full sm:w-1/2 font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
+      </div>
       </div>
 
       {blocks.map((block, index) => (
@@ -420,21 +439,21 @@ export default function CreateBlocks() {
         >
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 flex-grow max-w-lg">
-              <span className="font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">#{index + 1}</span>
+              <span className="font-bold text-foreground px-3 py-1 rounded-lg">{index + 1}</span>
 
               <input
                 type="text"
                 value={block.title || ""}
                 onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                 placeholder="Skriv en rubrik (minst 5 tecken)"
-                className="w-full font-semibold text-foreground bg-transparent px-2 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
+                className="w-full text-foreground bg-background border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary rounded-lg placeholder:text-muted-foreground/70"
               />
             </div>
 
             {blocks.length > 1 && (
               <button
                 type="button"
-                className="text-red-500 bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/50"
+                className="text-background-secondary bg-red-50 dark:bg-red-950/30 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/50"
                 onClick={() => removeBlock(block.id)}
               >
                 Ta bort
@@ -449,7 +468,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={addBlock}
           disabled={loading}
-          className="border border-primary rounded-xl py-3 px-5 text-primary hover:bg-primary/10 font-semibold disabled:opacity-50"
+          className="border border-primary bg-primary/5 rounded-xl py-3 px-6 text-primary hover:bg-primary hover:text-white transition-colors font-semibold disabled:opacity-50"
         >
           + Lägg till steg
         </button>
@@ -458,7 +477,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={handleSave}
           disabled={loading}
-          className="border border-border rounded-xl py-3 px-5 text-muted-foreground hover:bg-border hover:text-foreground font-semibold disabled:opacity-50"
+          className="border border-border rounded-xl py-3 px-6 text-muted-foreground hover:bg-border hover:text-foreground transition-colors font-semibold disabled:opacity-50"
         >
           {loading ? "Väntar..." : saved ? "Sparad" : "Spara"}
         </button>

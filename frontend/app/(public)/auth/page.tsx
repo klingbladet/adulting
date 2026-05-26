@@ -70,7 +70,7 @@ export default function AuthPage() {
 
             <div className="mt-8 text-center">
               <Link
-                href="/chat"
+                href="/learn"
                 className="text-base font-semibold text-[#2563EB]"
               >
                 Eller fortsätt utan konto

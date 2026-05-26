@@ -25,13 +25,13 @@ export default function PreviewClient({ blocks }: PreviewClientProps) {
   }
 
   return (
-    <div className="bg-card p-6 rounded-lg shadow-sm border border-border mt-6">
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-foreground mb-2">Välj steg att granska</label>
+    <div className="bg-card p-8 rounded-2xl shadow-sm border border-border mt-6">
+      <div className="mb-8">
+        <label className="block text-sm font-semibold text-foreground mb-3">Välj steg att granska</label>
         <select
           value={selectedBlockId || ''}
           onChange={(e) => setSelectedBlockId(Number(e.target.value))}
-          className="w-full font-medium text-foreground bg-background border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
+          className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
         >
           {blocks.map((block, index) => (
             <option key={block.id} value={block.id}>
@@ -42,12 +42,12 @@ export default function PreviewClient({ blocks }: PreviewClientProps) {
       </div>
 
       <div className="border-t pt-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="font-medium text-muted-foreground">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
-          <h3 className="text-xl font-bold text-foreground">{activeBlock.title}</h3>
+        <div className="flex items-center gap-3 mb-6">
+          <span className="font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
+          <h3 className="text-2xl font-bold text-foreground">{activeBlock.title}</h3>
         </div>
 
-        <div className="bg-muted p-6 rounded-lg border border-border min-h-[250px] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
+        <div className="bg-muted/50 p-8 rounded-2xl border border-border min-h-[250px] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
           <TipTapViewer content={activeBlock.content} />
         </div>
       </div>

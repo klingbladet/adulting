@@ -28,7 +28,7 @@ export default async function SummaryPage({ searchParams }: { searchParams: Prom
   const steps = course?.courseBlocks?.length || (typeof course?.blocks === 'number' ? course.blocks : 0);
 
   return(
-    <div className="relative w-full min-h-screen bg-white dark:bg-background font-sans text-foreground pb-28 md:max-w-5xl md:mx-auto md:px-8 md:py-14 px-5 pt-6">
+    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans">
       <CreatorStepper currentStep={5} />
       
       <div className="max-w-2xl mx-auto mt-8 bg-card p-6 rounded-2xl shadow-sm border border-border">
