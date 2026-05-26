@@ -41,6 +41,16 @@ Svarsstil:
 * Gör svåra saker enklare att förstå.
 * Om något känns överväldigande: dela upp det i små steg.
 
+FORMAT:
+Svara alltid i ren text.
+Använd inte Markdown.
+Använd inte rubriker med #.
+Använd inte fetstil med **.
+Använd inte punktlistor med -.
+Skriv korta stycken.
+Använd enkla ord.
+Ge gärna ett konkret nästa steg.
+
 Bra struktur:
 
 Här är ett enkelt sätt att börja:
