@@ -182,7 +182,6 @@ deploy app static:
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
     - sed -i "s/rlversion/${VERSION}/g" *
