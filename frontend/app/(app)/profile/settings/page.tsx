@@ -151,9 +151,9 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="h-dvh overflow-hidden bg-[#F8FAFC] text-gray-950 dark:bg-black dark:text-white">
-        <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-white dark:bg-black">
-          <header className="shrink-0 px-4 pb-3 pt-4">
+      <main className="min-h-dvh bg-[#F8FAFC] text-gray-950 dark:bg-black dark:text-white">
+        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-white dark:bg-black md:max-w-5xl md:bg-transparent md:px-8 md:py-8">
+          <header className="shrink-0 px-4 pb-3 pt-4 md:rounded-[32px] md:bg-white md:p-6 md:shadow-sm md:dark:bg-zinc-950">
             <div className="flex items-center justify-between">
               <Link
                 href="/profile"
@@ -196,7 +196,7 @@ export default function ProfileSettingsPage() {
             </Link>
           </header>
 
-          <div className="flex-1 overflow-y-auto pb-32">
+          <div className="mx-auto w-full max-w-5xl flex-1 pb-28 pt-4 md:grid md:grid-cols-2 md:gap-6 md:pb-8">
             <SettingsSection title="Konto">
               <SettingsRow
                 icon="👤"
@@ -305,11 +305,11 @@ export default function ProfileSettingsPage() {
               />
             </SettingsSection>
 
-            <div className="px-4 pb-6 pt-5">
+            <div className="px-4 pb-6 pt-5 md:col-span-2 md:flex md:justify-center">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(true)}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-900 dark:text-white"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-900 dark:text-white md:max-w-sm"
               >
                 <LogOut size={18} />
                 Logga ut
@@ -361,14 +361,14 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section className="overflow-hidden md:rounded-[28px] md:bg-white md:shadow-sm md:dark:bg-zinc-950">
       <div className="bg-[#F1F5F9] px-4 py-2 dark:bg-zinc-900">
         <h2 className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {title}
         </h2>
       </div>
 
-      <div className="divide-y divide-gray-100 bg-white dark:divide-zinc-800 dark:bg-black">
+      <div className="divide-y divide-gray-100 bg-white dark:divide-zinc-800 dark:bg-black md:dark:bg-zinc-950">
         {children}
       </div>
     </section>

@@ -111,9 +111,9 @@ export default function ProfilePage() {
 
   return (
     <>
-      <main className="h-dvh overflow-hidden bg-[#F8FAFC] text-gray-950 dark:bg-[#0B1120] dark:text-white">
-        <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-white dark:bg-[#07111F]">
-          <header className="shrink-0 bg-[#EAF7FF] px-5 pb-5 pt-4 dark:bg-[#0E3A5F]">
+      <main className="min-h-dvh bg-[#F8FAFC] text-gray-950 dark:bg-[#0B1120] dark:text-white">
+        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-white dark:bg-[#07111F] md:max-w-6xl md:bg-transparent md:px-8 md:py-8">
+          <header className="shrink-0 bg-[#EAF7FF] px-5 pb-5 pt-4 md:pb-6 md:pt-6 dark:bg-[#0E3A5F] md:rounded-[32px] md:px-8 md:pb-8 md:pt-6 md:shadow-sm">
             <div className="flex items-center justify-between">
               <Link
                 href="/learn"
@@ -167,8 +167,8 @@ function LoggedInHeader({ profile }: { profile: ProfileResponse }) {
   if (!user) return null;
 
   return (
-    <div className="mt-3 text-center">
-      <div className="mx-auto flex h-[92px] w-[92px] items-center justify-center overflow-hidden rounded-full border-[5px] border-white bg-[#2563EB] text-3xl font-bold text-white shadow-sm">
+    <div className="mt-3 text-center md:mt-0">
+      <div className="mx-auto flex h-[92px] w-[92px] md:h-[72px] md:w-[72px] items-center justify-center overflow-hidden rounded-full border-[5px] border-white bg-[#2563EB] text-3xl font-bold text-white shadow-sm">
         {user.image ? (
           <img
             src={user.image}
@@ -180,7 +180,7 @@ function LoggedInHeader({ profile }: { profile: ProfileResponse }) {
         )}
       </div>
 
-      <h1 className="mt-3 text-2xl font-bold">{user.name}</h1>
+      <h1 className="mt-3 text-2xl font-bold md:text-xl">{user.name}</h1>
 
       <p className="text-xs text-gray-500 dark:text-gray-300">{user.email}</p>
 
@@ -229,56 +229,60 @@ function ProfileContent({
   badges: ProfileBadge[];
 }) {
   return (
-    <div className="flex-1 overflow-y-auto px-5 pb-28 pt-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Mina kurser</h2>
+    <div className="flex-1 px-5 pb-10 pt-4 md:pb-12">
+      <div className="mx-auto max-w-[1100px] md:grid md:grid-cols-[1.6fr_0.9fr] md:gap-6">
+        <div className="rounded-[32px] bg-white p-5 shadow-sm dark:bg-[#111827] md:min-h-fit">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-lg font-bold">Mina kurser</h2>
 
-        <Link
-          href="/profile/courses"
-          className="flex items-center gap-1 text-sm font-bold text-[#2563EB] dark:text-blue-300"
-        >
-          Se alla <ChevronRight size={16} />
-        </Link>
-      </div>
+            <Link
+              href="/profile/courses"
+              className="flex items-center gap-1 text-sm font-bold text-[#2563EB] dark:text-blue-300"
+            >
+              Se alla <ChevronRight size={16} />
+            </Link>
+          </div>
 
-      {courses.length > 0 ? (
-        <div className="space-y-2.5">
-          {courses.slice(0, 3).map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+          {courses.length > 0 ? (
+            <div className="space-y-2.5">
+              {courses.slice(0, 3).map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-[#EAF7FF] p-4 text-center dark:bg-white/10">
+              <BookOpen
+                className="mx-auto text-[#2563EB] dark:text-blue-300"
+                size={26}
+              />
+              <p className="mt-2 text-sm font-bold">Inga kurser ännu</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
+                Dina kurser visas här när du börjar.
+              </p>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="rounded-3xl bg-[#EAF7FF] p-4 text-center dark:bg-white/10">
-          <BookOpen
-            className="mx-auto text-[#2563EB] dark:text-blue-300"
-            size={26}
-          />
-          <p className="mt-2 text-sm font-bold">Inga kurser ännu</p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
-            Dina kurser visas här när du börjar.
+
+        <section className="mt-6 rounded-[32px] bg-white p-5 shadow-sm dark:bg-[#111827] md:mt-0 md:min-h-fit">
+          <h2 className="text-lg font-bold">Mina badges</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-300">
+            Lås upp badges genom att slutföra kurser
           </p>
-        </div>
-      )}
 
-      <section className="mt-6">
-        <h2 className="text-lg font-bold">Mina badges</h2>
-        <p className="text-xs text-gray-500 dark:text-gray-300">
-          Lås upp badges genom att slutföra kurser
-        </p>
-
-        {badges.length > 0 ? (
-          <div className="mt-3 grid grid-cols-3 gap-4">
-            {badges.slice(0, 3).map((badge) => (
-              <BadgeItem key={badge.id} badge={badge} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-3 grid grid-cols-2 gap-5">
-            <LockedBadge title="Boende" />
-            <LockedBadge title="Körkort" />
-          </div>
-        )}
-      </section>
+          {badges.length > 0 ? (
+            <div className="mt-3 grid grid-cols-3 gap-4">
+              {badges.slice(0, 3).map((badge) => (
+                <BadgeItem key={badge.id} badge={badge} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-5">
+              <LockedBadge title="Boende" />
+              <LockedBadge title="Körkort" />
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -289,7 +293,7 @@ function GuestContent({ onLoginClick }: { onLoginClick: () => void }) {
       <button
         type="button"
         onClick={onLoginClick}
-        className="h-14 rounded-2xl bg-[#2563EB] text-base font-bold text-white shadow-sm"
+        className="mx-auto h-14 w-full max-w-[720px] rounded-2xl bg-[#2563EB] text-base font-bold text-white shadow-sm"
       >
         Skapa konto / Logga in
       </button>
