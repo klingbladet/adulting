@@ -41,15 +41,6 @@ workflow:
   rules:
     - if: $VERSION
 
-.lint template:
-  extends: .build template
-  stage: lint
-  script:
-    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
-    - docker run --rm lint pnpm eslint
-  allow_failure: true # TODO: remove once issues are fixed
-
-
 
 ### git checks
 
@@ -79,16 +70,16 @@ check git size diff:
 
 ### lint
 
-lint frontend:
-  extends: .lint template
-  variables:
-    DIR: frontend
-
-lint backend:
-  extends: .lint template
-  variables:
-    DIR: backend
-
+lint fullstack:
+  extends: .build template
+  stage: lint
+  script:
+    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
+    - docker run --rm lint pnpm eslint
+  allow_failure: true # TODO: remove once issues are fixed
+  parallel:
+    matrix:
+      - DIR: [backend, frontend]
 
 lint dockerfiles:
   stage: lint
@@ -119,7 +110,8 @@ build util image:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/util:latest
-      --push --provenance=false -f ./docker/util.Dockerfile .
+      --push --provenance=false
+      -f ./docker/util.Dockerfile .
   rules:
     - changes: 
       - docker/util.Dockerfile
@@ -129,9 +121,12 @@ build drizzle image:
   script:
     - >
       docker buildx build
-      -t $CI_REGISTRY_IMAGE/migrate:latest
-      --push --provenance=false -f ./backend/Dockerfile 
-      --target migrate ./backend
+      -t $CI_REGISTRY_IMAGE/migrate:$IMAGE_VERSION
+      --push --provenance=false 
+      -f ./docker/drizzle.Dockerfile ./backend
+  rules:
+    - changes:
+      - ./docker/drizzle.Dockerfile
 
 
 build backend:
@@ -140,7 +135,8 @@ build backend:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-      --push --provenance=false --target backend ./backend
+      --push --provenance=false
+      --target backend ./backend
 
 build mcp:
   extends: .build template
@@ -148,7 +144,8 @@ build mcp:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
-      --push --provenance=false --target mcp ./backend
+      --push --provenance=false
+      --target mcp ./backend
 
 
 build frontend:
@@ -164,7 +161,8 @@ build frontend:
       --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
       -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
-      --push --provenance=false ./frontend
+      --push --provenance=false
+      ./frontend
 
 
 ### deploy
@@ -184,9 +182,9 @@ deploy app static:
     - cd deploy/app
     - kustomize edit set nameprefix "${VERSION}-adulting-"
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/migrate:$IMAGE_VERSION
     - sed -i "s/rlversion/${VERSION}/g" *
     - echo "replaced 'rlversion' with '${VERSION}'"
     - cd -
