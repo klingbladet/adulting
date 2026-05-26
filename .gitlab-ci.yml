@@ -177,7 +177,7 @@ deploy app static:
     name: $VERSION
     url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
   rules:
-    - if: $VERSION == "main" && $VERSION == "latest"
+    - if: $VERSION == "main" || $VERSION == "latest"
   script:
     - ./scripts/delete-resources.sh --only jobs
     - ./scripts/generate-secrets.sh
