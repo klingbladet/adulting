@@ -142,7 +142,6 @@ export default function OnboardingFlow() {
     );
   }
 
-  // ── Ballongskärm ──────────────────────────────────────────────────────────
   if (showLoading) {
     const matchedLabels = stepTwoData.topics
       .map((id) => topics.find((t) => t.id === id)?.label)
@@ -206,7 +205,6 @@ export default function OnboardingFlow() {
     );
   }
 
-  // ── Huvudflöde ────────────────────────────────────────────────────────────
   return (
     <div className="w-full relative z-0">
       <div className="mb-4">
@@ -220,120 +218,109 @@ export default function OnboardingFlow() {
         </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="flex gap-1.5 mb-8">
-        {[1, 2].map((s) => (
-          <div
-            key={s}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? "bg-blue-500" : "bg-gray-200"
-              }`}
-          />
-        ))}
-      </div>
+      {/* Bakgrundsblob */}
+      <div
+        style={{
+          position: "absolute",
+          top: "80px",
+          right: "-90px",
+          width: "280px",
+          height: "280px",
+          background:
+            "radial-gradient(ellipse at center, #F9C9B8 0%, #FBDDD0 45%, transparent 72%)",
+          borderRadius: "55% 45% 65% 35% / 45% 55% 45% 55%",
+          opacity: 0.6,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
 
-      {/* ── Steg 1 ── */}
-      {step === 1 && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Berätta lite<br />om dig
-            </h1>
-            <p className="text-sm text-gray-500">Vi anpassar innehållet efter dig</p>
-          </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
 
-          <div className="space-y-3">
-            {situations.map((s) => {
-              const isSelected = stepOneData.situation === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setStepOneData({ situation: s.id })}
-                  className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
-                    }`}
-                >
-                  <span
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500" : "border-gray-300"
-                      }`}
-                  >
-                    {isSelected && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                    )}
-                  </span>
-                  <span className={`font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}>
-                    {s.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className="w-full h-12 rounded-2xl bg-blue-500 text-white text-sm font-semibold transition hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {saving ? "Sparar..." : "Nästa"}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSkip}
-            disabled={saving}
-            className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition"
-          >
-            Hoppa över
-          </button>
+        {/* Progress bar */}
+        <div className="flex gap-1.5 mb-8">
+          {[1, 2].map((s) => (
+            <div
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? "bg-blue-500" : "bg-gray-200"
+                }`}
+            />
+          ))}
         </div>
-      )}
 
-      {/* ── Steg 2 ── */}
-      {step === 2 && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Vad vill du ha<br />hjälp med?
-            </h1>
-            <p className="text-sm text-gray-500">
-              Välj ett eller flera ämnen som intresserar dig
-            </p>
-          </div>
+        {/* Steg 1 */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Berätta lite<br />om dig
+              </h1>
+              <p className="text-sm text-gray-500">Vi anpassar innehållet efter dig</p>
+            </div>
 
-          {/* Populärt — första 4 */}
-          <div>
-            <p className="text-base font-semibold text-gray-800 mb-4">Populärt</p>
-            <div className="grid grid-cols-2 gap-6">
-              {topics.slice(0, 4).map((t) => {
-                const isSelected = stepTwoData.topics.includes(t.id);
+            <div className="space-y-3">
+              {situations.map((s) => {
+                const isSelected = stepOneData.situation === s.id;
                 return (
                   <button
-                    key={t.id}
+                    key={s.id}
                     type="button"
-                    onClick={() => toggleTopic(t.id)}
-                    className="flex flex-col items-center gap-2"
+                    onClick={() => setStepOneData({ situation: s.id })}
+                    className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
-                    <div
-                      className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500" : "border-gray-300"
                         }`}
                     >
-                      {getCourseIcon({ title: t.label })}
-                    </div>
-                    <span className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-700"}`}>
-                      {t.label}
+                      {isSelected && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                      )}
+                    </span>
+                    <span className={`font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}>
+                      {s.label}
                     </span>
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Fler områden — resten */}
-          {topics.length > 4 && (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isNextDisabled}
+              className="w-full h-12 rounded-2xl bg-blue-500 text-white text-sm font-semibold transition hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {saving ? "Sparar..." : "Nästa"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSkip}
+              disabled={saving}
+              className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition"
+            >
+              Hoppa över
+            </button>
+          </div>
+        )}
+
+        {/* Steg 2 */}
+        {step === 2 && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Vad vill du ha<br />hjälp med?
+              </h1>
+              <p className="text-sm text-gray-500">
+                Välj ett eller flera ämnen som intresserar dig
+              </p>
+            </div>
+
             <div>
-              <p className="text-base font-semibold text-gray-800 mb-4">Fler områden</p>
+              <p className="text-base font-semibold text-gray-800 mb-4">Populärt</p>
               <div className="grid grid-cols-2 gap-6">
-                {topics.slice(4).map((t) => {
+                {topics.slice(0, 4).map((t) => {
                   const isSelected = stepTwoData.topics.includes(t.id);
                   return (
                     <button
@@ -356,18 +343,48 @@ export default function OnboardingFlow() {
                 })}
               </div>
             </div>
-          )}
 
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className="w-full h-12 rounded-2xl bg-blue-500 text-white text-sm font-semibold transition hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {saving ? "Sparar..." : "Slutför"}
-          </button>
-        </div>
-      )}
+            {topics.length > 4 && (
+              <div>
+                <p className="text-base font-semibold text-gray-800 mb-4">Fler områden</p>
+                <div className="grid grid-cols-2 gap-6">
+                  {topics.slice(4).map((t) => {
+                    const isSelected = stepTwoData.topics.includes(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => toggleTopic(t.id)}
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div
+                          className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
+                            }`}
+                        >
+                          <img src={t.icon} alt={t.label} className="object-cover w-full h-full" />
+                        </div>
+                        <span className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-700"}`}>
+                          {t.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isNextDisabled}
+              className="w-full h-12 rounded-2xl bg-blue-500 text-white text-sm font-semibold transition hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {saving ? "Sparar..." : "Slutför"}
+            </button>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

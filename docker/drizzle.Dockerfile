@@ -8,4 +8,6 @@ COPY ./package.json ./pnpm-lock.yaml* pnpm-workspace.yaml ./
 
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY ./drizzle.config.ts ./
+COPY ./drizzle/ ./drizzle/
+COPY ./src/db/ ./src/db/

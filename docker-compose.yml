@@ -1,6 +1,8 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: base
     ports:
       - 3000:3000
     command: ["pnpm", "run", "dev"]
@@ -23,7 +25,9 @@ services:
           path: ./frontend/package.json
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: base
     ports:
       - 3001:3001
       - 3002:3002
@@ -65,7 +69,9 @@ services:
           path: ./backend/package.json
 
   mcp:
-    build: ./backend
+    build:
+      context: ./backend
+      target: base
     ports:
       - 3003:3003
     command: ["pnpm", "run", "mcp:dev"]
@@ -90,6 +96,14 @@ services:
 
       LEARNING_LESSON_PROVIDER: database
       LEARNING_PROFILE_PROVIDER: mock
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f localhost:3003/health || exit 1"]
+      start_period: 10s
+      start_interval: 1s
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
     depends_on:
       backend:
@@ -110,8 +124,7 @@ services:
   migrate-db:
     build:
       context: ./backend
-      dockerfile: ./drizzle.Dockerfile
-
+      dockerfile: ../docker/drizzle.Dockerfile
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
@@ -124,8 +137,7 @@ services:
   drizzle:
     build:
       context: ./backend
-      dockerfile: ./drizzle.Dockerfile
-
+      dockerfile: ../docker/drizzle.Dockerfile
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 

@@ -62,14 +62,12 @@ export default function ProfileCoursesPage() {
 
   return (
     <main className="min-h-dvh">
-      <section className="mx-auto min-h-dvh w-full max-w-[430px] px-4 pb-28 pt-6 bg-background">
+      <section className="mx-auto min-h-dvh w-full max-w-[430px] px-4 pb-28 pt-6 bg-background md:max-w-5xl md:bg-transparent md:px-8 md:py-8">
         <header className="mb-6 flex items-center justify-between">
           <Link href="/profile" className="text-[#2563EB] dark:text-blue-400">
             <ChevronLeft size={26} />
           </Link>
         </header>
-
-        <h1 className="text-2xl font-bold">Mina kurser</h1>
 
         <div className="mt-5 flex gap-3">
           {tabs.map((tab) => (

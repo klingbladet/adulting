@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-migration
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      imagePullSecrets:
+        - name: registry-credentials
+      restartPolicy: Never
+      containers:
+        - name: postgres-migration
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/migrate:latest
+          imagePullPolicy: Always
+          command: ["sh", "-c"]
+          args:
+            - pnpm db:migrate
+          env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
+            - name: DATABASE_URL
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
+          envFrom:
+            - secretRef: 
+                name: env-postgres
+                optional: false
