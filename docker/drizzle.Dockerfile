@@ -1,0 +1,13 @@
+FROM node:25-alpine
+
+WORKDIR /app
+
+RUN npm install --global pnpm@10.32.0
+
+COPY ./package.json ./pnpm-lock.yaml* pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
+
+COPY ./drizzle.config.ts ./
+COPY ./drizzle/ ./drizzle/
+COPY ./src/db/ ./src/db/

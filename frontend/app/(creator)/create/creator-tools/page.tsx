@@ -10,7 +10,7 @@ export default async function CreatorToolsPage() {
   const courses = allCourses.filter(course => course.userId === session?.user?.id);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans">
+    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans md:pr-20">
       <div className="flex flex-row justify-between items-center bg-card p-6 rounded-2xl shadow-sm border border-border">
         <div>
           <h1 className="text-4xl font-extrabold text-foreground">Mina kurser</h1>

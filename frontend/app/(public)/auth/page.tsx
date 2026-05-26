@@ -21,12 +21,12 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC] px-4 text-gray-950 md:min-h-screen md:py-8">
-      <section className="relative min-h-dvh w-full max-w-[430px] overflow-hidden bg-white px-6 py-8 md:min-h-[760px] md:rounded-[36px] md:shadow-sm">
-        <div className="pointer-events-none absolute -right-20 -top-16 h-56 w-56 rounded-full bg-[#FBF8C6] blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-[#E9F2E6] blur-2xl" />
+    <main className="relative flex min-h-dvh items-center justify-center bg-background text-gray-950 overflow-hidden md:p-8">
+      <img src="/images/sign-in/form-över-höger.png" alt="" className="pointer-events-none absolute right-0 top-0 w-80 md:w-96 z-0" />
+      <img src="/images/sign-in/form-neder-vänster.png" alt="" className="pointer-events-none absolute bottom-0 left-0 w-80 md:w-96 z-0" />
 
-        <div className="relative z-10">
+      <section className="relative z-10 flex min-h-dvh w-full max-w-[430px] flex-col justify-center px-6 py-8 md:min-h-fit md:max-w-[480px] md:rounded-[36px] md:px-10 md:py-12">
+        <div className="relative z-10 w-full">
           <Link
             href="/"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#2563EB] transition hover:bg-blue-50"

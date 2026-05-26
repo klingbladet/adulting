@@ -67,81 +67,7 @@ const suggestions = [
 
 
 
-function AiRobotIcon({
-  size = "md",
-}: {
-  size?: "sm" | "md" | "lg";
-}) {
-  const sizes = {
-    sm: {
-      wrapper: "h-10 w-10",
-      head: "h-6 w-6",
-      eyes: "h-1 w-1",
-    },
-    md: {
-      wrapper: "h-14 w-14",
-      head: "h-8 w-8",
-      eyes: "h-1.5 w-1.5",
-    },
-    lg: {
-      wrapper: "h-28 w-28",
-      head: "h-16 w-16",
-      eyes: "h-2 w-2",
-    },
-  };
 
-  const current = sizes[size];
-
-  return (
-    <div
-      className={`relative flex ${current.wrapper} items-center justify-center rounded-full bg-gradient-to-br from-[#F4F0FF] to-[#E7DEFF] shadow-inner dark:from-[#1A1730] dark:to-[#121829]`}
-    >
-      {/* Glow */}
-      <div className="absolute inset-0 rounded-full bg-[#7C5CFF]/10 blur-xl" />
-
-      {/* Sparkles */}
-      {size === "lg" && (
-        <>
-          <Sparkles
-            size={16}
-            className="absolute right-2 top-2 text-[#A78BFA]"
-          />
-          <Sparkles
-            size={10}
-            className="absolute right-6 top-1 text-[#C4B5FD]"
-          />
-        </>
-      )}
-
-      {/* Robot */}
-      <div className="relative flex flex-col items-center">
-        {/* Antenna */}
-        <div className="mb-1 flex flex-col items-center">
-          <div className="h-2 w-[2px] rounded-full bg-[#8B5CF6]" />
-          <div className="h-2 w-2 rounded-full bg-[#A78BFA]" />
-        </div>
-
-        {/* Head */}
-        <div
-          className={`relative flex ${current.head} items-center justify-center rounded-2xl border border-[#A78BFA]/30 bg-gradient-to-b from-[#6D4CFF] to-[#5B3FF2] shadow-lg`}
-        >
-          {/* Eyes */}
-          <div className="flex gap-2">
-            <span
-              className={`${current.eyes} rounded-full bg-white`}
-            />
-            <span
-              className={`${current.eyes} rounded-full bg-white`}
-            />
-          </div>
-
-          {/* Smile */}
-          <div className="absolute bottom-2 h-[2px] w-4 rounded-full bg-white/80" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function AiChat({
   onClose,
@@ -318,7 +244,7 @@ export default function AiChat({
     }
   }
 
-    async function handleSelectThread(threadId: string) {
+  async function handleSelectThread(threadId: string) {
     setActiveThreadId(threadId);
     setSidebarOpen(false);
     await fetchMessages(threadId);
@@ -485,7 +411,9 @@ export default function AiChat({
           <div className="border-b border-border px-5 py-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <AiRobotIcon size="md" />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+                  <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI-assistent" />
+                </div>
 
                 <div className="min-w-0">
                   <h2 className="truncate text-xl font-bold text-foreground">
@@ -512,7 +440,7 @@ export default function AiChat({
               type="button"
               onClick={createThread}
               disabled={creatingThread}
-              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#5B3FF2] text-sm font-bold text-white shadow-lg shadow-[#5B3FF2]/25 transition hover:scale-[1.02] hover:bg-[#4F35DE] disabled:opacity-50"
+              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-white shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:bg-primary/90 disabled:opacity-50"
             >
               <Plus size={20} />
               Ny AI-chatt
@@ -578,14 +506,14 @@ export default function AiChat({
             </div>
           </div>
 
-                    <div className="border-t border-border p-4">
+          <div className="border-t border-border p-4">
             <button
               type="button"
               onClick={handleOpenSettings}
               className="flex w-full items-center justify-between rounded-[24px] border border-border bg-background p-4 transition hover:bg-secondary"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] dark:bg-white/10 dark:text-[#A78BFA]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary dark:bg-white/10 dark:text-primary">
                   <Settings size={20} />
                 </div>
 
@@ -620,7 +548,7 @@ export default function AiChat({
 
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <Sparkles className="text-[#5B3FF2] dark:text-[#A78BFA]" size={20} />
+                <Sparkles className="text-primary" size={20} />
 
                 <h1 className="text-xl font-bold text-foreground">
                   AI-chat
@@ -637,7 +565,7 @@ export default function AiChat({
                 type="button"
                 onClick={createThread}
                 disabled={creatingThread}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] shadow-sm transition hover:scale-105 hover:bg-[#E4DBFF] disabled:opacity-50 dark:bg-[#5B3FF2]/25 dark:text-white dark:hover:bg-[#5B3FF2]/35"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary shadow-sm transition hover:scale-105 hover:bg-secondary/80 disabled:opacity-50 dark:bg-primary/25 dark:text-white dark:hover:bg-primary/35"
                 title="Ny AI-chatt"
               >
                 <Plus size={24} />
@@ -671,8 +599,8 @@ export default function AiChat({
               <div className="flex h-full items-center justify-center">
                 <div className="w-full max-w-4xl text-center">
                   <div className="mx-auto flex justify-center">
-                    <div className="scale-75 md:scale-100">
-                      <AiRobotIcon size="lg" />
+                    <div className="scale-75 md:scale-100 flex h-28 w-28 items-center justify-center rounded-full border-2 border-border bg-white shadow-sm overflow-hidden">
+                      <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="Astronaut Logo" />
                     </div>
                   </div>
 
@@ -695,7 +623,7 @@ export default function AiChat({
                           onClick={() => useSuggestion(item.prompt)}
                           className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-sm transition hover:bg-secondary  md:rounded-3xl md:p-5"
                         >
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] transition group-hover:scale-105 dark:bg-white/10 dark:text-[#A78BFA]">
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary transition group-hover:scale-105 dark:bg-white/10 dark:text-primary">
                             <Icon size={26} />
                           </div>
 
@@ -723,7 +651,9 @@ export default function AiChat({
                       }`}
                   >
                     {message.role === "assistant" && (
-                      <AiRobotIcon size="sm" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+                        <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                      </div>
                     )}
 
                     <div
@@ -745,7 +675,9 @@ export default function AiChat({
 
                 {sending && (
                   <div className="flex items-end gap-3">
-                    <AiRobotIcon size="sm" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+                      <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                    </div>
 
                     <div className="rounded-[24px] border border-border bg-card px-5 py-3.5 text-left text-[15px] text-muted-foreground shadow-sm">
                       <span>AI skriver</span>
@@ -778,7 +710,7 @@ export default function AiChat({
                 type="button"
                 onClick={handleSendMessage}
                 disabled={sending || !messageInput.trim()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#5B3FF2] text-white shadow-lg shadow-[#5B3FF2]/20 transition hover:scale-105 hover:bg-[#4F35DE] disabled:opacity-50"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white transition hover:scale-105 hover:bg-primary/90"
               >
                 <Send size={20} />
               </button>

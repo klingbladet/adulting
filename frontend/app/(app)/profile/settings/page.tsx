@@ -166,7 +166,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background">
+      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background mb-20">
         <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background">
           <header className="shrink-0 px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
@@ -211,7 +211,7 @@ export default function ProfileSettingsPage() {
             </Link>
           </header>
 
-          <div className="flex-1 overflow-y-auto pb-32">
+          <div className="mx-auto w-full max-w-5xl flex-1 pb-28 pt-4 md:grid md:grid-cols-2 md:gap-6 md:pb-8">
             <SettingsSection title="Konto">
               <SettingsRow
                 icon="👤"
@@ -243,7 +243,7 @@ export default function ProfileSettingsPage() {
 
               <ToggleRow
                 icon={theme === "dark" ? "🌙" : "☀️"}
-                title={theme === "dark" ? "Mörkt tema" : "Ljust tema"}
+                title={theme === "dark" ? "Ljust tema" : "Mörkt tema"}
                 description={
                   theme === "dark"
                     ? "Mörk bakgrund och ljus text"
@@ -327,11 +327,11 @@ export default function ProfileSettingsPage() {
               />
             </SettingsSection>
 
-            <div className="px-4 pb-6 pt-5">
+            <div className="px-4 pb-6 pt-5 md:col-span-2 md:flex md:justify-center">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(true)}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-900 dark:text-white"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-900 dark:text-white md:max-w-sm"
               >
                 <LogOut size={18} />
                 Logga ut
@@ -383,14 +383,14 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section>
+    <section className="overflow-hidden md:rounded-[28px] md:bg-white md:shadow-sm md:dark:bg-zinc-950">
       <div className="bg-[#F1F5F9] px-4 py-2 dark:bg-zinc-900">
         <h2 className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {title}
         </h2>
       </div>
 
-      <div className="divide-y divide-gray-100 bg-white dark:divide-zinc-800 dark:bg-black">
+      <div className="divide-y divide-gray-100 bg-white dark:divide-zinc-800 dark:bg-black md:dark:bg-zinc-950">
         {children}
       </div>
     </section>
@@ -416,9 +416,8 @@ function SettingsRow({
 
       <div className="min-w-0 flex-1">
         <p
-          className={`text-sm font-semibold leading-4 ${
-            danger ? "text-red-500" : "text-gray-900 dark:text-white"
-          }`}
+          className={`text-sm font-semibold leading-4 ${danger ? "text-red-500" : "text-gray-900 dark:text-white"
+            }`}
         >
           {title}
         </p>
@@ -463,14 +462,12 @@ function ToggleRow({
       <button
         type="button"
         onClick={onChange}
-        className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-[#2563EB]" : "bg-gray-300"
-        }`}
+        className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-[#2563EB]" : "bg-gray-300"
+          }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
-            checked ? "left-6" : "left-1"
-          }`}
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${checked ? "left-6" : "left-1"
+            }`}
         />
       </button>
     </div>

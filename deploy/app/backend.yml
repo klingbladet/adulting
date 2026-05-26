@@ -64,6 +64,9 @@ spec:
             - secretRef:
                 name: env-mcp
                 optional: false
+            - secretRef:
+                name: google-client
+                optional: false
           startupProbe:
             httpGet:
               port: 3001

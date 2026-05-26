@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
 import CourseButton from "@/components/courses/course-buttons";
@@ -36,6 +36,8 @@ export default function CourseQuizPage({
   const resolvedParams = use(params);
   const courseId = resolvedParams.courseId;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const finalBlockId = searchParams.get("finalBlockId");
 
   const [quiz, setQuiz] = useState<CourseQuiz | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -121,6 +123,11 @@ export default function CourseQuizPage({
         courseId: Number(courseId),
         answers,
       })) as QuizResult;
+
+      if (finalBlockId && response.score === response.maxScore) {
+        router.push(`/courses/${courseId}/summary/${finalBlockId}`);
+        return;
+      }
 
       setResult(response);
     } catch (err) {
@@ -216,11 +223,17 @@ export default function CourseQuizPage({
           ))}
         </section>
 
-        <CourseButton 
-          onClick={() => router.push(`/courses/${courseId}/overview`)}
+        <CourseButton
+          onClick={() => {
+            if (finalBlockId && result.score === result.maxScore) {
+              router.push(`/courses/${courseId}/summary/${finalBlockId}`);
+            } else {
+              router.push(`/courses/${courseId}/overview`);
+            }
+          }}
           variant="third"
         >
-          Se kursöversikt
+          {finalBlockId && result.score === result.maxScore ? "Gå till sammanfattning" : "Se kursöversikt"}
           <ChevronRight size={20} />
         </CourseButton>
       </main>
@@ -232,10 +245,16 @@ export default function CourseQuizPage({
       <div className="mb-6">
         <button
           type="button"
-          onClick={() => router.push(`/courses/${courseId}/personalize`)}
+          onClick={() => {
+            if (finalBlockId) {
+              router.push(`/courses/${courseId}/blocks/${finalBlockId}`);
+            } else {
+              router.push(`/courses/${courseId}/personalize`);
+            }
+          }}
           className="mb-6 inline-flex items-center gap-2 text-sm"
         >
-        <ArrowLeft size={20} />
+          <ArrowLeft size={20} />
         </button>
 
         <p className="text-sm md:text-base font-medium text-muted-foreground mb-2">
@@ -243,13 +262,13 @@ export default function CourseQuizPage({
         </p>
 
         <div className="flex justify-start items-start w-full">
-                  
+
           {/* Progress bar */}
           <div className=" h-2 flex-1 overflow-hidden rounded-full bg-secondary">
             <div
               className="h-full bg-button transition-all duration-300"
               style={{
-              width: `${((currentIndex + 1) / totalQuestions) * 100}%`,
+                width: `${((currentIndex + 1) / totalQuestions) * 100}%`,
               }}
             />
           </div>
@@ -258,7 +277,7 @@ export default function CourseQuizPage({
 
       {currentQuestion && (
         <section className="flex flex-col gap-2">
-              <div>
+          <div>
             <h1 className="text-2xl font-bold leading-tight text-foreground">
               {currentQuestion.question}
             </h1>
@@ -279,20 +298,18 @@ export default function CourseQuizPage({
                   onClick={() =>
                     handleSelectAnswer(currentQuestion.id, option.id)
                   }
-                  className={`flex w-full items-center justify-between rounded-4xl border-2 p-4 text-left transition-all ${
-                    isSelected
+                  className={`flex w-full items-center justify-between rounded-4xl border-2 p-4 text-left transition-all ${isSelected
                       ? "border-[#4981F2] bg-muted"
                       : "border-[#223CAB] bg-card hover:border-[#96C0FA] transition duration-300"
-                  }`}
+                    }`}
                 >
                   <span className="text-sm font-medium text-foreground">
                     {option.text}
                   </span>
 
                   <CheckCircle2
-                    className={`h-5 w-5 text-[#649EF6] transition-opacity ${
-                      isSelected ? "opacity-100" : "opacity-0"
-                    }`}
+                    className={`h-5 w-5 text-[#649EF6] transition-opacity ${isSelected ? "opacity-100" : "opacity-0"
+                      }`}
                   />
                 </button>
               );
