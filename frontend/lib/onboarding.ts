@@ -1,4 +1,4 @@
-import { CLIENT_BACKEND_URL } from "@/lib/client-backend-url";
+import { BACKEND_URL } from "@/lib/backend-url";
 
 export type OnboardingStatus =
   | "not_started"
@@ -16,7 +16,7 @@ export type OnboardingData = {
 };
 
 export async function getOnboarding(): Promise<OnboardingData> {
-  const response = await fetch(`${CLIENT_BACKEND_URL}/api/onboarding`, {
+  const response = await fetch(`${BACKEND_URL}/api/onboarding`, {
     method: "GET",
     credentials: "include",
   });
@@ -32,7 +32,7 @@ export async function saveOnboardingStep(
   step: 1 | 2 | 3,
   data: Record<string, unknown>
 ) {
-  const response = await fetch(`${CLIENT_BACKEND_URL}/api/onboarding/step`, {
+  const response = await fetch(`${BACKEND_URL}/api/onboarding/step`, {
     method: "PATCH",
     credentials: "include",
     headers: {
@@ -49,7 +49,7 @@ export async function saveOnboardingStep(
 }
 
 export async function skipOnboarding() {
-  const response = await fetch(`${CLIENT_BACKEND_URL}/api/onboarding/skip`, {
+  const response = await fetch(`${BACKEND_URL}/api/onboarding/skip`, {
     method: "PATCH",
     credentials: "include",
   });
@@ -62,7 +62,7 @@ export async function skipOnboarding() {
 }
 
 export async function updateOnboardingStatus(status: OnboardingStatus) {
-  const response = await fetch(`${CLIENT_BACKEND_URL}/api/onboarding/status`, {
+  const response = await fetch(`${BACKEND_URL}/api/onboarding/status`, {
     method: "PATCH",
     credentials: "include",
     headers: {

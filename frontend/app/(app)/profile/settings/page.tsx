@@ -2,7 +2,22 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import {
+  Bell,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Globe,
+  HelpCircle,
+  Lock,
+  LogOut,
+  Mail,
+  MessageCircle,
+  Shield,
+  Trash2,
+  User,
+  Users,
+} from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
 

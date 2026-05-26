@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-openrouter
+data:
+  OPENROUTER_MODEL: openai/gpt-4o-mini
+  OPENROUTER_APP_NAME: Adulting Learning App

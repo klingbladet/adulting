@@ -1,4 +1,9 @@
 import "dotenv/config";
+
+console.log("test log")
+console.error("test error")
+
+
 console.log("--- SERVER STARTING ---");
 
 import express from "express";

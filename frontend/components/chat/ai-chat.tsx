@@ -20,8 +20,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import type { AiLearningContext } from "@/lib/learning-context";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+import { BACKEND_URL } from "./../../lib/backend-url";
 
 type Thread = {
   id: string;
@@ -200,7 +199,7 @@ export default function AiChat({
       setLoadingThreads(true);
       setError("");
 
-      const response = await fetch(`${API_BASE}/api/ai/threads`, {
+      const response = await fetch(`${BACKEND_URL}/api/ai/threads`, {
         credentials: "include",
       });
 
@@ -240,7 +239,7 @@ export default function AiChat({
       setError("");
 
       const response = await fetch(
-        `${API_BASE}/api/ai/threads/${threadId}/messages`,
+        `${BACKEND_URL}/api/ai/threads/${threadId}/messages`,
         { credentials: "include" }
       );
 
@@ -265,7 +264,7 @@ export default function AiChat({
       setCreatingThread(true);
       setError("");
 
-      const response = await fetch(`${API_BASE}/api/ai/threads`, {
+      const response = await fetch(`${BACKEND_URL}/api/ai/threads`, {
         method: "POST",
         credentials: "include",
       });
@@ -297,7 +296,7 @@ export default function AiChat({
     try {
       setError("");
 
-      const response = await fetch(`${API_BASE}/api/ai/threads/${threadId}`, {
+      const response = await fetch(`${BACKEND_URL}/api/ai/threads/${threadId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -362,7 +361,7 @@ export default function AiChat({
 
     try {
       const response = await fetch(
-        `${API_BASE}/api/ai/threads/${threadId}/messages`,
+        `${BACKEND_URL}/api/ai/threads/${threadId}/messages`,
         {
           method: "POST",
           headers: {

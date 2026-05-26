@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      adulting: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        adulting: backend
+    spec:
+      imagePullSecrets:
+        - name: registry-credentials
+      resources:
+        requests:
+          cpu: 200m
+          memory: 65Mi
+        limits:
+          cpu: 400m
+          memory: 120Mi
+      containers:
+        - name: backend
+          image: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+          env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
+            - name: FRONTEND_URL
+              value: https://$(VERSION)-adulting.cc.k3s.chas-lab.dev
+            - name: OPENROUTER_SITE_URL
+              value: $(FRONTEND_URL)
+            - name: BETTER_AUTH_URL
+              value: http://localhost:3001
+            - name: DATABASE_URL
+              value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
+            - name: MCP_SERVER_URL
+              value: http://$(VERSION)-adulting-mcp.doe25-group-1.svc.cluster.local:8080/mcp
+          envFrom:
+            - secretRef:
+                name: env-auth
+                optional: false
+            - secretRef: 
+                name: env-postgres
+                optional: false
+            - secretRef:
+                name: openrouter-api-key
+                optional: false
+            - configMapRef:
+                name: env-openrouter
+                optional: false
+            - secretRef:
+                name: env-mcp
+                optional: false
+          startupProbe:
+            httpGet:
+              port: 3001
+              path: /health
+            periodSeconds: 1
+            failureThreshold: 60
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              port: 3001
+              path: /health
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: 3001
+              path: /health
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 2
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend
+spec:
+  minReplicas: 3
+  maxReplicas: 10
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    adulting: backend
+  ports:
+    - port: 8080
+      targetPort: 3001
+      protocol: TCP
