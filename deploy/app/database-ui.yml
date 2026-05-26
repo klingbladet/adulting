@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dbui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      adulting: dbui
+  template:
+    metadata:
+      labels:
+        adulting: dbui
+    spec:
+      containers:
+        - name: dbui
+          image: dbgate/dbgate:alpine
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['env']
+            - name: CONNECTIONS
+              value: postgres
+            - name: SERVER_postgres
+              value: $(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local
+            - name: USER_postgres
+              value: $(POSTGRES_USER)
+            - name: PASSWORD_postgres
+              value: $(POSTGRES_PASSWORD)
+            - name: PORT_postgres
+              value: "5432"
+            - name: ENGINE_postgres
+              value: postgres@dbgate-plugin-postgres
+            - name: DATABASE_postgres
+              value: adulting
+          envFrom:
+            - secretRef: 
+                name: env-postgres
+                optional: false
+            - secretRef:
+                name: dbui-auth
+                optional: false
+          startupProbe:
+            httpGet:
+              port: 3000
+            periodSeconds: 1
+            failureThreshold: 60
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              port: 3000
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              port: 3000
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dbui
+spec:
+  selector:
+    adulting: dbui
+  ports:
+    - port: 8080
+      targetPort: 3000
+      protocol: TCP
