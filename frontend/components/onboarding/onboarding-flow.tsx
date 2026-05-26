@@ -198,18 +198,6 @@ export default function OnboardingFlow() {
   return (
     <div className="relative w-full max-w-sm mx-auto px-5 overflow-hidden">
 
-<<<<<<< HEAD
-      {/* Progress bar */}
-      <div className="flex gap-1.5 mb-8">
-        {[1, 2].map((s) => (
-          <div
-            key={s}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? "bg-blue-500" : "bg-gray-200"
-              }`}
-          />
-        ))}
-      </div>
-=======
       {/* Bakgrundsblob */}
       <div
         style={{
@@ -226,56 +214,9 @@ export default function OnboardingFlow() {
           pointerEvents: "none",
         }}
       />
->>>>>>> d86eecf5568b9b7de00f2a461c033bcf5024047f
 
       <div style={{ position: "relative", zIndex: 1 }}>
 
-<<<<<<< HEAD
-          <div className="space-y-3">
-            {situations.map((s) => {
-              const isSelected = stepOneData.situation === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setStepOneData({ situation: s.id })}
-                  className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
-                    }`}
-                >
-                  <span
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500" : "border-gray-300"
-                      }`}
-                  >
-                    {isSelected && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                    )}
-                  </span>
-                  <span className={`font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}>
-                    {s.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={isNextDisabled}
-            className="w-full h-12 rounded-2xl bg-blue-500 text-white text-sm font-semibold transition hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {saving ? "Sparar..." : "Nästa"}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSkip}
-            disabled={saving}
-            className="w-full text-center text-sm text-gray-400 hover:text-gray-600 transition"
-          >
-            Hoppa över
-          </button>
-=======
         {/* Progress bar */}
         <div className="flex gap-1.5 mb-8">
           {[1, 2].map((s) => (
@@ -286,7 +227,6 @@ export default function OnboardingFlow() {
               }`}
             />
           ))}
->>>>>>> d86eecf5568b9b7de00f2a461c033bcf5024047f
         </div>
 
         {/* Steg 1 */}
@@ -311,16 +251,10 @@ export default function OnboardingFlow() {
                       isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-<<<<<<< HEAD
-                    <div
-                      className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
-                        }`}
-=======
                     <span
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                         isSelected ? "border-blue-500" : "border-gray-300"
                       }`}
->>>>>>> d86eecf5568b9b7de00f2a461c033bcf5024047f
                     >
                       {isSelected && (
                         <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
