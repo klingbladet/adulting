@@ -15,24 +15,14 @@ import {
 import { BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
 import getCourseIcon from "@/components/courses/course-dynamic-icon";
+import CourseCard from "@/components/courses/course-card";
+import type { ProfileCourse } from "@/components/courses/course-card";
 
 type ProfileUser = {
   id: string;
   name: string;
   email: string;
   image: string | null;
-};
-
-type ProfileCourse = {
-  id: string;
-  title: string;
-  progress: number;
-  category: {
-    name: string;
-    iconName: string | null;
-  } | null;
-  totalSteps: number;
-  completedSteps: number;
 };
 
 type ProfileBadge = {
@@ -303,38 +293,6 @@ function GuestContent({ onLoginClick }: { onLoginClick: () => void }) {
   );
 }
 
-function CourseCard({ course }: { course: ProfileCourse }) {
-  const progress = safeProgress(course.progress);
-
-  return (
-    <Link
-      href={`/courses/${course.id}`}
-      className="flex min-h-[76px] items-center gap-3 rounded-3xl bg-[#EAF7FF] px-3 py-2.5 shadow-sm dark:bg-white/10"
-    >
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full">
-        {getCourseIcon(course)}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="truncate text-sm font-bold">{course.title}</h3>
-          <p className="text-xs font-bold">{progress}%</p>
-        </div>
-
-        <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-300">
-          {course.completedSteps} av {course.totalSteps} steg
-        </p>
-
-        <div className="mt-2 h-1.5 rounded-full bg-white/80 dark:bg-white/20">
-          <div
-            className="h-1.5 rounded-full bg-[#2563EB]"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 function BadgeItem({ badge }: { badge: ProfileBadge }) {
   const unlocked = badge.unlocked ?? true;

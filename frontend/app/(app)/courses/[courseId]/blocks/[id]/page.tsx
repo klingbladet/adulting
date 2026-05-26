@@ -158,12 +158,12 @@ export default async function BlockPage({
             </ProgressLink>
           ) : (
             <ProgressLink
-              href={`/courses/${courseId}/summary/${block.id}`}
+              href={`/courses/${courseId}/quiz?finalBlockId=${block.id}`}
               courseId={courseId}
               progress={100}
               className="flex-2 rounded-4xl bg-button px-6 py-4 font-semibold text-white transition hover:opacity-90"
             >
-              Slutför kurs
+              Gå till quiz
             </ProgressLink>
           )}
       </div>

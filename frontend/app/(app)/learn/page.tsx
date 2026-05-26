@@ -132,10 +132,10 @@ const UserDashboardPage = async () => {
             <h2 className="text-base md:text-2xl font-extrabold text-foreground mb-3 md:mb-8">Fortsätt där du slutade</h2>
             <ContinueCard />
             <div className="flex justify-between items-center md:w-[calc(50%-1rem)]">
-              <span className="font-extrabold text-sm md:text-lg text-foreground">My courses</span>
-              <Link href={`/courses/`}>
+              <span className="font-extrabold text-sm md:text-lg text-foreground">Mina kurser</span>
+              <Link href={`/profile/courses`}>
                 <button className="text-sm text-muted-foreground hover:underline flex items-center font-medium">
-                  See all <span className="ml-1">→</span>
+                  Se alla <span className="ml-1">→</span>
                 </button>
               </Link>
             </div>
