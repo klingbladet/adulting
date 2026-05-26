@@ -1,0 +1,216 @@
+stages:
+  - before
+  - lint
+  - build
+  - deploy
+  - cleanup
+
+variables:
+  IMAGE_VERSION: $CI_COMMIT_SHA
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH  &&  $CI_PIPELINE_SOURCE != "merge_request_event"
+      variables:
+        VERSION: latest
+    - if: $CI_COMMIT_REF_NAME == "main"  &&  $CI_PIPELINE_SOURCE != "merge_request_event"
+      variables:
+        VERSION: main
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        VERSION: mr$CI_MERGE_REQUEST_IID
+    - when: always
+
+
+### templates
+
+.docker login:
+  before_script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
+.kubeconfig setup:
+  before_script:
+    - mkdir "$HOME/.kube"
+    - echo "$KUBECONFIG_CONTENT" | base64 -d > "$HOME/.kube/config"
+
+
+.build template:
+  stage: build
+  image: docker:29
+  extends: .docker login
+  rules:
+    - if: $VERSION
+
+.lint template:
+  extends: .build template
+  stage: lint
+  script:
+    - docker buildx build -t lint -f $DIR/Dockerfile --target base $DIR
+    - docker run --rm lint pnpm eslint
+  allow_failure: true # TODO: remove once issues are fixed
+
+
+
+### git checks
+
+check gitignore:
+  stage: before
+  image: alpine:latest
+  script:
+    - apk add --no-cache git
+    - ./scripts/git-verify-ignore.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+check git size diff:
+  stage: before
+  image: alpine:latest
+  script:
+    - apk add --no-cache git
+    - git fetch -a
+    - >
+      ./scripts/git-verify-size.sh
+      remotes/origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+      remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+
+
+### lint
+
+lint frontend:
+  extends: .lint template
+  variables:
+    DIR: frontend
+
+lint backend:
+  extends: .lint template
+  variables:
+    DIR: backend
+
+
+lint dockerfiles:
+  stage: lint
+  image: hadolint/hadolint:v2.14.0-alpine
+  script: hadolint **/*Dockerfile
+  rules:
+    - if: $VERSION
+      changes: 
+        - "**/*Dockerfile"
+
+lint shell scripts:
+  stage: lint
+  image: 
+    name: koalaman/shellcheck-alpine:stable
+  script: shellcheck --severity=style --check-sourced **/*.sh
+  rules:
+    - if: $VERSION
+      changes: 
+        - "**/*.sh"
+
+
+
+### build
+
+build util image:
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/util:latest
+      --push --provenance=false -f ./docker/util.Dockerfile .
+  rules:
+    - changes: 
+      - docker/util.Dockerfile
+
+build drizzle image:
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/migrate:latest
+      --push --provenance=false -f ./backend/Dockerfile 
+      --target migrate ./backend
+
+
+build backend:
+  extends: .build template
+  script: 
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
+      --push --provenance=false --target backend ./backend
+
+build mcp:
+  extends: .build template
+  script:
+    - >
+      docker buildx build
+      -t $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
+      --push --provenance=false --target mcp ./backend
+
+
+build frontend:
+  extends: .build template
+  variables:
+    NEXT_PUBLIC_API_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/backend
+    NEXT_PUBLIC_AUTH_URL: https://${VERSION}-adulting.cc.k3s.chas-lab.dev/backend/api/auth
+  script:
+    - echo "client URL will be '$NEXT_PUBLIC_API_URL'"
+    - echo "auth URL will be '$NEXT_PUBLIC_AUTH_URL'"
+    - >
+      docker buildx build
+      --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
+      -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
+      --push --provenance=false ./frontend
+
+
+### deploy
+
+deploy app static:
+  stage: deploy
+  image: $CI_REGISTRY_IMAGE/util:latest
+  extends: .kubeconfig setup
+  environment:
+    name: $VERSION
+    url: https://$VERSION-adulting.cc.k3s.chas-lab.dev
+  rules:
+    - if: $VERSION == "main" || $VERSION == "latest"
+  script:
+    - ./scripts/delete-resources.sh --only jobs
+    - ./scripts/generate-secrets.sh
+    - cd deploy/app
+    - kustomize edit set nameprefix "${VERSION}-adulting-"
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/backend-base:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
+    - sed -i "s/rlversion/${VERSION}/g" *
+    - echo "replaced 'rlversion' with '${VERSION}'"
+    - cd -
+    - kubectl apply -k deploy
+
+deploy app dynamic:
+  extends: deploy app static
+  environment:
+    name: review/$VERSION
+    on_stop: delete env
+  rules:
+    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
+
+
+delete env:
+  stage: cleanup
+  image: $CI_REGISTRY_IMAGE/util:latest
+  extends: .kubeconfig setup
+  environment:
+    name: review/$VERSION
+    action: stop
+  needs: 
+    - deploy app dynamic
+  rules:
+    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
+      when: manual
+  script: ./scripts/delete-resources.sh persistentvolumeclaim

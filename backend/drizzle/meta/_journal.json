@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778490913569,
+      "tag": "0000_loud_sleeper",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778495014312,
+      "tag": "0001_ambiguous_giant_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778577049496,
+      "tag": "0002_reflective_aqueduct",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778661262456,
+      "tag": "0003_safe_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778847674635,
+      "tag": "0004_fantastic_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779021249541,
+      "tag": "0005_empty_vision",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779127463776,
+      "tag": "0006_stale_blue_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779184108910,
+      "tag": "0007_minor_lady_ursula",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779367188333,
+      "tag": "0008_boring_sally_floyd",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779572555763,
+      "tag": "0009_dark_nuke",
+      "breakpoints": true
+    }
+  ]
+}

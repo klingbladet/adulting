@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namePrefix: rlversion-adulting-
+resources:
+- env-openrouter.yml
+- database.yml
+- database-migration.yml
+- backend.yml
+- frontend.yml
+- mcp.yml
+- database-ui.yml
+- ingress.yml
+images:
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
+  newTag: mr42
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
+  newTag: mr42
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/mcp:latest
+  newTag: mr42
+labels:
+- includeSelectors: true
+  pairs:
+    env: rlversion
+
+secretGenerator:
+  - name: env-postgres
+    files:
+      - POSTGRES_PASSWORD=POSTGRES_PASSWORD.txt
+    literals:
+      - POSTGRES_DB=adulting
+      - POSTGRES_USER=postgres
+    options:
+      disableNameSuffixHash: true
+  - name: env-auth
+    files:
+      - BETTER_AUTH_SECRET=BETTER_AUTH_SECRET.txt
+    options:
+      disableNameSuffixHash: true
+  - name: env-mcp
+    files:
+      - MCP_INTERNAL_TOKEN=MCP_INTERNAL_TOKEN.txt
+    options:
+      disableNameSuffixHash: true
