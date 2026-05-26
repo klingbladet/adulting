@@ -34,7 +34,7 @@ export default async function HomePage() {
               Navigera ditt vuxenliv steg för steg
             </p>
           </div>
-          <div className="pt-35 pb-20">
+          <div className="pt-35 pb-20 md:pt-0 md:pb-0">
             <Link
               href="/auth"
               className="mt-16 flex h-14 w-full items-center justify-center gap-2 rounded-4xl bg-[#4981F2] text-sm font-bold text-[#f6f9ff] shadow-sm transition hover:bg-[#1D4ED8]"

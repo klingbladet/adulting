@@ -49,9 +49,9 @@ const UserDashboardPage = async () => {
           {/* Profile Picture in Top Right */}
           <div className="mb-4 mt-2 flex justify-center w-full">
             <img
-              src="/images/logotype/astronaut-logo-2.png"
+              src="/images/logotype/astronaut-logo-4.png"
               alt="Adulting Logotyp"
-              className="h-40 md:h-14 object-contain"
+              className="h-40 md:h-30 object-contain"
             />
           </div>
           <div className='flex flex-row items-center gap-3'>

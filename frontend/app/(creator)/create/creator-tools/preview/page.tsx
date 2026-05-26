@@ -26,10 +26,10 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
     }
   }
 
-  return(
-    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans">
+  return (
+    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans md:pr-20">
       <CreatorStepper currentStep={4} />
-      
+
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-2">
           Förhandsgranska: {course?.title || 'Laddar...'}
@@ -45,7 +45,7 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
         )}
       </div>
 
-      <StepNavigation 
+      <StepNavigation
         backPath="/create/creator-tools/create-quiz"
         nextPath="/create/creator-tools/publish"
       />

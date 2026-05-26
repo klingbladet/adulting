@@ -376,60 +376,60 @@ export default function CreateBlocks() {
       <div className="bg-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
         <h2 className="text-lg font-semibold text-foreground mb-4">Grundläggande information</h2>
         <div className="space-y-3">
-        <input
-          type="text"
-          value={courseTitle}
-          onChange={(e) => {
-            setCourseTitle(e.target.value);
-            setSaved(false);
-          }}
-          placeholder="Kursnamn"
-          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
-        <textarea
-          value={courseTextContent}
-          onChange={(e) => {
-            setCourseTextContent(e.target.value);
-            setSaved(false);
-          }}
-          placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
-          rows={3}
-          className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-        />
-      </div>
+          <input
+            type="text"
+            value={courseTitle}
+            onChange={(e) => {
+              setCourseTitle(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="Kursnamn"
+            className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <textarea
+            value={courseTextContent}
+            onChange={(e) => {
+              setCourseTextContent(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
+            rows={3}
+            className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+          />
+        </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <select
-          value={categoryId}
-          onChange={(e) => {
-            setCategoryId(e.target.value);
-            setSaved(false);
-          }}
-          className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        >
-          <option value="" disabled>
-            Välj kategori
-          </option>
-
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <select
+            value={categoryId}
+            onChange={(e) => {
+              setCategoryId(e.target.value);
+              setSaved(false);
+            }}
+            className="w-full sm:w-1/2 font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          >
+            <option value="" disabled>
+              Välj kategori
             </option>
-          ))}
-        </select>
 
-        <input
-          type="number"
-          value={courseTime}
-          onChange={(e) => {
-            setCourseTime(e.target.value);
-            setSaved(false);
-          }}
-          placeholder="Uppskattad tid (minuter)"
-          min="1"
-          className="w-full sm:w-1/2 font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
-      </div>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="number"
+            value={courseTime}
+            onChange={(e) => {
+              setCourseTime(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="Uppskattad tid (minuter)"
+            min="1"
+            className="w-full sm:w-1/2 font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+        </div>
       </div>
 
       {blocks.map((block, index) => (
@@ -485,8 +485,8 @@ export default function CreateBlocks() {
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
-      <div className="flex flex-row justify-between mt-10">
-        <Link href="/create/creator-tools">
+      <div className="flex flex-row gap-4 mt-10 justify-between w-full">
+        <Link href="/create/creator-tools" className="flex-1">
           <CourseButton variant="secondary">Tillbaka</CourseButton>
         </Link>
 
@@ -494,6 +494,7 @@ export default function CreateBlocks() {
           type="button"
           onClick={handleNext}
           disabled={loading}
+          className="flex-1"
         >
           {loading ? "Sparar..." : "Nästa"}
         </CourseButton>
