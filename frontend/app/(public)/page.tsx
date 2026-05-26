@@ -33,7 +33,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-3 text-base leading-7 text-gray-600">
-              Lär dig vuxenlivet steg för steggg
+              Lär dig vuxenlivet steg för steg
             </p>
 
             <Link
