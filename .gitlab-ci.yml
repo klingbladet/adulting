@@ -110,7 +110,8 @@ build util image:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/util:latest
-      --push --provenance=false -f ./docker/util.Dockerfile .
+      --push --provenance=false
+      -f ./docker/util.Dockerfile .
   rules:
     - changes: 
       - docker/util.Dockerfile
@@ -134,7 +135,8 @@ build backend:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
-      --push --provenance=false --target backend ./backend
+      --push --provenance=false
+      --target backend ./backend
 
 build mcp:
   extends: .build template
@@ -142,7 +144,8 @@ build mcp:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
-      --push --provenance=false --target mcp ./backend
+      --push --provenance=false
+      --target mcp ./backend
 
 
 build frontend:
@@ -158,7 +161,8 @@ build frontend:
       --build-arg NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       --build-arg NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
       -t $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
-      --push --provenance=false ./frontend
+      --push --provenance=false
+      ./frontend
 
 
 ### deploy
