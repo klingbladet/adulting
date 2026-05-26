@@ -325,79 +325,78 @@ export default function AiChat({
     await fetchMessages(threadId);
   }
 
-async function handleSendMessage() {
-  const cleanMessage = messageInput.trim();
+  async function handleSendMessage() {
+    const cleanMessage = messageInput.trim();
 
-  if (!cleanMessage || sending) return;
+    if (!cleanMessage || sending) return;
 
-  setError("");
-  setSending(true);
+    setError("");
+    setSending(true);
 
-  let threadId = activeThreadId;
-
-  if (!threadId) {
-    threadId = await createThread();
+    let threadId = activeThreadId;
 
     if (!threadId) {
-      setSending(false);
-      return;
-    }
-  }
+      threadId = await createThread();
 
-  const optimisticUserMessage: Message = {
-    id: `temp-${Date.now()}`,
-    threadId,
-    role: "user",
-    content: cleanMessage,
-    createdAt: new Date().toISOString(),
-  };
-
-  setMessages((prev) => [...prev, optimisticUserMessage]);
-  setMessageInput("");
-
-  try {
-    const response = await fetch(
-      `${API_BASE}/api/ai/threads/${threadId}/messages`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          message: cleanMessage,
-          aiSettings:
-            typeof window !== "undefined"
-              ? JSON.parse(localStorage.getItem("ai-assistant-settings") || "null")
-              : null,
-          ...(learningContext ? { learningContext } : {}),
-        }),
+      if (!threadId) {
+        setSending(false);
+        return;
       }
-    );
-
-    const data = await safeJson(response);
-
-    if (!response.ok) {
-      throw new Error(
-        data?.error || "AI-assistenten kunde inte svara just nu."
-      );
     }
 
-    await fetchThreads();
-    await fetchMessages(threadId);
-  } catch (err) {
-    setError(
-      err instanceof Error
-        ? err.message
-        : "AI-assistenten kunde inte svara just nu."
-    );
+    const optimisticUserMessage: Message = {
+      id: `temp-${Date.now()}`,
+      threadId,
+      role: "user",
+      content: cleanMessage,
+      createdAt: new Date().toISOString(),
+    };
 
-    await fetchThreads();
-    await fetchMessages(threadId);
-  } finally {
-    setSending(false);
+    setMessages((prev) => [...prev, optimisticUserMessage]);
+    setMessageInput("");
+
+    const payload = {
+      message: cleanMessage,
+      ...(learningContext ? { learningContext } : {}),
+    };
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/ai/threads/${threadId}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
+
+      const data = await safeJson(response);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "AI-assistenten kunde inte svara just nu.",
+        );
+      }
+
+      await fetchThreads();
+      await fetchMessages(threadId);
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "AI-assistenten kunde inte svara just nu.";
+
+      setError(message);
+
+      await fetchThreads();
+      await fetchMessages(threadId);
+    } finally {
+      setSending(false);
+    }
   }
-}
 
   function handleTextareaKeyDown(
     event: React.KeyboardEvent<HTMLTextAreaElement>
@@ -481,9 +480,8 @@ async function handleSendMessage() {
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 flex h-full w-[86%] max-w-[330px] flex-col border-r border-border bg-card transition duration-300 lg:static lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
         >
           <div className="border-b border-border px-5 py-5">
             <div className="flex items-center justify-between gap-3">
@@ -543,11 +541,8 @@ async function handleSendMessage() {
                   return (
                     <div
                       key={thread.id}
-                      className={`group flex items-center gap-3 rounded-[22px] border p-3 transition ${
-                        isActive
-                          ? "border-[#5B3FF2]/20 bg-[#EEE9FF] text-[#5B3FF2] dark:border-[#5B3FF2]/30 dark:bg-[#5B3FF2]/20 dark:text-white"
-                          : "border-transparent hover:bg-secondary"
-                      }`}
+                      className={`group flex items-center gap-2 rounded-2xl px-2 py-2 transition ${isActive ? "bg-secondary" : "hover:bg-secondary/70"
+                        }`}
                     >
                       <button
                         type="button"
@@ -725,20 +720,18 @@ async function handleSendMessage() {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex items-end gap-3 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex items-end gap-2 ${message.role === "user" ? "justify-end" : "justify-start"
+                      }`}
                   >
                     {message.role === "assistant" && (
                       <AiRobotIcon size="sm" />
                     )}
 
                     <div
-                      className={`max-w-[86%] whitespace-pre-wrap rounded-[26px] px-5 py-3.5 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${
-                        message.role === "user"
-                          ? "bg-[#5B3FF2] text-white"
-                          : "border border-border bg-card text-foreground"
-                      }`}
+                      className={`max-w-[88%] whitespace-pre-wrap rounded-[24px] px-4 py-3 text-left text-[15px] leading-7 shadow-sm md:max-w-[75%] ${message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border bg-card text-foreground"
+                        }`}
                     >
                       {message.content}
                     </div>
@@ -771,15 +764,15 @@ async function handleSendMessage() {
             )}
           </div>
 
-          <div className="shrink-0 border-t border-border px-5 py-4 lg:px-10">
-            <div className="mx-auto flex max-w-4xl items-end gap-3 rounded-3xl border border-border bg-card px-4 py-3 shadow-sm">
+          <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
+            <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
               <textarea
                 value={messageInput}
                 onChange={(event) => setMessageInput(event.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder="Skriv din fråga här..."
                 rows={1}
-                className="max-h-32 min-h-[28px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-7 text-foreground outline-none placeholder:text-muted-foreground"
+                className="flex justify-center max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
               />
 
               <button
