@@ -219,6 +219,13 @@ export default function ProfileSettingsPage() {
                 href="/profile/settings/language"
               />
 
+              <SettingsRow
+                icon="🤖"
+                title="AI-assistent"
+                description="Anpassa hur AI hjälper dig"
+                href="/profile/settings/ai"
+              />
+
               <ToggleRow
                 icon={theme === "dark" ? "🌙" : "☀️"}
                 title={theme === "dark" ? "Mörkt tema" : "Ljust tema"}
