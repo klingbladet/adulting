@@ -211,6 +211,6 @@ delete env:
   needs: 
     - deploy app dynamic
   rules:
-    - if: $VERSION
+    - if: $VERSION && $VERSION != "main" && $VERSION != "latest"
       when: manual
   script: ./scripts/delete-resources.sh persistentvolumeclaim
