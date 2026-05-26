@@ -85,10 +85,6 @@ export default function SignUpForm() {
             Logga in
           </Link>
         </p>
-
-        <Link href="/auth" className="text-sm font-bold text-gray-500">
-          Tillbaka
-        </Link>
       </div>
 
       {errorMsg ? (

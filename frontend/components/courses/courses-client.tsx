@@ -44,6 +44,26 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
       ? courses
       : courses.filter((c) => selected.some((key) => matchesCategory(c, key)));
 
+  const totalTime = Math.round(courses.reduce((sum, course) => {
+    const enrollment = course.enrollments?.[0] || course.userCourses?.[0];
+    if (!enrollment || !course.time) return sum;
+
+    if (enrollment.status === "completed") {
+      return sum + course.time;
+    }
+
+    let progress = 0;
+    if (typeof enrollment.score === "number") {
+      progress = Math.min(Math.max(enrollment.score, 0), 100);
+    }
+
+    const totalSteps = Math.max(course.blocks || 1, 1);
+    const completedSteps = Math.round((progress / 100) * totalSteps);
+    const timeSpent = (completedSteps / totalSteps) * course.time;
+
+    return sum + timeSpent;
+  }, 0));
+
   return (
     <>
       {/* Filter chips */}
@@ -127,7 +147,7 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
 
           <div className="rounded-2xl bg-[#C8E6DC] dark:bg-[#234042] p-4 flex flex-col justify-between min-h-[100px]">
             <span className="text-2xl font-extrabold text-foreground">
-              20min
+              {totalTime}min
             </span>
             <span className="text-xs font-medium text-foreground/80 leading-tight mt-1">
               Tid spenderad på att lära sig

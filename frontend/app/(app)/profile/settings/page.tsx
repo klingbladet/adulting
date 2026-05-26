@@ -166,7 +166,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background">
+      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background mb-20">
         <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background">
           <header className="shrink-0 px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
@@ -243,7 +243,7 @@ export default function ProfileSettingsPage() {
 
               <ToggleRow
                 icon={theme === "dark" ? "🌙" : "☀️"}
-                title={theme === "dark" ? "Mörkt tema" : "Ljust tema"}
+                title={theme === "dark" ? "Ljust tema" : "Mörkt tema"}
                 description={
                   theme === "dark"
                     ? "Mörk bakgrund och ljus text"
@@ -416,9 +416,8 @@ function SettingsRow({
 
       <div className="min-w-0 flex-1">
         <p
-          className={`text-sm font-semibold leading-4 ${
-            danger ? "text-red-500" : "text-gray-900 dark:text-white"
-          }`}
+          className={`text-sm font-semibold leading-4 ${danger ? "text-red-500" : "text-gray-900 dark:text-white"
+            }`}
         >
           {title}
         </p>
@@ -463,14 +462,12 @@ function ToggleRow({
       <button
         type="button"
         onClick={onChange}
-        className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-[#2563EB]" : "bg-gray-300"
-        }`}
+        className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-[#2563EB]" : "bg-gray-300"
+          }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
-            checked ? "left-6" : "left-1"
-          }`}
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${checked ? "left-6" : "left-1"
+            }`}
         />
       </button>
     </div>
