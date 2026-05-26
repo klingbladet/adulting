@@ -200,7 +200,6 @@ export default function Header() {
           aria-haspopup="menu"
         >
           <User className="h-4 w-4" />
-          Profil
           <ChevronDown
             className={`h-4 w-4 transition-transform ${
               profileOpen ? "rotate-180" : ""

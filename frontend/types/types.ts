@@ -12,6 +12,7 @@ export interface Course {
   categoryId: string | null;
   category?: Category | null;
   title: string;
+  author?: string | null;
   textContent: string | null;
   imageUrl: string | null;
   videoUrl: string | null;

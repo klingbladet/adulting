@@ -21,6 +21,7 @@ export const courses = pgTable("courses", {
   categoryId: uuid("category_id")
     .references(() => categories.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
+  author: text("author"),
   textContent: text("text_content"),
   time: integer("time"),
   blocks: integer("blocks").default(0),

@@ -28,6 +28,7 @@ export default function CreateBlocks() {
   const [courseTime, setCourseTime] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [courseAuthor, setCourseAuthor] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([
     {
       id: Date.now(),
@@ -91,6 +92,7 @@ export default function CreateBlocks() {
               const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
               setCategoryId(parsed.categoryId || String(extendedCourse.categoryId || ''));
               setCourseTime(parsed.courseTime || String(extendedCourse.time || ''));
+              setCourseAuthor(parsed.courseAuthor || extendedCourse.author || "");
               setBlocks(parsed.blocks || blocksData || []);
               useLocal = true;
             } catch (e) {
@@ -100,11 +102,17 @@ export default function CreateBlocks() {
 
           if (!useLocal) {
             setCourseTitle(courseData.title);
-            if (courseData.textContent) setCourseTextContent(courseData.textContent);
-            // Sätt categoryId om det finns (vi utökar typen temporärt för att undvika 'any' varningen)
-            const extendedCourse = courseData as Course & { categoryId?: string | number | null, time?: string | number | null };
-            if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
-            if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
+              if (courseData.textContent) setCourseTextContent(courseData.textContent);
+
+              const extendedCourse = courseData as Course & {
+                categoryId?: string | number | null;
+                time?: string | number | null;
+                author?: string | null;
+              };
+
+              if (extendedCourse.author) setCourseAuthor(extendedCourse.author);
+              if (extendedCourse.categoryId) setCategoryId(String(extendedCourse.categoryId));
+              if (extendedCourse.time) setCourseTime(String(extendedCourse.time));
             setBlocks(blocksData || []);
             setSaved(true);
           }
@@ -132,6 +140,7 @@ export default function CreateBlocks() {
           const parsed = JSON.parse(localDraft);
           if (parsed.courseTitle !== undefined) setCourseTitle(parsed.courseTitle);
           if (parsed.courseTextContent !== undefined) setCourseTextContent(parsed.courseTextContent);
+          if (parsed.courseAuthor !== undefined) setCourseAuthor(parsed.courseAuthor);
           if (parsed.courseTime !== undefined) setCourseTime(parsed.courseTime);
           if (parsed.categoryId !== undefined) setCategoryId(parsed.categoryId);
           if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
@@ -152,12 +161,13 @@ export default function CreateBlocks() {
       localStorage.setItem(draftKey, JSON.stringify({
         courseTitle,
         courseTextContent,
+        courseAuthor,
         courseTime,
         categoryId,
         blocks
       }));
     }
-  }, [courseTitle, courseTextContent, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
+  }, [courseTitle, courseTextContent, courseAuthor, courseTime, categoryId, blocks, activeCourseId, isLoaded, saved]);
 
   const addBlock = () => {
     const newBlock: Block = {
@@ -191,6 +201,11 @@ export default function CreateBlocks() {
       return null;
     }
 
+    if (!courseAuthor || courseAuthor.trim().length < 2) {
+        setError("Du måste ange en författare.");
+        return null;
+}
+
     if (!courseTime || Number(courseTime) <= 0) {
       setError("Du måste ange en giltig uppskattad tid (i minuter).");
       return null;
@@ -219,6 +234,7 @@ export default function CreateBlocks() {
           `${baseUrl}/api/courses`,
           {
             title: courseTitle,
+            author: courseAuthor,
             textContent: courseTextContent,
             categoryId,
             time: Number(courseTime),
@@ -240,12 +256,13 @@ export default function CreateBlocks() {
         await axios
           .patch(
             `${baseUrl}/api/courses/${targetCourseId}`,
-            {
-              title: courseTitle,
-              textContent: courseTextContent,
-              categoryId,
-              time: Number(courseTime),
-            },
+              {
+                title: courseTitle,
+                author: courseAuthor,
+                textContent: courseTextContent,
+                categoryId,
+                time: Number(courseTime),
+                          },
             {
               withCredentials: true,
             },
@@ -376,27 +393,38 @@ export default function CreateBlocks() {
       <div className="bg-card p-6 rounded-2xl shadow-sm border border-border space-y-4">
         <h2 className="text-lg font-semibold text-foreground mb-4">Grundläggande information</h2>
         <div className="space-y-3">
-          <input
-            type="text"
-            value={courseTitle}
-            onChange={(e) => {
-              setCourseTitle(e.target.value);
-              setSaved(false);
-            }}
-            placeholder="Kursnamn"
-            className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
-          <textarea
-            value={courseTextContent}
-            onChange={(e) => {
-              setCourseTextContent(e.target.value);
-              setSaved(false);
-            }}
-            placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
-            rows={3}
-            className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-          />
-        </div>
+        <input
+          type="text"
+          value={courseTitle}
+          onChange={(e) => {
+            setCourseTitle(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Kursnamn"
+          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <input
+          type="text"
+          value={courseAuthor}
+          onChange={(e) => {
+            setCourseAuthor(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Författare"
+          className="w-full font-medium text-foreground bg-card border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+
+        <textarea
+          value={courseTextContent}
+          onChange={(e) => {
+            setCourseTextContent(e.target.value);
+            setSaved(false);
+          }}
+          placeholder="Sammanfattning – beskriv kort vad kursen handlar om"
+          rows={3}
+          className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+        />
+      </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
           <select

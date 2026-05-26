@@ -1,21 +1,5 @@
 import { z } from "zod";
 
-/**
- * Reusable AI client.
- *
- * Den här filen samlar AI-anrop till OpenRouter på ett ställe.
- *
- * Den ska kunna användas av:
- * - AI-chatten
- * - quiz-generatorn
- * - MCP-tools
- * - framtida kursrekommendationer
- * - framtida assistant context flows
- *
- * TODO senare:
- * Om ni byter från OpenRouter till OpenAI Responses API, Anthropic eller annan provider,
- * bör resten av systemet kunna fortsätta använda samma AiClient-interface.
- */
 
 export type AiMessageRole = "system" | "user" | "assistant";
 
@@ -25,33 +9,9 @@ export type AiMessage = {
 };
 
 export type AiClientOptions = {
-  /**
-   * OpenRouter API key.
-   *
-   * Läggs normalt i .env:
-   *
-   * OPENROUTER_API_KEY=...
-   */
+ 
   apiKey?: string;
-
-  /**
-   * Modellnamn i OpenRouter.
-   *
-   * Exempel:
-   * OPENROUTER_MODEL=openai/gpt-4o-mini
-   * OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
-   *
-   * TODO:
-   * Välj modell utifrån budget och kvalitet.
-   * Quiz-generering gynnas av en modell som är bra på strukturerad JSON.
-   */
   model?: string;
-
-  /**
-   * Valfria OpenRouter headers.
-   *
-   * OpenRouter rekommenderar ibland referer/title.
-   */
   siteUrl?: string;
   appName?: string;
 };
@@ -67,13 +27,6 @@ export type JsonModelInput<TSchema extends z.ZodTypeAny> = {
   schema: TSchema;
   temperature?: number;
   maxTokens?: number;
-
-  /**
-   * Namn används bara för bättre felmeddelanden.
-   *
-   * Exempel:
-   * schemaName: "GeneratedQuiz"
-   */
   schemaName?: string;
 };
 
@@ -87,11 +40,6 @@ export class AiClientError extends Error {
   }
 }
 
-/**
- * Minimal OpenRouter response shape.
- *
- * Vi typ-ar bara det vi faktiskt använder.
- */
 const openRouterResponseSchema = z.object({
   choices: z
     .array(
@@ -104,23 +52,12 @@ const openRouterResponseSchema = z.object({
     .min(1),
 });
 
-/**
- * Skapar AI-client.
- *
- * Använd helst createAiClient() via defaultAiClient nedan,
- * om du inte behöver injecta config i tester.
- */
 export function createAiClient(options: AiClientOptions = {}) {
   const apiKey = options.apiKey ?? process.env.OPENROUTER_API_KEY;
 
   const model =
     options.model ??
     process.env.OPENROUTER_MODEL ??
-    /**
-     * TODO:
-     * Byt gärna denna default till den modell ni faktiskt vill köra i projektet.
-     * Den bör vara stabil på JSON-output för quiz-generatorn.
-     */
     "openai/gpt-4o-mini";
 
   const siteUrl =
@@ -151,11 +88,6 @@ export function createAiClient(options: AiClientOptions = {}) {
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-
-          /**
-           * Dessa headers är inte kritiska för lokal utveckling,
-           * men är bra att ha för OpenRouter-ranking/identifiering.
-           */
           "HTTP-Referer": siteUrl,
           "X-Title": appName,
         },
@@ -212,13 +144,7 @@ export function createAiClient(options: AiClientOptions = {}) {
   }
 
   return {
-    /**
-     * Vanligt chat-anrop.
-     *
-     * Används för:
-     * - AI-assistenten
-     * - vanliga textförklaringar
-     */
+   
     async chat(input: ChatModelInput): Promise<string> {
       return callOpenRouter({
         messages: input.messages,
@@ -227,20 +153,6 @@ export function createAiClient(options: AiClientOptions = {}) {
       });
     },
 
-    /**
-     * JSON-anrop med Zod-validering.
-     *
-     * Används för:
-     * - quiz-generering
-     * - strukturerade rekommendationer
-     * - framtida MCP-resultat
-     *
-     * Viktigt:
-     * Vi litar inte på att AI:n alltid returnerar korrekt JSON.
-     * Därför:
-     *
-     * AI text -> extract JSON -> JSON.parse -> Zod schema parse
-     */
     async generateJson<TSchema extends z.ZodTypeAny>(
       input: JsonModelInput<TSchema>,
     ): Promise<z.infer<TSchema>> {
@@ -289,26 +201,8 @@ export function createAiClient(options: AiClientOptions = {}) {
 
 export type AiClient = ReturnType<typeof createAiClient>;
 
-/**
- * Default client för appens services.
- *
- * I tester kan ni skapa en egen client eller mocka AiClient-interface.
- */
 export const defaultAiClient = createAiClient();
 
-/**
- * Lägger till en extra instruktion om strikt JSON.
- *
- * Detta är extra viktigt för quiz-generatorn.
- *
- * Vi använder prompt-baserad JSON istället för att hårdkoda response_format,
- * eftersom alla OpenRouter-modeller inte beter sig exakt likadant med
- * response_format.
- *
- * TODO senare:
- * Om ni väljer en modell som har stabilt stöd för response_format/json_schema
- * kan vi lägga till provider-specifik structured output.
- */
 function withJsonInstruction(messages: AiMessage[]): AiMessage[] {
   return [
     {
@@ -320,23 +214,6 @@ function withJsonInstruction(messages: AiMessage[]): AiMessage[] {
   ];
 }
 
-/**
- * Försöker extrahera JSON från modellens svar.
- *
- * Hanterar tre vanliga fall:
- *
- * 1. Modellen returnerar ren JSON:
- *    { "title": "..." }
- *
- * 2. Modellen returnerar markdown:
- *    ```json
- *    { "title": "..." }
- *    ```
- *
- * 3. Modellen råkar lägga text runt JSON:
- *    Här är resultatet:
- *    { "title": "..." }
- */
 export function extractJsonFromModelContent(content: string): string {
   const trimmed = content.trim();
 
@@ -362,9 +239,7 @@ export function extractJsonFromModelContent(content: string): string {
   return trimmed;
 }
 
-/**
- * Försöker hämta ett begripligt fel från OpenRouter.
- */
+
 function extractOpenRouterErrorMessage(rawJson: unknown): string {
   const schema = z.object({
     error: z
