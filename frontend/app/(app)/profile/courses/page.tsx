@@ -76,8 +76,6 @@ export default function ProfileCoursesPage() {
           <Link href="/profile" className="text-[#2563EB] dark:text-blue-400">
             <ChevronLeft size={26} />
           </Link>
-
-          <Bell size={22} />
         </header>
 
         <h1 className="text-2xl font-bold">Mina kurser</h1>
@@ -88,11 +86,10 @@ export default function ProfileCoursesPage() {
               key={tab.value}
               type="button"
               onClick={() => setActiveFilter(tab.value)}
-              className={`h-9 rounded-full px-5 text-sm font-bold ${
-                activeFilter === tab.value
+              className={`h-9 rounded-full px-5 text-sm font-bold ${activeFilter === tab.value
                   ? "bg-[#2563EB] text-white"
                   : "bg-gray-100 text-gray-700 dark:bg-zinc-900 dark:text-white"
-              }`}
+                }`}
             >
               {tab.label}
             </button>

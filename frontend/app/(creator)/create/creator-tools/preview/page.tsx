@@ -27,7 +27,7 @@ export default async function PreviewPage({ searchParams }: { searchParams: Prom
   }
 
   return(
-    <div className="relative w-full min-h-screen bg-white dark:bg-background font-sans text-foreground pb-28 md:max-w-5xl md:mx-auto md:px-8 md:py-14 px-5 pt-6">
+    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans">
       <CreatorStepper currentStep={4} />
       
       <div className="max-w-4xl mx-auto">

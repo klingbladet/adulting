@@ -158,7 +158,7 @@ export default async function CourseOverview({
         <header className="md:flex md:justify-start  h-auto min-h-45 md:min-h-60 w-screen -mx-6 p-16 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-18 px-6 md:pb-6 relative">
           <div className="flex justify-start items-center gap-4">
             <div className="flex flex-col gap-4 md:mt-4 px-4 md:px-8 lg:px-16 max-w-5xl relative">
-              <Link href={`/learn`}>
+              <Link href={`/courses`}>
                 <ArrowLeft
                   size={20}
                   className="text-secondary-foreground"
@@ -259,7 +259,7 @@ export default async function CourseOverview({
               </CourseButton>
             </Link>
           )}
-        
+
         </div>
       </div>
     </div>

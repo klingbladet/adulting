@@ -12,19 +12,19 @@ type StepOneData = { situation: string };
 type StepTwoData = { topics: string[] };
 
 const situations = [
-  { id: "school",   label: "Jag går i skolan" },
-  { id: "moving",   label: "Jag ska flytta hemifrån" },
-  { id: "job",      label: "Jag söker jobb" },
+  { id: "school", label: "Jag går i skolan" },
+  { id: "moving", label: "Jag ska flytta hemifrån" },
+  { id: "job", label: "Jag söker jobb" },
   { id: "graduate", label: "Jag tar studenten snart" },
 ];
 
 const topics = [
-  { id: "work",      label: "Jobb",       icon: "/images/icons/jobb.jpg" },
-  { id: "drivers",   label: "Körkort",    icon: "/images/icons/korkort.jpg" },
-  { id: "housing",   label: "Boende",     icon: "/images/icons/bostad.jpg" },
-  { id: "economy",   label: "Ekonomi",    icon: "/images/icons/ekonomi.jpg" },
-  { id: "csn",       label: "CSN",        icon: "/images/icons/CSN.png" },
-  { id: "skatt",     label: "Skatt",      icon: "/images/icons/skatt.png" },
+  { id: "work", label: "Jobb", icon: "/images/icons/jobb.jpg" },
+  { id: "drivers", label: "Körkort", icon: "/images/icons/korkort.jpg" },
+  { id: "housing", label: "Boende", icon: "/images/icons/bostad.jpg" },
+  { id: "economy", label: "Ekonomi", icon: "/images/icons/ekonomi.jpg" },
+  { id: "csn", label: "CSN", icon: "/images/icons/CSN.png" },
+  { id: "skatt", label: "Skatt", icon: "/images/icons/skatt.png" },
   { id: "education", label: "Utbildning", icon: "/images/icons/utbildning.jpg" },
 ];
 
@@ -71,8 +71,8 @@ export default function OnboardingFlow() {
         setStepTwoData({
           topics: Array.isArray(data.stepTwoData.topics)
             ? data.stepTwoData.topics.filter(
-                (t): t is string => typeof t === "string"
-              )
+              (t): t is string => typeof t === "string"
+            )
             : [],
         });
       } catch (error) {
@@ -141,22 +141,13 @@ export default function OnboardingFlow() {
     return (
       <div className="w-full max-w-sm mx-auto px-6 flex flex-col items-center text-center min-h-[600px] justify-center">
         <div className="mb-8" style={{ animation: "float 3s ease-in-out infinite" }}>
-          <svg width="160" height="180" viewBox="0 0 140 160" fill="none">
-            <ellipse cx="20"  cy="100" rx="18" ry="10" fill="#e5e7eb" opacity="0.7"/>
-            <ellipse cx="30"  cy="95"  rx="14" ry="9"  fill="#f3f4f6" opacity="0.8"/>
-            <ellipse cx="120" cy="90"  rx="16" ry="9"  fill="#e5e7eb" opacity="0.7"/>
-            <ellipse cx="112" cy="85"  rx="12" ry="8"  fill="#f3f4f6" opacity="0.8"/>
-            <path d="M70 10 C30 10 10 45 10 70 C10 100 38 118 70 118 C102 118 130 100 130 70 C130 45 110 10 70 10Z" fill="#E84040"/>
-            <path d="M70 10 C55 10 40 25 33 45 C28 60 30 80 35 95 C45 110 57 118 70 118 L70 10Z" fill="#F5C518"/>
-            <path d="M70 10 C60 12 52 30 50 55 C49 70 51 90 55 105 C60 114 65 118 70 118 C75 118 80 114 85 105 C89 90 91 70 90 55 C88 30 80 12 70 10Z" fill="#38BDF8"/>
-            <line x1="50" y1="115" x2="55" y2="135" stroke="#9ca3af" strokeWidth="1.5"/>
-            <line x1="70" y1="118" x2="70" y2="135" stroke="#9ca3af" strokeWidth="1.5"/>
-            <line x1="90" y1="115" x2="85" y2="135" stroke="#9ca3af" strokeWidth="1.5"/>
-            <rect x="52" y="132" width="36" height="20" rx="5" fill="#d97706"/>
-            <rect x="52" y="132" width="36" height="5"  rx="2" fill="#b45309"/>
-            <line x1="64" y1="137" x2="64" y2="152" stroke="#b45309" strokeWidth="1"/>
-            <line x1="76" y1="137" x2="76" y2="152" stroke="#b45309" strokeWidth="1"/>
-          </svg>
+          <img
+            src="/images/onboarding/luftballong.gif"
+            alt="Laddar"
+            width={400}
+            height={450}
+            className="object-contain"
+          />
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-5 leading-tight">
@@ -214,9 +205,8 @@ export default function OnboardingFlow() {
         {[1, 2].map((s) => (
           <div
             key={s}
-            className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-              s <= step ? "bg-blue-500" : "bg-gray-200"
-            }`}
+            className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? "bg-blue-500" : "bg-gray-200"
+              }`}
           />
         ))}
       </div>
@@ -239,14 +229,12 @@ export default function OnboardingFlow() {
                   key={s.id}
                   type="button"
                   onClick={() => setStepOneData({ situation: s.id })}
-                  className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${
-                    isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
-                  }`}
+                  className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
+                    }`}
                 >
                   <span
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                      isSelected ? "border-blue-500" : "border-gray-300"
-                    }`}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500" : "border-gray-300"
+                      }`}
                   >
                     {isSelected && (
                       <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
@@ -306,9 +294,8 @@ export default function OnboardingFlow() {
                     className="flex flex-col items-center gap-2"
                   >
                     <div
-                      className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${
-                        isSelected ? "border-blue-500" : "border-gray-200"
-                      }`}
+                      className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
+                        }`}
                     >
                       <img
                         src={t.icon}
@@ -340,9 +327,8 @@ export default function OnboardingFlow() {
                       className="flex flex-col items-center gap-2"
                     >
                       <div
-                        className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${
-                          isSelected ? "border-blue-500" : "border-gray-200"
-                        }`}
+                        className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
+                          }`}
                       >
                         <img
                           src={t.icon}

@@ -17,14 +17,16 @@ interface RichTextEditorProps {
 const extensions = [
   TextStyleKit,
   StarterKit,
-  Image,
+  Image.configure({
+    inline: true,
+  }),
   Youtube.configure({
     controls: false,
     nocookie: true,
     allowFullscreen: false,
   }),
   TextAlign.configure({
-    types: ['heading', 'paragraph'],
+    types: ['heading', 'paragraph', 'image', 'youtube'],
   }),
 ]
 
@@ -52,7 +54,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     editorProps: {
       attributes: {
         spellcheck: 'false',
-        class: 'min-h-[150px] w-full p-4 border border-gray-200 rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400 [&_iframe]:block [&_iframe]:mx-auto',
+        class: 'min-h-[150px] w-full p-4 border border-gray-200 rounded-md bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_.ProseMirror-selectednode_iframe]:outline [&_.ProseMirror-selectednode_iframe]:outline-2 [&_.ProseMirror-selectednode_iframe]:outline-blue-400 [&_iframe]:block [&_iframe]:mx-auto [&_img]:block [&_img]:mx-auto',
       },
     },
   })
@@ -80,7 +82,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
       </div>
       {preview ? (
         <div
-          className="min-h-[150px] w-full p-4 [&_p:empty]:min-h-[1.5rem] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_iframe]:block [&_iframe]:mx-auto"
+          className="min-h-[150px] w-full p-4 [&_p:empty]:min-h-[1.5rem] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_iframe]:block [&_iframe]:mx-auto [&_img]:block [&_img]:mx-auto"
           dangerouslySetInnerHTML={{ __html: editor.getHTML() }}
         ></div>
       ) : (
