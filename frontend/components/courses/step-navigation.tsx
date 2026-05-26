@@ -21,7 +21,7 @@ export default function StepNavigation({
   const query = courseId ? `?courseId=${courseId}` : '';
 
   return (
-    <div className="flex flex-row justify-between mt-10">
+    <div className="flex flex-row justify-between mt-12 pt-8 border-t border-border">
       {backPath ? (
         <Link href={`${backPath}${query}`}>
           <CourseButton variant="secondary">{backLabel}</CourseButton>

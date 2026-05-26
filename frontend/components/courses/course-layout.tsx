@@ -14,7 +14,7 @@ interface BlockCardProps {
   isClickable?: boolean;
   onClick?: () => void;
   className?: string;
-  badge?: React.ReactNode; 
+  badge?: React.ReactNode;
 }
 
 const BlockCard = ({
@@ -30,19 +30,19 @@ const BlockCard = ({
   badge
 }: BlockCardProps) => {
   const interactiveStyles = isClickable
-  ? "cursor-pointer hover:border-secondary-800 hover:border-2 transition-all active:scale-[0.98]"
-  : "";
+    ? "text-primary cursor-pointer hover:border-secondary-800 hover:border-2 transition-all active:scale-[0.98]"
+    : "";
 
   const details = [];
   if (time) details.push(typeof time === 'number' ? `${time} min` : time);
   if (steps !== undefined && steps !== null) details.push(`${steps} steg`);
 
-   const variants = {
+  const variants = {
     primary: "bg-secondary text-white rounded-2xl",
     secondary: "bg-overview-box text-[#1F2937] hover:bg-overview-hover transition duration-300",
   };
 
-  return(
+  return (
     <div
       onClick={isClickable ? onClick : undefined}
       className={`flex items-center justify-between p-4 border-border w-full ${interactiveStyles} ${variants[variant]} ${className}`}
@@ -58,7 +58,7 @@ const BlockCard = ({
       </div>
       {isClickable && (
         <div className="text-secondary-foreground">
-          <ChevronRight size={20} /> 
+          <ChevronRight size={20} />
         </div>
       )}
     </div>
