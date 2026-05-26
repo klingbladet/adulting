@@ -130,11 +130,11 @@ build drizzle image:
     - >
       docker buildx build
       -t $CI_REGISTRY_IMAGE/migrate:latest
-      --push --provenance=false -f ./backend/Dockerfile 
-      --target migrate ./backend
+      --push --provenance=false 
+      -f ./docker/drizzle.Dockerfile ./backend
   rules:
     - changes:
-      - ./backend/Dockerfile
+      - ./docker/drizzle.Dockerfile
 
 
 build backend:
