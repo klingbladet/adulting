@@ -121,7 +121,7 @@ build drizzle image:
   script:
     - >
       docker buildx build
-      -t $CI_REGISTRY_IMAGE/migrate:latest
+      -t $CI_REGISTRY_IMAGE/migrate:$IMAGE_VERSION
       --push --provenance=false 
       -f ./docker/drizzle.Dockerfile ./backend
   rules:
@@ -184,6 +184,7 @@ deploy app static:
     - kustomize edit set image $CI_REGISTRY_IMAGE/backend:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/frontend:$IMAGE_VERSION
     - kustomize edit set image $CI_REGISTRY_IMAGE/mcp:$IMAGE_VERSION
+    - kustomize edit set image $CI_REGISTRY_IMAGE/migrate:$IMAGE_VERSION
     - sed -i "s/rlversion/${VERSION}/g" *
     - echo "replaced 'rlversion' with '${VERSION}'"
     - cd -

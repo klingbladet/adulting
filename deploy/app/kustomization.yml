@@ -15,7 +15,9 @@ images:
   newTag: mr42
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/frontend
   newTag: mr42
-- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/mcp:latest
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/mcp
+  newTag: mr42
+- name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/migrate
   newTag: mr42
 labels:
 - includeSelectors: true
