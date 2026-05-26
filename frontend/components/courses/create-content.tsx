@@ -146,11 +146,12 @@ export default function CreatorToolsClient() {
       <p className="text-muted-foreground">Lägg till innehåll i de steg du skapade.</p>
 
       {blocks.length > 0 && (
-        <div>
+        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border">
+          <label className="block text-sm font-semibold text-foreground mb-3">Välj block att redigera</label>
           <select
             value={selectedBlockId || ''}
             onChange={(e) => setSelectedBlockId(Number(e.target.value))}
-            className="w-full font-medium text-foreground bg-background border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
+            className="w-full font-medium text-foreground bg-background border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-colors cursor-pointer"
           >
             {blocks.map((block, index) => (
               <option key={block.id} value={block.id}>
@@ -162,11 +163,11 @@ export default function CreatorToolsClient() {
       )}
 
       {activeBlock ? (
-        <div key={activeBlock.id} className="border border-border p-4 rounded-lg relative bg-card shadow-sm mt-4">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2 flex-grow max-w-sm">
-              <span className="font-medium text-muted-foreground">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
-              <h2 className="text-lg font-semibold text-foreground">{activeBlock.title}</h2>
+        <div key={activeBlock.id} className="border border-border p-6 rounded-2xl relative bg-card shadow-sm mt-4">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3 flex-grow max-w-sm">
+              <span className="font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">#{blocks.findIndex(b => b.id === activeBlock.id) + 1}</span>
+              <h2 className="text-xl font-bold text-foreground">{activeBlock.title}</h2>
             </div>
           </div>
 
@@ -183,7 +184,7 @@ export default function CreatorToolsClient() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className='border rounded-sm border-primary py-2 px-4 text-primary hover:bg-primary/10 transition disabled:opacity-50'
+          className="border border-border rounded-xl py-3 px-6 text-muted-foreground hover:bg-border hover:text-foreground transition-colors font-semibold disabled:opacity-50"
         >
           {loading ? 'Wait...' : saved ? 'Sparad' : 'Spara innehåll'}
         </button>

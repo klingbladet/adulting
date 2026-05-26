@@ -30,9 +30,21 @@ const aiLearningContextSchema = z
   })
   .optional();
 
+const aiSettingsSchema = z
+  .object({
+    answerLength: z.enum(["short", "normal", "detailed"]).optional(),
+    tone: z.enum(["standard", "simple", "motivating"]).optional(),
+    simplifyWords: z.boolean().optional(),
+    suggestNextStep: z.boolean().optional(),
+    studyTips: z.boolean().optional(),
+  })
+  .optional()
+  .nullable();
+
 const sendMessageBodySchema = z.object({
   message: z.string().min(1),
   learningContext: aiLearningContextSchema,
+  aiSettings: aiSettingsSchema,
 });
 
 type LearningContext = z.infer<typeof aiLearningContextSchema>;
@@ -168,6 +180,55 @@ async function buildLearningAwareSystemPrompt(input: {
   ]
     .filter((line): line is string => Boolean(line))
     .join("\n");
+}
+
+function buildAiSettingsPrompt(aiSettings?: z.infer<typeof aiSettingsSchema>) {
+  if (!aiSettings) return "";
+
+  const rules: string[] = [];
+
+  if (aiSettings.answerLength === "short") {
+    rules.push("- Svara extra kort och direkt. Max 3–5 meningar om möjligt.");
+  }
+
+  if (aiSettings.answerLength === "normal") {
+    rules.push("- Svara normalt: tydligt men inte för långt.");
+  }
+
+  if (aiSettings.answerLength === "detailed") {
+    rules.push("- Ge mer detaljer och förklara steg för steg när det behövs.");
+  }
+
+  if (aiSettings.tone === "simple") {
+    rules.push("- Använd extra enkel svenska och undvik svåra ord.");
+  }
+
+  if (aiSettings.tone === "motivating") {
+    rules.push("- Var extra peppande, varm och uppmuntrande.");
+  }
+
+  if (aiSettings.simplifyWords) {
+    rules.push("- Förklara svåra ord enkelt om de dyker upp.");
+  }
+
+  if (aiSettings.suggestNextStep) {
+    rules.push("- Föreslå gärna ett tydligt nästa steg.");
+  }
+
+  if (aiSettings.studyTips) {
+    rules.push("- Ge små studietips när det passar frågan.");
+  }
+
+  if (rules.length === 0) return "";
+
+  return [
+    "========================",
+    "USER AI SETTINGS",
+    "========================",
+    "",
+    "Anpassa svaret efter användarens AI-inställningar:",
+    ...rules,
+  ].join("\n");
 }
 
 async function callOpenRouter(
@@ -375,7 +436,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
     const { threadId } = req.params;
 
     const parsedBody = sendMessageBodySchema.parse(req.body ?? {});
-    const { message, learningContext } = parsedBody;
+    const { message, learningContext, aiSettings } = parsedBody;
 
     const cleanMessage = message.trim();
 
@@ -429,6 +490,13 @@ router.post("/threads/:threadId/messages", async (req, res) => {
       learningContext,
     });
 
+    const aiSettingsPrompt = buildAiSettingsPrompt(aiSettings);
+
+    const finalSystemPrompt = [
+      learningAwareSystemPrompt,
+      aiSettingsPrompt,
+    ].filter(Boolean).join("\n\n");
+
     let aiReply = "";
 
       try {
@@ -438,7 +506,7 @@ router.post("/threads/:threadId/messages", async (req, res) => {
 
         aiReply = await callOpenRouterWithMcpTools({
           history,
-          systemPrompt: learningAwareSystemPrompt,
+          systemPrompt: finalSystemPrompt,
           userId,
           courseId: learningContext?.courseId,
           openRouterApiKey: OPENROUTER_API_KEY,

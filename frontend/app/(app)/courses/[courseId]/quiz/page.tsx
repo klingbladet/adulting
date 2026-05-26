@@ -175,7 +175,7 @@ export default function CourseQuizPage({
 
   if (result) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6">
+      <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 mt-10 mb-20">
         <section className="rounded-2xl border bg-card p-6 shadow-sm">
           <p className="mb-2 text-sm font-medium text-muted-foreground">
             Quiz klart

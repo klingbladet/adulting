@@ -57,7 +57,7 @@ export default function TipTapViewer({ content }: TipTapViewerProps) {
   }, [parsedContent, editor]);
 
   return (
-    <div className="[&_iframe]:block [&_iframe]:mx-auto">
+    <div className="[&_iframe]:block [&_iframe]:mx-auto [&_img]:block [&_img]:mx-auto">
       <EditorContent editor={editor} />
     </div>
   )
