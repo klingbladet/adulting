@@ -51,7 +51,7 @@ export default function Personalize({ params }: { params: Promise<{ courseId: st
               checked={selectedLevel === option.value}
               onChange={() => setSelectedLevel(option.value)}
             />
-            <div className="flex items-center justify-between p-3 border-2 border-border rounded-xl transition-all
+            <div className="flex items-center justify-between p-3 border-2 border-border rounded-2xl transition-all
                           peer-checked:border-primary peer-checked:bg-secondary
                           group-hover:border-ring">
               <p className="font-medium text-foreground">
