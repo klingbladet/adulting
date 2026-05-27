@@ -1,0 +1,94 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      adulting: backend
+      env: rlversion
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+  jobLabel: env
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard
+  labels:
+    grafana_dashboard: "1"
+data:
+  adulting-rlversion-dashboard.json: |
+    {
+      "title": "adulting (group 1) / rlversion",
+      "uid": "adulting-group1-rlversion",
+      "schemaVersion": 1,
+      "time": { "from": "now-1h", "to": "now" },
+      "refresh": "30s",
+      "tags": ["chas-academy", "doe25", "doe25-group-1", "rlversion"],
+      "panels": [
+        {
+          "id": 1,
+          "type": "timeseries",
+          "title": "Request rate (req/s) by route",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum by (route) (rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[1m]))",
+              "legendFormat": "{{route}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "reqps" } }
+        },
+        {
+          "id": 2,
+          "type": "timeseries",
+          "title": "Error rate (5xx, share of total)",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",status_code=~\"5..\",route!=\"/metrics\"}[5m])) / clamp_min(sum(rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])), 1)",
+              "legendFormat": "5xx ratio",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0 } }
+        },
+        {
+          "id": 3,
+          "type": "timeseries",
+          "title": "Latency p95 (s) by route",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (route, le) (rate(adulting_backend_http_request_duration_seconds_bucket{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])))",
+              "legendFormat": "{{route}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "s" } }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Requests last 5m by status_code",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum by (status_code) (increase(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m]))",
+              "legendFormat": "{{status_code}}",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }

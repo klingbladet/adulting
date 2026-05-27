@@ -49,6 +49,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 3003
+              name: http
               protocol: TCP
           env:
             - name: VERSION
@@ -85,21 +86,21 @@ spec:
                 optional: false
           startupProbe:
             httpGet:
-              port: 3003
+              port: http
               path: /health
             periodSeconds: 1
             failureThreshold: 60
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
-              port: 3003
+              port: http
               path: /health
             periodSeconds: 10
             failureThreshold: 3
             timeoutSeconds: 2
           readinessProbe:
             httpGet:
-              port: 3003
+              port: http
               path: /health
             periodSeconds: 5
             failureThreshold: 3
@@ -114,5 +115,6 @@ spec:
     adulting: mcp
   ports:
     - port: 8080
-      targetPort: 3003
+      targetPort: http
+      name: http
       protocol: TCP
