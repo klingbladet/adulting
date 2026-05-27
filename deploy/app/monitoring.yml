@@ -10,7 +10,7 @@ spec:
       adulting: backend
       env: rlversion
   endpoints:
-    - port: "8080"
+    - port: http
       path: /metrics
       interval: 15s
 ---

@@ -34,6 +34,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
+              name: http
               protocol: TCP
           env:
             - name: VERSION
@@ -123,5 +124,6 @@ spec:
     adulting: backend
   ports:
     - port: 8080
-      targetPort: 3001
+      name: http
+      targetPort: http
       protocol: TCP
