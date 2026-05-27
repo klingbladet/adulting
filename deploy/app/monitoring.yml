@@ -3,7 +3,7 @@ kind: ServiceMonitor
 metadata:
   name: backend
   labels:
-    adulting: monitoring
+    release: monitoring
 spec:
   selector:
     matchLabels:
