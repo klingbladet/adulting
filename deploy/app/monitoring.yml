@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       adulting: backend
-      env: versionrl
+      env: rlversion
   endpoints:
     - port: "8080"
       path: /metrics
