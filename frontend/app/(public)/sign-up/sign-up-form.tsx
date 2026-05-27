@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { getOnboarding } from "@/lib/onboarding";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -11,21 +12,35 @@ export default function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg("");
+
+    if (password !== confirmPassword) {
+      setErrorMsg("Lösenorden matchar inte");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await authClient.signUp.email(
         { name, email, password },
         {
-          onSuccess: () => {
-            router.push("/sign-in");
-            router.refresh();
+          onSuccess: async () => {
+            try {
+              const onboarding = await getOnboarding();
+              router.push(onboarding.redirectTo);
+              router.refresh();
+            } catch (error) {
+              console.error("Could not get onboarding status:", error);
+              router.push("/onboarding");
+              router.refresh();
+            }
           },
           onError: (ctx) => {
             setErrorMsg(ctx.error.message || "Kunde inte skapa konto");
@@ -70,6 +85,15 @@ export default function SignUpForm() {
         required
       />
 
+      <input
+        className="h-14 rounded-2xl border border-transparent bg-[#EEF3FF] px-5 text-base font-medium text-gray-900 outline-none placeholder:text-gray-500 focus:border-[#2563EB]"
+        type="password"
+        placeholder="Bekräfta lösenord"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        required
+      />
+
       <button
         className="mt-1 h-14 rounded-2xl bg-[#2563EB] px-4 text-base font-bold text-white shadow-sm transition hover:bg-[#1D4ED8] disabled:opacity-50"
         type="submit"
@@ -85,10 +109,6 @@ export default function SignUpForm() {
             Logga in
           </Link>
         </p>
-
-        <Link href="/auth" className="text-sm font-bold text-gray-500">
-          Tillbaka
-        </Link>
       </div>
 
       {errorMsg ? (

@@ -46,8 +46,8 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
           <h1 className="text-7xl font-bold text-summary">Grattis!</h1>
           <div className="flex flex-col justify-center gap-2">
             {isLastBlock && course && (
-              <span className="flex gap-1 justify-center flex-wrap text-summary font-normal">
-                Du har läst igenom sista blocket: <p className='font-semibold'>{block.title}</p>
+              <span className="pb-10 flex gap-1 justify-center flex-wrap text-summary font-normal">
+                Du klarade kursen!
               </span>
             )}
             <span className="flex justify-center flex-wrap gap-1 text-summary font-normal text-lg">
@@ -63,7 +63,7 @@ export default async function SummaryPage({ params }: { params: Promise<{ course
             <p className="font-medium text-muted-foreground">Vill du fortsätta din resa?</p>
             <CategoryButtons categories={categories} />
           </div>
-          <Link href={`/learn`} className="block">
+          <Link href={`/courses`} className="block">
             <CourseButton variant="primary">
               Utforska fler kurser
             </CourseButton>

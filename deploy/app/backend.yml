@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  labels:
+    adulting: backend
 spec:
   replicas: 3
   selector:
@@ -32,6 +34,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
+              name: http
               protocol: TCP
           env:
             - name: VERSION
@@ -43,7 +46,7 @@ spec:
             - name: OPENROUTER_SITE_URL
               value: $(FRONTEND_URL)
             - name: BETTER_AUTH_URL
-              value: http://localhost:3001
+              value: $(FRONTEND_URL)/api/auth
             - name: DATABASE_URL
               value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
             - name: MCP_SERVER_URL
@@ -64,23 +67,26 @@ spec:
             - secretRef:
                 name: env-mcp
                 optional: false
+            - secretRef:
+                name: google-client
+                optional: false
           startupProbe:
             httpGet:
-              port: 3001
+              port: http
               path: /health
             periodSeconds: 1
             failureThreshold: 60
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
-              port: 3001
+              port: http
               path: /health
             periodSeconds: 10
             failureThreshold: 3
             timeoutSeconds: 2
           readinessProbe:
             httpGet:
-              port: 3001
+              port: http
               path: /health
             periodSeconds: 5
             failureThreshold: 3
@@ -90,6 +96,8 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: backend
+  labels:
+    adulting: backend
 spec:
   minReplicas: 3
   maxReplicas: 10
@@ -109,10 +117,13 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
+  labels:
+    adulting: backend
 spec:
   selector:
     adulting: backend
   ports:
     - port: 8080
-      targetPort: 3001
+      name: http
+      targetPort: http
       protocol: TCP

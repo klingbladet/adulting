@@ -11,21 +11,21 @@ export default async function StaffSidebar() {
     roles.includes("creator") || roles.includes("admin");
 
   return (
-    <aside className="w-64 border-r border-border bg-card p-4">
+    <aside className="w-64 md:w-100 border-r border-border p-4 md:pl-40">
       <h2 className="mb-6 text-lg font-semibold">Creators Page</h2>
 
       <nav className="flex flex-col gap-2">
         <Link
           href="/create"
-          className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+          className="rounded-md px-3 py-2 focus:text-primary hover:text-primary"
         >
-          Översikt 
+          Översikt
         </Link>
 
         {isAdmin && (
           <Link
             href="/create/users"
-            className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+            className="rounded-md px-3 py-2 focus:text-primary hover:text-primary"
           >
             Användare
           </Link>
@@ -34,7 +34,7 @@ export default async function StaffSidebar() {
         {isAdmin && (
           <Link
             href={`/create/admin/reviews`}
-            className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+            className="rounded-md px-3 py-2 focus:text-primary hover:text-primary"
           >
             Godkänna
           </Link>
@@ -43,7 +43,7 @@ export default async function StaffSidebar() {
         {canAccessCreatorTools && (
           <Link
             href="/create/creator-tools"
-            className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+            className="rounded-md px-3 py-2 focus:text-primary hover:text-primary"
           >
             Creator tools
           </Link>
@@ -51,7 +51,7 @@ export default async function StaffSidebar() {
 
         <Link
           href="/create/installningar"
-          className="rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+          className="rounded-md px-3 py-2 focus:text-primary hover:text-primary"
         >
           Inställningar
         </Link>

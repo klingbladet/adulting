@@ -9,7 +9,7 @@ export default async function CreatorToolsPage() {
   await requireRole(["creator", "admin"]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans">
+    <div className="w-full max-w-5xl mx-auto space-y-8 font-sans md:pr-20">
       <CreatorToolsClient />
       <StepNavigation
         backPath="/create/creator-tools/create-blocks"

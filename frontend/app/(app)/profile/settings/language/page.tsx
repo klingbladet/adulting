@@ -48,7 +48,7 @@ export default function LanguageSettingsPage() {
 
   return (
     <SettingsPageShell title="Språk">
-      <div className="space-y-3 rounded-[28px] bg-[#F8FAFC] p-5 dark:bg-zinc-900">
+      <div className="space-y-3 rounded-[28px] bg-muted p-5 text-foreground">
         {[
           { value: "sv", label: "Svenska" },
           { value: "en", label: "English" },
@@ -58,10 +58,10 @@ export default function LanguageSettingsPage() {
             type="button"
             onClick={() => saveLanguage(item.value as Language)}
             disabled={saving}
-            className={`h-12 w-full rounded-2xl text-sm font-bold ${
+            className={`h-12 w-full rounded-2xl text-sm font-bold transition ${
               language === item.value
-                ? "bg-[#2563EB] text-white"
-                : "bg-white text-gray-800 dark:bg-black dark:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card text-foreground border border-border"
             }`}
           >
             {item.label}
@@ -69,7 +69,7 @@ export default function LanguageSettingsPage() {
         ))}
 
         {message && (
-          <p className="text-center text-sm font-semibold text-green-600">
+          <p className="text-center text-sm font-semibold text-green-500">
             {message}
           </p>
         )}

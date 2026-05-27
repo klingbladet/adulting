@@ -2,20 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import {
   getOnboarding,
   saveOnboardingStep,
   skipOnboarding,
 } from "@/lib/onboarding";
+import getCourseIcon from "../courses/course-dynamic-icon";
 
-type StepOneData = { situation: string };
+type StepOneData = { situations: string[] };
 type StepTwoData = { topics: string[] };
 
 const situations = [
   { id: "school", label: "Jag går i skolan" },
   { id: "moving", label: "Jag ska flytta hemifrån" },
-  { id: "job", label: "Jag söker jobb" },
   { id: "graduate", label: "Jag tar studenten snart" },
+  { id: "job", label: "Jag söker jobb" },
+  { id: "other", label: "Annat" },
 ];
 
 const topics = [
@@ -23,12 +26,18 @@ const topics = [
   { id: "drivers", label: "Körkort", icon: "/images/icons/korkort.jpg" },
   { id: "housing", label: "Boende", icon: "/images/icons/bostad.jpg" },
   { id: "economy", label: "Ekonomi", icon: "/images/icons/ekonomi.jpg" },
-  { id: "csn", label: "CSN", icon: "/images/icons/CSN.png" },
+  { id: "csn", label: "CSN", icon: "/images/icons/csn.png" },
   { id: "skatt", label: "Skatt", icon: "/images/icons/skatt.png" },
   { id: "education", label: "Utbildning", icon: "/images/icons/utbildning.jpg" },
 ];
 
-export default function OnboardingFlow() {
+type OnboardingFlowProps = {
+  onShowBackgroundChange?: (show: boolean) => void;
+};
+
+export default function OnboardingFlow({
+  onShowBackgroundChange,
+}: OnboardingFlowProps) {
   const router = useRouter();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -36,8 +45,25 @@ export default function OnboardingFlow() {
   const [saving, setSaving] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
 
-  const [stepOneData, setStepOneData] = useState<StepOneData>({ situation: "" });
+  const [stepOneData, setStepOneData] = useState<StepOneData>({ situations: [] });
   const [stepTwoData, setStepTwoData] = useState<StepTwoData>({ topics: [] });
+
+  useEffect(() => {
+    if (onShowBackgroundChange) {
+      onShowBackgroundChange(!showLoading);
+    }
+  }, [showLoading, onShowBackgroundChange]);
+
+  function toggleSituation(id: string) {
+    setStepOneData((current) => {
+      const already = current.situations.includes(id);
+      return {
+        situations: already
+          ? current.situations.filter((s) => s !== id)
+          : [...current.situations, id],
+      };
+    });
+  }
 
   function toggleTopic(id: string) {
     setStepTwoData((current) => {
@@ -48,6 +74,14 @@ export default function OnboardingFlow() {
           : [...current.topics, id],
       };
     });
+  }
+
+  function handleBack() {
+    if (step === 2) {
+      setStep(1);
+    } else {
+      router.back();
+    }
   }
 
   useEffect(() => {
@@ -62,11 +96,17 @@ export default function OnboardingFlow() {
           return;
         }
         setStep(data.currentStep === 2 ? 2 : 1);
+        let loadedSituations: string[] = [];
+        if (Array.isArray(data.stepOneData.situations)) {
+          loadedSituations = data.stepOneData.situations.filter(
+            (s): s is string => typeof s === "string"
+          );
+        } else if (typeof data.stepOneData.situation === "string" && data.stepOneData.situation) {
+          loadedSituations = [data.stepOneData.situation];
+        }
+
         setStepOneData({
-          situation:
-            typeof data.stepOneData.situation === "string"
-              ? data.stepOneData.situation
-              : "",
+          situations: loadedSituations,
         });
         setStepTwoData({
           topics: Array.isArray(data.stepTwoData.topics)
@@ -86,7 +126,7 @@ export default function OnboardingFlow() {
 
   const isNextDisabled =
     saving ||
-    (step === 1 && !stepOneData.situation) ||
+    (step === 1 && stepOneData.situations.length === 0) ||
     (step === 2 && stepTwoData.topics.length === 0);
 
   async function handleNext() {
@@ -138,7 +178,7 @@ export default function OnboardingFlow() {
       .filter(Boolean) as string[];
 
     return (
-      <div className="w-full max-w-sm mx-auto px-6 flex flex-col items-center text-center min-h-[600px] justify-center">
+      <div className="w-full flex flex-col items-center text-center min-h-[600px] justify-center">
         <div className="mb-8" style={{ animation: "float 3s ease-in-out infinite" }}>
           <img
             src="/images/onboarding/luftballong.gif"
@@ -166,9 +206,9 @@ export default function OnboardingFlow() {
         <p className="text-sm text-gray-400 mb-8">Det tar bara några sekunder</p>
 
         {matchedLabels.length > 0 && (
-          <div className="w-full text-left">
-            <p className="text-sm font-medium text-gray-500 mb-3">Matchar med:</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="text-left">
+            <p className="text-sm font-medium text-[#575757] mb-5">Matchar med:</p>
+            <div className="flex justify-center flex-wrap gap-2">
               {matchedLabels.map((label) => (
                 <span
                   key={label}
@@ -196,24 +236,17 @@ export default function OnboardingFlow() {
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto px-5 overflow-hidden">
-
-      {/* Bakgrundsblob */}
-      <div
-        style={{
-          position: "absolute",
-          top: "80px",
-          right: "-90px",
-          width: "280px",
-          height: "280px",
-          background:
-            "radial-gradient(ellipse at center, #F9C9B8 0%, #FBDDD0 45%, transparent 72%)",
-          borderRadius: "55% 45% 65% 35% / 45% 55% 45% 55%",
-          opacity: 0.6,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      />
+    <div className="w-full relative z-0">
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#2563EB] transition hover:bg-blue-50 -ml-2"
+          aria-label="Tillbaka"
+        >
+          <ArrowLeft size={22} />
+        </button>
+      </div>
 
       <div style={{ position: "relative", zIndex: 1 }}>
 
@@ -222,9 +255,8 @@ export default function OnboardingFlow() {
           {[1, 2].map((s) => (
             <div
               key={s}
-              className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                s <= step ? "bg-blue-500" : "bg-gray-200"
-              }`}
+              className={`h-1 flex-1 rounded-full transition-all duration-300 ${s <= step ? "bg-blue-500" : "bg-gray-200"
+                }`}
             />
           ))}
         </div>
@@ -241,23 +273,23 @@ export default function OnboardingFlow() {
 
             <div className="space-y-3">
               {situations.map((s) => {
-                const isSelected = stepOneData.situation === s.id;
+                const isSelected = stepOneData.situations.includes(s.id);
                 return (
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setStepOneData({ situation: s.id })}
-                    className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${
-                      isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    onClick={() => toggleSituation(s.id)}
+                    className={`w-full px-5 py-4 rounded-2xl border text-sm text-left transition-all duration-150 flex items-center gap-4 bg-white ${isSelected ? "border-blue-500" : "border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     <span
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                        isSelected ? "border-blue-500" : "border-gray-300"
-                      }`}
+                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300 bg-white"
+                        }`}
                     >
                       {isSelected && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                        <svg className="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 20 20">
+                          <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" fill="currentColor" />
+                        </svg>
                       )}
                     </span>
                     <span className={`font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}>
@@ -316,7 +348,7 @@ export default function OnboardingFlow() {
                         className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
                           }`}
                       >
-                        <img src={t.icon} alt={t.label} className="object-cover w-full h-full" />
+                        {getCourseIcon({ title: t.label })}
                       </div>
                       <span className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-700"}`}>
                         {t.label}
@@ -341,11 +373,10 @@ export default function OnboardingFlow() {
                         className="flex flex-col items-center gap-2"
                       >
                         <div
-                          className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${
-                            isSelected ? "border-blue-500" : "border-gray-200"
-                          }`}
+                          className={`w-20 h-20 rounded-full flex items-center justify-center border-2 overflow-hidden transition-all ${isSelected ? "border-blue-500" : "border-gray-200"
+                            }`}
                         >
-                          <img src={t.icon} alt={t.label} className="object-cover w-full h-full" />
+                          {getCourseIcon({ title: t.label })}
                         </div>
                         <span className={`text-sm font-medium ${isSelected ? "text-blue-600" : "text-gray-700"}`}>
                           {t.label}

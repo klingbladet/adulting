@@ -172,6 +172,7 @@ export default function CreatorToolsClient() {
           </div>
 
           <RichTextEditor
+            key={activeBlock.id}
             content={activeBlock.content}
             onChange={(json) => updateBlockContent(activeBlock.id, json)}
           />

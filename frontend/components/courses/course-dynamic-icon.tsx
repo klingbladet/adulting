@@ -24,7 +24,7 @@ export default function getCourseIcon(course: CourseIconData) {
   const title = course.title?.toLowerCase() || "";
 
   // 2. Mappa kategorinamn ELLER titel (kombinerar front- och backendlogik)
-  if (categoryName.includes("ekonomi") || title.includes("ekonomi") || title.includes("skatt") || title.includes("csn")) return (
+  if (categoryName.includes("ekonomi") || title.includes("ekonomi")) return (
     <div className="w-full h-full rounded-full border-[0.5px] border-black/70 bg-white flex items-center justify-center p-[20%]">
       <Image src="/images/icons/ekonomi.jpg" alt="Ekonomi" width={24} height={24} className="w-full h-full object-contain" />
     </div>
@@ -44,12 +44,26 @@ export default function getCourseIcon(course: CourseIconData) {
       <Image src="/images/icons/korkort.jpg" alt="Körkort" width={24} height={24} className="w-full h-full object-contain" />
     </div>
   );
-  if (title.includes("utbild")) return (
+  if (categoryName.includes("utbildning") || title.includes("utbildning")) return (
     <div className="w-full h-full rounded-full border-[0.5px] border-black/70 bg-white flex items-center justify-center p-[20%]">
       <Image src="/images/icons/utbildning.jpg" alt="Utbildning" width={24} height={24} className="w-full h-full object-contain" />
     </div>
   );
-
+  if (categoryName.includes("csn") || title.includes("csn")) return (
+    <div className="w-full h-full rounded-full border-[0.5px] border-black/70 bg-white flex items-center justify-center p-[20%]">
+      <Image src="/images/icons/csn.png" alt="CSN" width={24} height={24} className="w-full h-full object-contain" />
+    </div>
+  );
+  if (categoryName.includes("skatt") || title.includes("skatt")) return (
+    <div className="w-full h-full rounded-full border-[0.5px] border-black/70 bg-white flex items-center justify-center p-[20%]">
+      <Image src="/images/icons/skatt.png" alt="Skatt" width={24} height={24} className="w-full h-full object-contain" />
+    </div>
+  );
+  if (categoryName.includes("hälsa") || title.includes("hälsa")) return (
+    <div className="w-full h-full rounded-full border-[0.5px] border-black/70 bg-white flex items-center justify-center p-[20%]">
+      <Image src="/images/icons/halsa.jpg" alt="Hälsa" width={24} height={24} className="w-full h-full object-contain" />
+    </div>
+  );
   // Fallback: Sätt padding på fallback-boken så den passar designen
   return <BookOpen className="w-full h-full text-gray-400 p-[15%]" />;
 }

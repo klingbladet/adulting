@@ -67,81 +67,7 @@ const suggestions = [
 
 
 
-function AiRobotIcon({
-  size = "md",
-}: {
-  size?: "sm" | "md" | "lg";
-}) {
-  const sizes = {
-    sm: {
-      wrapper: "h-10 w-10",
-      head: "h-6 w-6",
-      eyes: "h-1 w-1",
-    },
-    md: {
-      wrapper: "h-14 w-14",
-      head: "h-8 w-8",
-      eyes: "h-1.5 w-1.5",
-    },
-    lg: {
-      wrapper: "h-28 w-28",
-      head: "h-16 w-16",
-      eyes: "h-2 w-2",
-    },
-  };
 
-  const current = sizes[size];
-
-  return (
-    <div
-      className={`relative flex ${current.wrapper} items-center justify-center rounded-full bg-gradient-to-br from-[#F4F0FF] to-[#E7DEFF] shadow-inner dark:from-[#1A1730] dark:to-[#121829]`}
-    >
-      {/* Glow */}
-      <div className="absolute inset-0 rounded-full bg-[#7C5CFF]/10 blur-xl" />
-
-      {/* Sparkles */}
-      {size === "lg" && (
-        <>
-          <Sparkles
-            size={16}
-            className="absolute right-2 top-2 text-[#A78BFA]"
-          />
-          <Sparkles
-            size={10}
-            className="absolute right-6 top-1 text-[#C4B5FD]"
-          />
-        </>
-      )}
-
-      {/* Robot */}
-      <div className="relative flex flex-col items-center">
-        {/* Antenna */}
-        <div className="mb-1 flex flex-col items-center">
-          <div className="h-2 w-[2px] rounded-full bg-[#8B5CF6]" />
-          <div className="h-2 w-2 rounded-full bg-[#A78BFA]" />
-        </div>
-
-        {/* Head */}
-        <div
-          className={`relative flex ${current.head} items-center justify-center rounded-2xl border border-[#A78BFA]/30 bg-gradient-to-b from-[#6D4CFF] to-[#5B3FF2] shadow-lg`}
-        >
-          {/* Eyes */}
-          <div className="flex gap-2">
-            <span
-              className={`${current.eyes} rounded-full bg-white`}
-            />
-            <span
-              className={`${current.eyes} rounded-full bg-white`}
-            />
-          </div>
-
-          {/* Smile */}
-          <div className="absolute bottom-2 h-[2px] w-4 rounded-full bg-white/80" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function AiChat({
   onClose,
@@ -151,6 +77,7 @@ export default function AiChat({
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -172,6 +99,13 @@ export default function AiChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [messageInput]);
 
   async function safeJson(response: Response) {
     try {
@@ -318,7 +252,7 @@ export default function AiChat({
     }
   }
 
-    async function handleSelectThread(threadId: string) {
+  async function handleSelectThread(threadId: string) {
     setActiveThreadId(threadId);
     setSidebarOpen(false);
     await fetchMessages(threadId);
@@ -479,23 +413,19 @@ export default function AiChat({
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
         >
           <div className="border-b border-border px-5 py-5">
+            <h1 className="text-xl text-foreground font-bold font-Montserrat font-heading tracking-tight mb-10">
+              Adulting
+            </h1>
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <AiRobotIcon size="md" />
-
                 <div className="min-w-0">
                   <h2 className="truncate text-xl font-bold text-foreground">
-                    AI-assistent
+                    Coach Nils
                   </h2>
-
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="h-2 w-2 rounded-full bg-green-500" />
-                    Online • Svarar direkt
-                  </div>
                 </div>
               </div>
 
@@ -512,10 +442,10 @@ export default function AiChat({
               type="button"
               onClick={createThread}
               disabled={creatingThread}
-              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#5B3FF2] text-sm font-bold text-white shadow-lg shadow-[#5B3FF2]/25 transition hover:scale-[1.02] hover:bg-[#4F35DE] disabled:opacity-50"
+              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-background text-sm font-bold text-foreground transition hover:scale-[1.02] hover:bg-primary/90 disabled:opacity-50"
             >
               <Plus size={20} />
-              Ny AI-chatt
+              Ny chatt
             </button>
           </div>
 
@@ -578,14 +508,14 @@ export default function AiChat({
             </div>
           </div>
 
-                    <div className="border-t border-border p-4">
+          <div className="border-t border-border p-4">
             <button
               type="button"
               onClick={handleOpenSettings}
               className="flex w-full items-center justify-between rounded-[24px] border border-border bg-background p-4 transition hover:bg-secondary"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] dark:bg-white/10 dark:text-[#A78BFA]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary dark:bg-white/10 dark:text-primary">
                   <Settings size={20} />
                 </div>
 
@@ -620,10 +550,8 @@ export default function AiChat({
 
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <Sparkles className="text-[#5B3FF2] dark:text-[#A78BFA]" size={20} />
-
                 <h1 className="text-xl font-bold text-foreground">
-                  AI-chat
+                  Coach Nils
                 </h1>
               </div>
 
@@ -637,7 +565,7 @@ export default function AiChat({
                 type="button"
                 onClick={createThread}
                 disabled={creatingThread}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] shadow-sm transition hover:scale-105 hover:bg-[#E4DBFF] disabled:opacity-50 dark:bg-[#5B3FF2]/25 dark:text-white dark:hover:bg-[#5B3FF2]/35"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary shadow-sm transition hover:scale-105 hover:bg-secondary/80 disabled:opacity-50 dark:bg-primary/25 dark:text-white dark:hover:bg-primary/35"
                 title="Ny AI-chatt"
               >
                 <Plus size={24} />
@@ -671,9 +599,6 @@ export default function AiChat({
               <div className="flex h-full items-center justify-center">
                 <div className="w-full max-w-4xl text-center">
                   <div className="mx-auto flex justify-center">
-                    <div className="scale-75 md:scale-100">
-                      <AiRobotIcon size="lg" />
-                    </div>
                   </div>
 
                   <h2 className="mt-4 text-[24px] font-extrabold tracking-tight text-foreground md:mt-8 md:text-4xl">
@@ -695,7 +620,7 @@ export default function AiChat({
                           onClick={() => useSuggestion(item.prompt)}
                           className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left shadow-sm transition hover:bg-secondary  md:rounded-3xl md:p-5"
                         >
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#EEE9FF] text-[#5B3FF2] transition group-hover:scale-105 dark:bg-white/10 dark:text-[#A78BFA]">
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary transition group-hover:scale-105 dark:bg-white/10 dark:text-primary">
                             <Icon size={26} />
                           </div>
 
@@ -723,7 +648,9 @@ export default function AiChat({
                       }`}
                   >
                     {message.role === "assistant" && (
-                      <AiRobotIcon size="sm" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+                        <img src="/images/logotype/astronaut-logo.png" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                      </div>
                     )}
 
                     <div
@@ -745,10 +672,12 @@ export default function AiChat({
 
                 {sending && (
                   <div className="flex items-end gap-3">
-                    <AiRobotIcon size="sm" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+                      <img src="/images/logotype/astronaut-logo.png" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                    </div>
 
                     <div className="rounded-[24px] border border-border bg-card px-5 py-3.5 text-left text-[15px] text-muted-foreground shadow-sm">
-                      <span>AI skriver</span>
+                      <span>Nils skriver</span>
                       <span className="ml-1 inline-flex gap-1">
                         <span className="animate-bounce">.</span>
                         <span className="animate-bounce delay-100">.</span>
@@ -766,19 +695,20 @@ export default function AiChat({
           <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
             <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
               <textarea
+                ref={textareaRef}
                 value={messageInput}
                 onChange={(event) => setMessageInput(event.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder="Skriv din fråga här..."
                 rows={1}
-                className="flex justify-center max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+                className="flex justify-center max-h-[72px] min-h-[24px] text-foreground flex-1 resize-none overflow-y-auto bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
               />
 
               <button
                 type="button"
                 onClick={handleSendMessage}
                 disabled={sending || !messageInput.trim()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#5B3FF2] text-white shadow-lg shadow-[#5B3FF2]/20 transition hover:scale-105 hover:bg-[#4F35DE] disabled:opacity-50"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white transition hover:scale-105 hover:bg-primary/90"
               >
                 <Send size={20} />
               </button>

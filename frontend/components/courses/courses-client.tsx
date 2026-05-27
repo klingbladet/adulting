@@ -1,26 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import getCourseIcon from '@/components/courses/course-dynamic-icon';
-import { Course, UserCourse } from '@/types/types';
+import { useState } from "react";
+import Link from "next/link";
+import getCourseIcon from "@/components/courses/course-dynamic-icon";
+import { Course, UserCourse } from "@/types/types";
 
 type CourseWithPublishStatus = Course & {
+  author?: string | null;
   isPublished?: boolean;
   userCourses?: UserCourse[];
   enrollments?: UserCourse[];
 };
 
 const CATEGORY_FILTERS = [
-  { label: 'körkort', colorClass: 'bg-category-one text-category-one-text' },
-  { label: 'bostad', colorClass: 'bg-category-two text-category-two-text' },
-  { label: 'ekonomi', colorClass: 'bg-border text-foreground' },
-  { label: 'jobb', colorClass: 'bg-category-three text-category-three-text' },
+  { label: "körkort", colorClass: "bg-category-one text-category-one-text" },
+  { label: "bostad", colorClass: "bg-category-two text-category-two-text" },
+  { label: "ekonomi", colorClass: "bg-border text-foreground" },
+  { label: "jobb", colorClass: "bg-category-three text-category-three-text" },
 ];
 
 function matchesCategory(course: CourseWithPublishStatus, key: string): boolean {
-  const name = course.category?.name?.toLowerCase() ?? '';
-  const title = course.title?.toLowerCase() ?? '';
+  const name = course.category?.name?.toLowerCase() ?? "";
+  const title = course.title?.toLowerCase() ?? "";
+
   return name.includes(key) || title.includes(key);
 }
 
@@ -30,7 +32,11 @@ interface CoursesClientProps {
   completedCourses: number;
 }
 
-export default function CoursesClient({ courses, totalEnrolled, completedCourses }: CoursesClientProps) {
+export default function CoursesClient({
+  courses,
+  totalEnrolled,
+  completedCourses,
+}: CoursesClientProps) {
   const [selected, setSelected] = useState<string[]>([]);
 
   function toggleFilter(key: string) {
@@ -44,17 +50,43 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
       ? courses
       : courses.filter((c) => selected.some((key) => matchesCategory(c, key)));
 
+  const totalTime = Math.round(
+    courses.reduce((sum, course) => {
+      const enrollment = course.enrollments?.[0] || course.userCourses?.[0];
+
+      if (!enrollment || !course.time) return sum;
+
+      if (enrollment.status === "completed") {
+        return sum + course.time;
+      }
+
+      let progress = 0;
+
+      if (typeof enrollment.score === "number") {
+        progress = Math.min(Math.max(enrollment.score, 0), 100);
+      }
+
+      const totalSteps = Math.max(course.blocks || 1, 1);
+      const completedSteps = Math.round((progress / 100) * totalSteps);
+      const timeSpent = (completedSteps / totalSteps) * course.time;
+
+      return sum + timeSpent;
+    }, 0),
+  );
+
   return (
     <>
-      {/* Filter chips */}
       <div className="flex flex-wrap gap-2 mb-5">
         {CATEGORY_FILTERS.map((f) => {
           const isActive = selected.includes(f.label);
+
           return (
             <button
               key={f.label}
               onClick={() => toggleFilter(f.label)}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${f.colorClass} ${isActive ? 'ring-2 ring-foreground/40' : 'opacity-70'}`}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${f.colorClass} ${
+                isActive ? "ring-2 ring-foreground/40" : "opacity-70"
+              }`}
             >
               {f.label}
             </button>
@@ -62,14 +94,14 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
         })}
       </div>
 
-      {/* Course grid */}
       {visibleCourses.length > 0 ? (
         <div className="grid grid-cols-2 gap-3">
           {visibleCourses.map((course: CourseWithPublishStatus) => {
-            const enrollment =
-              course.enrollments?.[0] || course.userCourses?.[0];
+            const enrollment = course.enrollments?.[0] || course.userCourses?.[0];
+
             const hasStarted =
               enrollment && enrollment.status !== "not_started";
+
             const targetUrl = hasStarted
               ? `/courses/${course.id}/overview`
               : `/courses/${course.id}`;
@@ -82,13 +114,21 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
                       {getCourseIcon(course)}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end">
+
+                  <div className="flex flex-col items-end text-right min-w-0">
                     <p className="text-xs font-semibold text-foreground leading-tight line-clamp-2">
                       {course.title}
                     </p>
+
+                    {course.author && (
+                      <p className="text-[10px] font-medium text-muted-foreground mt-1 leading-tight line-clamp-1">
+                        Av {course.author}
+                      </p>
+                    )}
+
                     {course.time && (
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {course.time}
+                        {course.time} min
                       </p>
                     )}
                   </div>
@@ -103,14 +143,17 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
         </p>
       )}
 
-      {/* Insikt */}
       <section className="mt-10 flex flex-col justify-end">
-        <h2 className="text-lg font-extrabold text-foreground mb-4">Insikt</h2>
+        <h2 className="text-lg font-extrabold text-foreground mb-4">
+          Insikt
+        </h2>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-[#E8D97A] dark:bg-[#6F5909] p-4 flex flex-col justify-between min-h-[100px]">
             <span className="text-4xl font-extrabold text-foreground">
               {totalEnrolled}
             </span>
+
             <span className="text-xs font-medium text-foreground/80 leading-tight mt-1">
               Färdiga kurser
             </span>
@@ -120,6 +163,7 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
             <span className="text-4xl font-extrabold text-foreground">
               {completedCourses}
             </span>
+
             <span className="text-xs font-medium text-foreground/80 leading-tight mt-1">
               Guider
             </span>
@@ -127,8 +171,9 @@ export default function CoursesClient({ courses, totalEnrolled, completedCourses
 
           <div className="rounded-2xl bg-[#C8E6DC] dark:bg-[#234042] p-4 flex flex-col justify-between min-h-[100px]">
             <span className="text-2xl font-extrabold text-foreground">
-              20min
+              {totalTime}min
             </span>
+
             <span className="text-xs font-medium text-foreground/80 leading-tight mt-1">
               Tid spenderad på att lära sig
             </span>

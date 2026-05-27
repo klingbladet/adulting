@@ -71,25 +71,3 @@ EXPOSE 3001
 
 CMD ["node", "dist/server.js"]
 
-
-
-
-
-
-#
-# drizzle migration
-#
-
-FROM node:25-alpine AS migrate
-
-WORKDIR /app
-
-RUN npm install --global pnpm@10.32.0
-
-COPY ./package.json ./pnpm-lock.yaml* pnpm-workspace.yaml ./
-
-RUN pnpm install --frozen-lockfile
-
-COPY ./drizzle.config.ts ./
-COPY ./drizzle/ ./drizzle/
-COPY ./src/db/ ./src/db/
