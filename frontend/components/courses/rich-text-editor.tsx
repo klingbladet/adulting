@@ -1,4 +1,5 @@
 'use client'
+import * as React from 'react';
 import { useState } from 'react'
 import { TextStyleKit } from '@tiptap/extension-text-style'
 import { EditorContent, JSONContent, useEditor } from '@tiptap/react'
@@ -58,6 +59,15 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
       },
     },
   })
+
+const prevContentRef = React.useRef(parsedContent);
+
+React.useEffect(() => {
+  if (editor && JSON.stringify(parsedContent) !== JSON.stringify(prevContentRef.current)) {
+    editor.commands.setContent(parsedContent || '<p>Börja skriva...</p>');
+    prevContentRef.current = parsedContent;
+  }
+}, [editor, parsedContent]);
 
   if (!editor) {
     return null
