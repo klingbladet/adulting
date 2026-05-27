@@ -34,13 +34,13 @@ data:
         {
           "id": 1,
           "type": "timeseries",
-          "title": "Request rate (req/s) by endpoint",
+          "title": "Request rate (req/s) by route",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum by (endpoint) (rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[1m]))",
-              "legendFormat": "{{endpoint}}",
+              "expr": "sum by (route) (rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[1m]))",
+              "legendFormat": "{{route}}",
               "refId": "A"
             }
           ],
@@ -64,13 +64,13 @@ data:
         {
           "id": 3,
           "type": "timeseries",
-          "title": "Latency p95 (s) by endpoint",
+          "title": "Latency p95 (s) by route",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
           "targets": [
             {
-              "expr": "histogram_quantile(0.95, sum by (endpoint, le) (rate(adulting_backend_http_request_duration_seconds_bucket{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])))",
-              "legendFormat": "{{endpoint}}",
+              "expr": "histogram_quantile(0.95, sum by (route, le) (rate(adulting_backend_http_request_duration_seconds_bucket{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])))",
+              "legendFormat": "{{route}}",
               "refId": "A"
             }
           ],
