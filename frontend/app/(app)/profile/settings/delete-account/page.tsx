@@ -43,10 +43,10 @@ export default function DeleteAccountPage() {
 
   return (
     <SettingsPageShell title="Radera konto">
-      <div className="space-y-4 rounded-[28px] bg-red-50 p-5 dark:bg-red-950/30">
-        <h2 className="font-bold text-red-600">Detta går inte att ångra</h2>
+      <div className="space-y-4 rounded-[28px] bg-red-500/10 p-5 text-foreground">
+        <h2 className="font-bold text-red-500 dark:text-red-400">Detta går inte att ångra</h2>
 
-        <p className="text-sm leading-6 text-red-700 dark:text-red-300">
+        <p className="text-sm leading-6 text-red-600 dark:text-red-400/90">
           Om du raderar kontot tas din profil, session och sparad information
           bort. Skriv RADERA för att bekräfta.
         </p>
@@ -55,16 +55,16 @@ export default function DeleteAccountPage() {
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
           placeholder="Skriv RADERA"
-          className="h-12 w-full rounded-2xl border bg-white px-4 text-sm text-gray-950 outline-none dark:border-zinc-700 dark:bg-black dark:text-white"
+          className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm text-foreground outline-none focus:border-red-500 transition-colors"
         />
 
-        {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+        {error && <p className="text-sm font-semibold text-red-500 dark:text-red-400">{error}</p>}
 
         <button
           type="button"
           onClick={deleteAccount}
           disabled={!canDelete || deleting}
-          className="h-12 w-full rounded-2xl bg-red-600 text-sm font-bold text-white disabled:opacity-40"
+          className="h-12 w-full rounded-2xl bg-red-500 hover:bg-red-600 text-sm font-bold text-white transition-colors disabled:opacity-40"
         >
           {deleting ? "Raderar..." : "Radera mitt konto"}
         </button>

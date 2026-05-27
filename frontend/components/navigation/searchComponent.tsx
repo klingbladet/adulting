@@ -107,7 +107,7 @@ export default function SearchComponent({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={`${placeholder} Sök kurser`.trim()}
-                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-800 focus:outline-0 bg-muted text-sm"
+                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-800 focus:outline-0 bg-muted text-sm "
                 aria-label={`Sök kurser`}
             />
             {showResults && (

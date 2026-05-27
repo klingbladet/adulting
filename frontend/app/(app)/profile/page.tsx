@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
-import getCourseIcon from "@/components/courses/course-dynamic-icon";
 import CourseCard from "@/components/courses/course-card";
 import type { ProfileCourse } from "@/components/courses/course-card";
 
@@ -44,6 +43,11 @@ type ProfileResponse = {
 
 function getFirstLetter(name?: string) {
   return name?.trim().charAt(0).toUpperCase() || "O";
+}
+
+function capitalize(name?: string) {
+  if (!name) return "";
+  return name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
 }
 
 function safeProgress(progress: number) {
@@ -170,7 +174,7 @@ function LoggedInHeader({ profile }: { profile: ProfileResponse }) {
         )}
       </div>
 
-      <h1 className="mt-3 text-2xl font-bold md:text-xl">{user.name}</h1>
+      <h1 className="mt-3 text-2xl font-bold md:text-xl">{capitalize(user.name)}</h1>
 
       <p className="text-xs text-gray-500 dark:text-gray-300">{user.email}</p>
 
@@ -368,14 +372,6 @@ function LoginBottomSheet({
             <span className="text-xl">G</span>
             Fortsätt med Google
           </button>
-
-          <Link
-            href="/auth"
-            className="flex w-full items-center gap-4 rounded-2xl bg-[#F8FAFC] px-4 py-4 text-left text-sm font-bold shadow-sm dark:bg-white/10"
-          >
-            <span className="text-xl"></span>
-            Fortsätt med Apple
-          </Link>
 
           <Link
             href="/sign-in"
