@@ -3,20 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  Bell,
-  Calendar,
   ChevronLeft,
   ChevronRight,
-  Globe,
-  HelpCircle,
-  Lock,
   LogOut,
-  Mail,
-  MessageCircle,
-  Shield,
-  Trash2,
-  User,
-  Users,
 } from "lucide-react";
 import { BACKEND_URL } from "@/lib/backend-url";
 import { authClient } from "@/lib/auth-client";
@@ -46,6 +35,11 @@ const DEFAULT_NOTIFICATIONS: NotificationSettings = {
 
 function firstLetter(name?: string) {
   return name?.trim()?.charAt(0)?.toUpperCase() || "U";
+}
+
+function capitalize(name?: string) {
+  if (!name) return "";
+  return name.trim().charAt(0).toUpperCase() + name.trim().slice(1);
 }
 
 function getStoredNotifications() {
@@ -154,8 +148,8 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-[#F8FAFC] ">
-        <p className="text-sm text-gray-500 dark:text-gray-300">
+      <main className="flex min-h-dvh items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">
           Laddar inställningar...
         </p>
       </main>
@@ -166,48 +160,49 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="min-h-dvh bg-background text-gray-950 dark:text-white">
-        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background px-4 pb-28 pt-6 md:max-w-5xl md:px-8 md:py-8">
-          <header className="shrink-0 md:mx-auto md:w-full md:max-w-3xl md:rounded-[32px] md:bg-white md:p-6 md:shadow-sm md:dark:bg-zinc-950">
+      <main className="mb-10 min-h-dvh text-foreground bg-background">
+        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background md:max-w-5xl md:px-8 md:py-8">
+          <header className="shrink-0 px-4 pb-3 pt-4 w-full md:max-w-2xl md:mx-auto md:px-0">
             <div className="flex items-center justify-between">
               <Link
                 href="/profile"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F5F9] text-gray-700 dark:bg-zinc-900 dark:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-secondary-foreground hover:opacity-85 transition-opacity"
               >
                 <ChevronLeft size={20} />
               </Link>
 
               <h1 className="text-lg font-bold">Inställningar</h1>
-
               <div className="h-9 w-9" />
             </div>
 
             <Link
-              href="/profile/settings/account"
-              className="mt-4 flex items-center gap-3 rounded-3xl bg-[#EAF7FF] p-3 shadow-sm dark:bg-[#0D2B49]"
+              href={user ? "/profile/settings/account" : "/profile"}
+              className="mt-4 flex items-center gap-3 rounded-3xl bg-secondary p-3 shadow-sm hover:opacity-90 transition-opacity text-secondary-foreground"
             >
-              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#2563EB] text-xl font-bold text-white">
-                {user?.image ? (
-                  <img
-                    src={user.image}
-                    alt={user.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  firstLetter(user?.name)
-                )}
+              {user && (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xl font-bold text-primary-foreground">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    firstLetter(user.name)
+                  )}
+                </div>
+              )}
+
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate text-sm font-bold text-foreground">
+                  {user?.name ? capitalize(user.name) : "Användare"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {user?.email ?? "Klicka här för att logga in"}
+                </p>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">
-                  {user?.name ?? "Användare"}
-                </p>
-                <p className="truncate text-xs text-gray-500 dark:text-gray-300">
-                  {user?.email ?? "Ingen e-post"}
-                </p>
-              </div>
-
-              <ChevronRight size={17} className="text-gray-400" />
+              <ChevronRight size={17} className="text-muted-foreground" />
             </Link>
           </header>
 
@@ -327,11 +322,11 @@ export default function ProfileSettingsPage() {
               />
             </SettingsSection>
 
-            <div className="px-4 pb-6 pt-5 md:col-span-2 md:flex md:justify-center">
+            <div className="px-4 pb-20 md:col-span-2 md:flex md:justify-center">
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(true)}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-900 dark:text-white md:max-w-sm"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-secondary text-sm font-bold text-foreground hover:opacity-90 transition-opacity md:max-w-sm cursor-pointer"
               >
                 <LogOut size={18} />
                 Logga ut
@@ -342,11 +337,11 @@ export default function ProfileSettingsPage() {
       </main>
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5">
-          <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-xl dark:bg-zinc-900 dark:text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-[28px] bg-card p-5 shadow-xl text-foreground">
             <h2 className="text-lg font-bold">Logga ut?</h2>
 
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-300">
+            <p className="mt-2 text-sm text-muted-foreground">
               Är du säker på att du vill logga ut från ditt konto?
             </p>
 
@@ -354,7 +349,7 @@ export default function ProfileSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowLogoutModal(false)}
-                className="h-12 flex-1 rounded-2xl bg-[#F1F5F9] text-sm font-bold text-gray-700 dark:bg-zinc-800 dark:text-white"
+                className="h-12 flex-1 rounded-2xl bg-muted text-sm font-bold text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
               >
                 Avbryt
               </button>
@@ -363,7 +358,7 @@ export default function ProfileSettingsPage() {
                 type="button"
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="h-12 flex-1 rounded-2xl bg-[#2563EB] text-sm font-bold text-white disabled:opacity-60"
+                className="h-12 flex-1 rounded-2xl bg-primary text-sm font-bold text-primary-foreground hover:opacity-90 disabled:opacity-60 transition-opacity cursor-pointer"
               >
                 {loggingOut ? "Loggar ut..." : "Logga ut"}
               </button>
@@ -383,14 +378,14 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[28px] bg-white shadow-sm dark:bg-zinc-950">
-      <div className="bg-[#F1F5F9] px-4 py-2 dark:bg-zinc-900">
-        <h2 className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+    <section className="overflow-hidden md:rounded-[28px] md:bg-background md:shadow-sm ">
+      <div className="bg-muted px-4 py-2 text-muted-foreground">
+        <h2 className="text-[11px] font-bold uppercase tracking-wide">
           {title}
         </h2>
       </div>
 
-      <div className="divide-y divide-gray-100 bg-white dark:divide-zinc-800 dark:bg-black md:dark:bg-zinc-950">
+      <div className="divide-y divide-border bg-card">
         {children}
       </div>
     </section>
@@ -411,23 +406,23 @@ function SettingsRow({
   danger?: boolean;
 }) {
   return (
-    <Link href={href} className="flex items-center gap-3 px-4 py-3.5">
+    <Link href={href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted/30 transition-colors">
       <span className="w-6 text-lg">{icon}</span>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 text-left">
         <p
-          className={`text-sm font-semibold leading-4 ${danger ? "text-red-500" : "text-gray-900 dark:text-white"
+          className={`text-sm font-semibold leading-4 ${danger ? "text-red-500 dark:text-red-400" : "text-foreground"
             }`}
         >
           {title}
         </p>
 
-        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+        <p className="truncate text-xs text-muted-foreground mt-0.5">
           {description}
         </p>
       </div>
 
-      <ChevronRight size={16} className="text-gray-400" />
+      <ChevronRight size={16} className="text-muted-foreground" />
     </Link>
   );
 }
@@ -449,12 +444,12 @@ function ToggleRow({
     <div className="flex items-center gap-3 px-4 py-3.5">
       <span className="w-6 text-lg">{icon}</span>
 
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold leading-4 text-gray-900 dark:text-white">
+      <div className="min-w-0 flex-1 text-left">
+        <p className="text-sm font-semibold leading-4 text-foreground">
           {title}
         </p>
 
-        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+        <p className="truncate text-xs text-muted-foreground mt-0.5">
           {description}
         </p>
       </div>
@@ -462,11 +457,11 @@ function ToggleRow({
       <button
         type="button"
         onClick={onChange}
-        className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-[#2563EB]" : "bg-gray-300"
+        className={`relative h-7 w-12 rounded-full transition-colors cursor-pointer ${checked ? "bg-primary" : "bg-[#9ca3af]"
           }`}
       >
         <span
-          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${checked ? "left-6" : "left-1"
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-6" : "left-1"
             }`}
         />
       </button>

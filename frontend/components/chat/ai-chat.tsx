@@ -77,6 +77,7 @@ export default function AiChat({
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -98,6 +99,13 @@ export default function AiChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [messageInput]);
 
   async function safeJson(response: Response) {
     try {
@@ -405,25 +413,19 @@ export default function AiChat({
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-card p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          className={`fixed left-0 top-0 z-50 flex h-full w-[82%] max-w-77 flex-col border-r border-border bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] p-5 transition duration-300 lg:static lg:z-auto lg:h-auto lg:w-[320px] lg:max-w-none lg:translate-x-0 lg:p-6 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
         >
           <div className="border-b border-border px-5 py-5">
+            <h1 className="text-xl text-foreground font-bold font-Montserrat font-heading tracking-tight mb-10">
+              Adulting
+            </h1>
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
-                  <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI-assistent" />
-                </div>
-
                 <div className="min-w-0">
                   <h2 className="truncate text-xl font-bold text-foreground">
-                    AI-assistent
+                    Coach Nils
                   </h2>
-
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="h-2 w-2 rounded-full bg-green-500" />
-                    Online • Svarar direkt
-                  </div>
                 </div>
               </div>
 
@@ -440,10 +442,10 @@ export default function AiChat({
               type="button"
               onClick={createThread}
               disabled={creatingThread}
-              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-white shadow-lg shadow-primary/25 transition hover:scale-[1.02] hover:bg-primary/90 disabled:opacity-50"
+              className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-background text-sm font-bold text-foreground transition hover:scale-[1.02] hover:bg-primary/90 disabled:opacity-50"
             >
               <Plus size={20} />
-              Ny AI-chatt
+              Ny chatt
             </button>
           </div>
 
@@ -548,10 +550,8 @@ export default function AiChat({
 
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <Sparkles className="text-primary" size={20} />
-
                 <h1 className="text-xl font-bold text-foreground">
-                  AI-chat
+                  Coach Nils
                 </h1>
               </div>
 
@@ -599,9 +599,6 @@ export default function AiChat({
               <div className="flex h-full items-center justify-center">
                 <div className="w-full max-w-4xl text-center">
                   <div className="mx-auto flex justify-center">
-                    <div className="scale-75 md:scale-100 flex h-28 w-28 items-center justify-center rounded-full border-2 border-border bg-white shadow-sm overflow-hidden">
-                      <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="Astronaut Logo" />
-                    </div>
                   </div>
 
                   <h2 className="mt-4 text-[24px] font-extrabold tracking-tight text-foreground md:mt-8 md:text-4xl">
@@ -652,7 +649,7 @@ export default function AiChat({
                   >
                     {message.role === "assistant" && (
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
-                        <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                        <img src="/images/logotype/astronaut-logo.png" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
                       </div>
                     )}
 
@@ -676,11 +673,11 @@ export default function AiChat({
                 {sending && (
                   <div className="flex items-end gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
-                      <img src="/images/logotype/astronaut-logo.svg" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
+                      <img src="/images/logotype/astronaut-logo.png" className="h-full w-full object-contain scale-[1.4]" alt="AI" />
                     </div>
 
                     <div className="rounded-[24px] border border-border bg-card px-5 py-3.5 text-left text-[15px] text-muted-foreground shadow-sm">
-                      <span>AI skriver</span>
+                      <span>Nils skriver</span>
                       <span className="ml-1 inline-flex gap-1">
                         <span className="animate-bounce">.</span>
                         <span className="animate-bounce delay-100">.</span>
@@ -698,12 +695,13 @@ export default function AiChat({
           <div className="shrink-0 border-t border-border/70 px-4 py-3 md:px-8 md:py-5">
             <div className="mx-auto flex max-w-3xl items-center gap-2 rounded-3xl border border-border bg-card px-3 py-3 shadow-sm">
               <textarea
+                ref={textareaRef}
                 value={messageInput}
                 onChange={(event) => setMessageInput(event.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder="Skriv din fråga här..."
                 rows={1}
-                className="flex justify-center max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
+                className="flex justify-center max-h-[72px] min-h-[24px] text-foreground flex-1 resize-none overflow-y-auto bg-transparent px-2 text-left text-[15px] leading-6 outline-none placeholder:text-muted-foreground"
               />
 
               <button
