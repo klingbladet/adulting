@@ -10,6 +10,7 @@ resources:
 - mcp.yml
 - database-ui.yml
 - ingress.yml
+- monitoring.yml
 images:
 - name: registry.chas-lab.dev/chas-challenge-2026/grupp-1/adulting/backend
   newTag: mr42
