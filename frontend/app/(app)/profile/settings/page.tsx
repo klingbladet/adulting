@@ -166,9 +166,9 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <main className="mt-10 h-dvh overflow-hidden text-gray-950 dark:text-white bg-background mb-20">
-        <section className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background">
-          <header className="shrink-0 px-4 pb-3 pt-4">
+      <main className="min-h-dvh bg-background text-gray-950 dark:text-white">
+        <section className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background px-4 pb-28 pt-6 md:max-w-5xl md:px-8 md:py-8">
+          <header className="shrink-0 md:mx-auto md:w-full md:max-w-3xl md:rounded-[32px] md:bg-white md:p-6 md:shadow-sm md:dark:bg-zinc-950">
             <div className="flex items-center justify-between">
               <Link
                 href="/profile"
@@ -211,7 +211,7 @@ export default function ProfileSettingsPage() {
             </Link>
           </header>
 
-          <div className="mx-auto w-full max-w-5xl flex-1 pb-28 pt-4 md:grid md:grid-cols-2 md:gap-6 md:pb-8">
+          <div className="mx-auto grid w-full gap-5 pt-4 md:max-w-5xl md:grid-cols-2 md:gap-6 md:pb-8">
             <SettingsSection title="Konto">
               <SettingsRow
                 icon="👤"
@@ -383,7 +383,7 @@ function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden md:rounded-[28px] md:bg-white md:shadow-sm md:dark:bg-zinc-950">
+    <section className="overflow-hidden rounded-[28px] bg-white shadow-sm dark:bg-zinc-950">
       <div className="bg-[#F1F5F9] px-4 py-2 dark:bg-zinc-900">
         <h2 className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {title}
