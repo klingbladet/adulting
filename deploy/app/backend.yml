@@ -46,7 +46,7 @@ spec:
             - name: OPENROUTER_SITE_URL
               value: $(FRONTEND_URL)
             - name: BETTER_AUTH_URL
-              value: http://localhost:3001
+              value: $(FRONTEND_URL)/api/auth
             - name: DATABASE_URL
               value: postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(VERSION)-adulting-postgres-0.$(VERSION)-adulting-postgres.doe25-group-1.svc.cluster.local:5432/$(POSTGRES_DB)
             - name: MCP_SERVER_URL
