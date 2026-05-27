@@ -17,7 +17,7 @@ export default async function BlockPage({
 
   try {
     blocks = await getBlocksByCourseId(courseId);
-    course = await getCourseById(courseId)
+    course = await getCourseById(courseId);
   } catch {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
@@ -38,25 +38,19 @@ export default async function BlockPage({
     );
   }
 
-  const sortedBlocks = [...blocks].sort(
-    (a, b) => a.orderIndex - b.orderIndex
-  );
+  const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
 
   const totalBlocks = sortedBlocks.length;
 
   const block = sortedBlocks.find((b) => b.id === Number(id));
 
-  const currentIndex = sortedBlocks.findIndex(
-    (b) => b.id === Number(id)
-  );
+  const currentIndex = sortedBlocks.findIndex((b) => b.id === Number(id));
 
   const previousBlock =
     currentIndex > 0 ? sortedBlocks[currentIndex - 1] : null;
 
   const nextBlock =
-    currentIndex < totalBlocks - 1
-      ? sortedBlocks[currentIndex + 1]
-      : null;
+    currentIndex < totalBlocks - 1 ? sortedBlocks[currentIndex + 1] : null;
 
   if (!block) {
     return (
@@ -80,79 +74,67 @@ export default async function BlockPage({
 
   const stepNumber = currentIndex + 1;
 
-  const progress =
-    totalBlocks > 0
-      ? (stepNumber / totalBlocks) * 100
-      : 0;
+  const progress = totalBlocks > 0 ? (stepNumber / totalBlocks) * 100 : 0;
+
+  const backHref = previousBlock
+    ? `/courses/${courseId}/blocks/${previousBlock.id}`
+    : `/courses/${courseId}/overview`;
 
   return (
-    <main className="flex w-full min-h-screen flex-col bg-background -mt-12 mr-10 relative">
+    <main className="relative flex min-h-screen w-full flex-col bg-background -mt-6">
       {/* Header */}
-      <div className="flex items-center justify-between md:justify-start relative z-10 max-w-screen min-h-full font-sans text-foreground">
-          <header className="md:flex md:justify-center md:items-center h-auto min-h-45 md:min-h-60 w-screen -mx-6 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)] pt-14 pb-12 relative">
-            <div className="flex justify-start items-center md:flex-col md:items-start md:text-center">
-              <div className="flex flex-col gap-4 justify-center pl-6 items-start md:mt-4 md:items-start">
+      <header className="relative left-1/2 w-screen -translate-x-1/2 bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)]">
+  <div className="mx-auto flex min-h-44 max-w-5xl flex-col justify-center px-6 py-8 md:min-h-52 md:px-8 md:py-10">
+    <Link href={backHref} className="mb-8 w-fit">
+      <ArrowLeft
+        size={22}
+        className="text-secondary-foreground"
+      />
+    </Link>
 
-                {previousBlock ? (
-                   <Link href={`/courses/${courseId}/blocks/${previousBlock.id}`}>
-                    <ArrowLeft
-                      size={20}
-                      className="text-secondary-foreground"
-                    />
-                  </Link>
-                ) : (
-                  <Link href={`/courses/${courseId}/overview`}>
-                    <ArrowLeft
-                      size={20}
-                      className="text-secondary-foreground"
-                    />
-                  </Link>
-                )}
-                  
-                <div className="flex flex-col items-start justify-end">
-                  <p className="text-sm md:text-lg text-muted-foreground leading-tight mt-1 md:max-w-md">
-                    {course.title}
-                  </p>
-                  <p className="text-lg md:text-3xl font-semibold leading-tight mt-1 md:max-w-md">
-                    {block.title}
-                  </p>
-                </div>
-                <div className="flex justify-start items-start w-full">
-                  
-                  {/* Progress bar */}
-                  <div className="md:-mr-100 h-1 w-85 md:w-100 overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full bg-button transition-all duration-300"
-                      style={{
-                      width: `${progress}%`,
-                  }}
-                    />
-                  </div>
-                </div>
-                <span className="text-sm font-medium">
-                  {stepNumber} av {totalBlocks} avklarat
-                </span>
-              </div>
-            </div>
-          </header>
+    <div className="flex flex-col items-start">
+      <p className="text-sm md:text-base text-muted-foreground leading-tight">
+        {course.title}
+      </p>
+
+      <h1 className="mt-1 text-2xl md:text-3xl font-semibold leading-tight text-foreground">
+        {block.title}
+      </h1>
+
+      <div className="mt-6 w-full max-w-md md:max-w-xl">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+          <div
+            className="h-full bg-button transition-all duration-300"
+            style={{
+              width: `${progress}%`,
+            }}
+          />
         </div>
 
-        {/* Content */}
-        <div className="mb-6 flex flex-col justify-center items-center pt-6 pl-4">
-          <div className="md:flex md:justify-center md:items-start md:text-left prose prose-slate w-90 md:w-200 text-md leading-relaxed text-foreground [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
-            <TipTapViewer content={block.content} />
-          </div>
+        <span className="mt-3 block text-sm font-medium text-muted-foreground">
+          {stepNumber} av {totalBlocks} avklarat
+        </span>
+      </div>
+    </div>
+  </div>
+</header>
+
+      {/* Content */}
+      <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-8 md:px-8 md:py-12">
+        <div className="prose prose-slate w-full max-w-none text-md leading-relaxed text-foreground dark:prose-invert [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6">
+          <TipTapViewer content={block.content} />
         </div>
+      </section>
 
-        {/* Footer navigation */}
-        <div className="mb-10 flex justify-center gap-4 border-t border-border p-6 pb-10">
-
+      {/* Footer navigation */}
+      <footer className="mx-auto w-full max-w-5xl border-t border-border px-6 py-6 md:px-8">
+        <div className="flex justify-center">
           {nextBlock ? (
             <ProgressLink
               href={`/courses/${courseId}/blocks/${nextBlock.id}`}
               courseId={courseId}
               progress={progress}
-              className="flex justify-center items-center text-md rounded-4xl px-6 py-4 font-semibold transition hover:opacity-90 bg-button text-white hover:bg-[#649EF6]"
+              className="flex items-center justify-center rounded-4xl bg-button px-6 py-4 text-md font-semibold text-white transition hover:bg-[#649EF6] hover:opacity-90"
             >
               Gå vidare till: {nextBlock.title}
             </ProgressLink>
@@ -161,13 +143,13 @@ export default async function BlockPage({
               href={`/courses/${courseId}/quiz?finalBlockId=${block.id}`}
               courseId={courseId}
               progress={100}
-              className="flex-2 rounded-4xl bg-button px-6 py-4 font-semibold text-white transition hover:opacity-90"
+              className="flex items-center justify-center rounded-4xl bg-button px-6 py-4 text-md font-semibold text-white transition hover:opacity-90"
             >
               Gå till quiz
             </ProgressLink>
           )}
-      </div>
-
+        </div>
+      </footer>
     </main>
   );
 }
