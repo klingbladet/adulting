@@ -17,6 +17,7 @@ spec:
           image: dbgate/dbgate:alpine
           ports:
             - containerPort: 3000
+              name: http
               protocol: TCP
           env:
             - name: VERSION
@@ -46,19 +47,19 @@ spec:
                 optional: false
           startupProbe:
             httpGet:
-              port: 3000
+              port: http
             periodSeconds: 1
             failureThreshold: 60
             timeoutSeconds: 1
           livenessProbe:
             httpGet:
-              port: 3000
+              port: http
             periodSeconds: 10
             failureThreshold: 3
             timeoutSeconds: 2
           readinessProbe:
             httpGet:
-              port: 3000
+              port: http
             periodSeconds: 5
             failureThreshold: 3
             timeoutSeconds: 2
@@ -72,5 +73,5 @@ spec:
     adulting: dbui
   ports:
     - port: 8080
-      targetPort: 3000
+      targetPort: http
       protocol: TCP

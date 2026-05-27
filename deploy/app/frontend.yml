@@ -112,6 +112,6 @@ spec:
     adulting: frontend
   ports:
     - port: 8080
-      targetPort: name
+      targetPort: http
       name: http
       protocol: TCP
