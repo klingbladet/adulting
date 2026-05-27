@@ -124,9 +124,6 @@ build drizzle image:
       -t $CI_REGISTRY_IMAGE/migrate:$IMAGE_VERSION
       --push --provenance=false 
       -f ./docker/drizzle.Dockerfile ./backend
-  rules:
-    - changes:
-      - ./docker/drizzle.Dockerfile
 
 
 build backend:
