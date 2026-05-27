@@ -4,15 +4,22 @@ import { getCoursesByCategory } from "@/lib/api";
 import getCourseIcon from "@/components/courses/course-dynamic-icon";
 import { Course } from "@/types/types";
 
-type CourseWithPublishStatus = Course & { isPublished?: boolean };
+type CourseWithPublishStatus = Course & {
+  author?: string | null;
+  isPublished?: boolean;
+};
 
 export default async function UserDashboardPage() {
   const allCourses = await getCoursesByCategory("ekonomi");
-  const publishedCourses = allCourses.filter((course: CourseWithPublishStatus) => course.isPublished === true);
+
+  const publishedCourses = allCourses.filter(
+    (course: CourseWithPublishStatus) => course.isPublished === true,
+  );
 
   return (
     <div className="mt-10">
       <h1 className="text-4xl font-bold">Ekonomi</h1>
+
       <p className="mt-2 mb-10 text-muted-foreground">
         Välj vilken kurs du vill göra
       </p>
@@ -24,12 +31,15 @@ export default async function UserDashboardPage() {
               <BlockCard
                 icon={getCourseIcon(course)}
                 title={course.title}
+                description={course.author ? `Av ${course.author}` : undefined}
                 time={course.time}
               />
             </Link>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground italic">Inga publicerade kurser hittades ännu.</p>
+          <p className="text-sm text-muted-foreground italic">
+            Inga publicerade kurser hittades ännu.
+          </p>
         )}
       </div>
     </div>
