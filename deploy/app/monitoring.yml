@@ -13,22 +13,23 @@ spec:
     - port: http
       path: /metrics
       interval: 15s
+  jobLabel: env
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: dashbaord
+  name: dashboard
   labels:
     grafana_dashboard: "1"
 data:
-  adulting-dashboard.json: |
+  adulting-rlversion-dashboard.json: |
     {
-      "title": "adulting (group 1)",
-      "uid": "adulting-group1",
+      "title": "adulting (group 1) / rlversion",
+      "uid": "adulting-group1-rlversion",
       "schemaVersion": 1,
       "time": { "from": "now-1h", "to": "now" },
       "refresh": "30s",
-      "tags": ["chas-academy", "doe25", "doe25-group-1"],
+      "tags": ["chas-academy", "doe25", "doe25-group-1", "rlversion"],
       "panels": [
         {
           "id": 1,
@@ -38,7 +39,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum by (endpoint) (rate(adulting_backend_http_requests_total{namespace=\"doe25-group-1\",route!=\"/metrics\"}[1m]))",
+              "expr": "sum by (endpoint) (rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[1m]))",
               "legendFormat": "{{endpoint}}",
               "refId": "A"
             }
@@ -53,7 +54,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(adulting_backend_http_requests_total{namespace=\"doe25-group-1\",status_code=~\"5..\",route!=\"/metrics\"}[5m])) / clamp_min(sum(rate(adulting_backend_http_requests_total{namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])), 1)",
+              "expr": "sum(rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",status_code=~\"5..\",route!=\"/metrics\"}[5m])) / clamp_min(sum(rate(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])), 1)",
               "legendFormat": "5xx ratio",
               "refId": "A"
             }
@@ -68,7 +69,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
           "targets": [
             {
-              "expr": "histogram_quantile(0.95, sum by (endpoint, le) (rate(adulting_backend_http_request_duration_seconds_bucket{namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])))",
+              "expr": "histogram_quantile(0.95, sum by (endpoint, le) (rate(adulting_backend_http_request_duration_seconds_bucket{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m])))",
               "legendFormat": "{{endpoint}}",
               "refId": "A"
             }
@@ -83,7 +84,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
           "targets": [
             {
-              "expr": "sum by (status_code) (increase(adulting_backend_http_requests_total{namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m]))",
+              "expr": "sum by (status_code) (increase(adulting_backend_http_requests_total{job=\"rlversion\",namespace=\"doe25-group-1\",route!=\"/metrics\"}[5m]))",
               "legendFormat": "{{status_code}}",
               "refId": "A"
             }
