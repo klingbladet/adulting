@@ -166,33 +166,33 @@ export default async function CourseOverview({
   const sortedBlocks = [...blocks].sort((a, b) => a.orderIndex - b.orderIndex);
 
   return (
-  <div className="relative min-h-screen bg-background -mx-6 -mt-6">
-    <div className="relative z-10 min-h-full font-sans text-foreground">
-      <header className="w-full bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)]">
-        <div className="mx-auto flex min-h-44 max-w-5xl flex-col justify-center px-6 py-8 md:min-h-52 md:px-8 md:py-10">
-          <Link href="/courses" className="mb-8 w-fit">
-            <ArrowLeft size={22} className="text-secondary-foreground" />
-          </Link>
+    <div className="relative min-h-screen bg-background -mx-6 -mt-6">
+      <div className="relative z-10 min-h-full font-sans text-foreground">
+        <header className="w-full bg-[linear-gradient(270deg,#DEEDEA_-64.34%,#C0E7F7_89.05%,#4BBDE5_213.33%)] dark:bg-[linear-gradient(270deg,#1D3537_-64.34%,#0C4F80_89.05%,#0A5C9A_213.33%)]">
+          <div className="mx-auto flex min-h-44 max-w-5xl flex-col justify-center px-6 py-8 md:min-h-52 md:px-8 md:py-10">
+            <Link href="/courses" className="mb-8 w-fit">
+              <ArrowLeft size={22} className="text-secondary-foreground" />
+            </Link>
 
-          <div className="flex flex-col">
-            <p className="text-sm md:text-base text-muted-foreground leading-tight">
-              {course.category?.name}
-            </p>
-
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold leading-tight text-foreground">
-              {course.title}
-            </h1>
-
-            {courseWithAuthor.author && (
-              <p className="mt-2 text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
-                Av {courseWithAuthor.author}
+            <div className="flex flex-col">
+              <p className="text-sm md:text-base text-muted-foreground leading-tight">
+                {course.category?.name}
               </p>
-            )}
-          </div>
-        </div>
-      </header>
 
-      <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col bg-background px-6 py-6">
+              <h1 className="mt-1 text-2xl md:text-3xl font-semibold leading-tight text-foreground">
+                {course.title}
+              </h1>
+
+              {courseWithAuthor.author && (
+                <p className="mt-2 text-xs sm:text-sm md:text-base font-medium text-muted-foreground leading-tight">
+                  Av {courseWithAuthor.author}
+                </p>
+              )}
+            </div>
+          </div>
+        </header>
+
+        <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col bg-background px-6 py-6">
           <div className="my-5">
             <h3 className="text-lg md:text-2xl font-semibold">
               Introduktion:

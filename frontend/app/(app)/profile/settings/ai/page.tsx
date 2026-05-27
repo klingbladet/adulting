@@ -75,12 +75,12 @@ export default function AiAssistantSettingsPage() {
   return (
     <SettingsPageShell title="AI-assistent">
       <div className="space-y-5">
-        <section className="rounded-[28px] bg-[#F8FAFC] p-5 dark:bg-zinc-900">
-          <h2 className="text-base font-bold text-gray-950 dark:text-white">
+        <section className="rounded-[28px] bg-muted p-5 text-foreground">
+          <h2 className="text-base font-bold text-foreground">
             Hur AI svarar
           </h2>
 
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Välj hur kort eller detaljerat AI ska svara.
           </p>
 
@@ -108,12 +108,12 @@ export default function AiAssistantSettingsPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] bg-[#F8FAFC] p-5 dark:bg-zinc-900">
-          <h2 className="text-base font-bold text-gray-950 dark:text-white">
+        <section className="rounded-[28px] bg-muted p-5 text-foreground">
+          <h2 className="text-base font-bold text-foreground">
             Ton
           </h2>
 
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             Anpassa känslan i svaren.
           </p>
 
@@ -141,18 +141,18 @@ export default function AiAssistantSettingsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[28px] bg-[#F8FAFC] dark:bg-zinc-900">
+        <section className="overflow-hidden rounded-[28px] bg-muted text-foreground">
           <div className="p-5">
-            <h2 className="text-base font-bold text-gray-950 dark:text-white">
+            <h2 className="text-base font-bold text-foreground">
               Smart hjälp
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Gör AI:n mer hjälpsam i studier och vardag.
             </p>
           </div>
 
-          <div className="divide-y divide-gray-100 dark:divide-zinc-800">
+          <div className="divide-y divide-border/30">
             <ToggleRow
               title="Förenkla svåra ord"
               description="AI förklarar svåra ord enklare"
@@ -195,8 +195,8 @@ function ChoiceButton({
       onClick={onClick}
       className={`h-11 rounded-2xl text-sm font-bold transition ${
         active
-          ? "bg-[#2563EB] text-white"
-          : "bg-white text-gray-700 dark:bg-black dark:text-white"
+          ? "bg-primary text-primary-foreground"
+          : "bg-card text-foreground border border-border"
       }`}
     >
       {children}
@@ -218,11 +218,11 @@ function ToggleRow({
   return (
     <div className="flex items-center gap-3 px-5 py-4">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-gray-950 dark:text-white">
+        <p className="text-sm font-semibold text-foreground">
           {title}
         </p>
 
-        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {description}
         </p>
       </div>
@@ -231,7 +231,7 @@ function ToggleRow({
         type="button"
         onClick={onChange}
         className={`relative h-7 w-12 rounded-full transition ${
-          checked ? "bg-[#2563EB]" : "bg-gray-300"
+          checked ? "bg-primary" : "bg-secondary"
         }`}
       >
         <span

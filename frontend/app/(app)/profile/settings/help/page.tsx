@@ -3,7 +3,7 @@ import SettingsPageShell from "@/components/profile/settings-page-shell";
 export default function HelpPage() {
   return (
     <SettingsPageShell title="Hjälpcenter">
-      <div className="space-y-3">
+      <div className="space-y-3 text-foreground">
         {[
           "Hur börjar jag en kurs?",
           "Hur fungerar badges?",
@@ -12,7 +12,7 @@ export default function HelpPage() {
         ].map((question) => (
           <div
             key={question}
-            className="rounded-2xl bg-[#F8FAFC] p-4"
+            className="rounded-2xl bg-muted p-4"
           >
             <p className="text-sm font-semibold">
               {question}

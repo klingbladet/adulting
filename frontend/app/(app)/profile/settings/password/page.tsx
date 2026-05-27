@@ -51,7 +51,7 @@ export default function PasswordSettingsPage() {
 
   return (
     <SettingsPageShell title="Lösenord">
-      <div className="space-y-4 rounded-[28px] bg-[#F8FAFC] p-5 dark:bg-zinc-900">
+      <div className="space-y-4 rounded-[28px] bg-muted p-5 text-foreground">
         <label className="block">
           <span className="text-sm font-semibold">Nuvarande lösenord</span>
 
@@ -60,7 +60,7 @@ export default function PasswordSettingsPage() {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Nuvarande lösenord"
-            className="mt-2 h-12 w-full rounded-2xl border bg-white px-4 text-sm text-gray-950 outline-none dark:border-zinc-700 dark:bg-black dark:text-white"
+            className="mt-2 h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm text-foreground outline-none focus:border-primary transition-colors"
           />
         </label>
 
@@ -72,7 +72,7 @@ export default function PasswordSettingsPage() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Nytt lösenord"
-            className="mt-2 h-12 w-full rounded-2xl border bg-white px-4 text-sm text-gray-950 outline-none dark:border-zinc-700 dark:bg-black dark:text-white"
+            className="mt-2 h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm text-foreground outline-none focus:border-primary transition-colors"
           />
         </label>
 
@@ -84,21 +84,21 @@ export default function PasswordSettingsPage() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Bekräfta lösenord"
-            className="mt-2 h-12 w-full rounded-2xl border bg-white px-4 text-sm text-gray-950 outline-none dark:border-zinc-700 dark:bg-black dark:text-white"
+            className="mt-2 h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm text-foreground outline-none focus:border-primary transition-colors"
           />
         </label>
 
         {message && (
-          <p className="text-sm font-semibold text-green-600">{message}</p>
+          <p className="text-sm font-semibold text-green-500">{message}</p>
         )}
 
-        {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+        {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
 
         <button
           type="button"
           onClick={updatePassword}
           disabled={saving}
-          className="h-12 w-full rounded-2xl bg-[#2563EB] text-sm font-bold text-white disabled:opacity-60"
+          className="h-12 w-full rounded-2xl bg-primary text-sm font-bold text-primary-foreground hover:opacity-95 transition-opacity disabled:opacity-60"
         >
           {saving ? "Uppdaterar..." : "Uppdatera lösenord"}
         </button>

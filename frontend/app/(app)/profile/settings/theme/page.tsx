@@ -57,21 +57,21 @@ export default function ThemeSettingsPage() {
 
   return (
     <SettingsPageShell title="Tema">
-      <div className="rounded-[28px] bg-[#F8FAFC] p-4">
-        <p className="mb-4 text-sm text-gray-500">
+      <div className="rounded-[28px] bg-muted p-4 text-foreground">
+        <p className="mb-4 text-sm text-muted-foreground">
           Välj hur appen ska visas på din
           enhet.
         </p>
 
-        <div className="overflow-hidden rounded-3xl bg-white">
+        <div className="overflow-hidden rounded-3xl bg-card">
           <button
             type="button"
             onClick={() =>
               handleThemeChange("light")
             }
-            className="flex h-16 w-full items-center gap-4 border-b px-4 text-left"
+            className="flex h-16 w-full items-center gap-4 border-b border-border px-4 text-left"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EAF7FF] text-[#2563EB]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-primary">
               <Sun size={22} />
             </div>
 
@@ -80,7 +80,7 @@ export default function ThemeSettingsPage() {
                 Light mode
               </p>
 
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Ljus bakgrund och mörk text
               </p>
             </div>
@@ -88,7 +88,7 @@ export default function ThemeSettingsPage() {
             {theme === "light" && (
               <Check
                 size={22}
-                className="text-[#2563EB]"
+                className="text-primary"
               />
             )}
           </button>
@@ -100,7 +100,7 @@ export default function ThemeSettingsPage() {
             }
             className="flex h-16 w-full items-center gap-4 px-4 text-left"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EAF7FF] text-[#2563EB]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-secondary text-primary">
               <Moon size={22} />
             </div>
 
@@ -109,7 +109,7 @@ export default function ThemeSettingsPage() {
                 Dark mode
               </p>
 
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Mörk bakgrund och ljus text
               </p>
             </div>
@@ -117,7 +117,7 @@ export default function ThemeSettingsPage() {
             {theme === "dark" && (
               <Check
                 size={22}
-                className="text-[#2563EB]"
+                className="text-primary"
               />
             )}
           </button>

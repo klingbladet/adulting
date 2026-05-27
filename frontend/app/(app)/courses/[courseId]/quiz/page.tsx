@@ -299,8 +299,8 @@ export default function CourseQuizPage({
                     handleSelectAnswer(currentQuestion.id, option.id)
                   }
                   className={`flex w-full items-center justify-between rounded-4xl border-2 p-4 text-left transition-all ${isSelected
-                      ? "border-[#4981F2] bg-muted"
-                      : "border-[#223CAB] bg-card hover:border-[#96C0FA] transition duration-300"
+                    ? "border-[#4981F2] bg-muted"
+                    : "border-[#223CAB] bg-card hover:border-[#96C0FA] transition duration-300"
                     }`}
                 >
                   <span className="text-sm font-medium text-foreground">
