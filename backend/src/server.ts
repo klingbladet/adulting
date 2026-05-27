@@ -28,6 +28,7 @@ import quizRoutes from "./api/routes/quiz-routes";
 import quizQuestionsRoutes from "./api/routes/quiz-questions-routes";
 import quizAnswersRoutes from "./api/routes/quiz-answers-routes";
 import profileRoutes from "./api/routes/profile-routes";
+import { metricsMiddleware, registerMetricsEndpoint } from "./metrics";
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -36,6 +37,9 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3002",
 ];
+
+app.use(metricsMiddleware);
+registerMetricsEndpoint(app);
 
 app.use(
   cors({
