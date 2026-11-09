@@ -1,6 +1,6 @@
 import { Block, Course as BaseCourse } from "@/types/types";
 
-export interface Course extends Omit<BaseCourse, 'id'> {
+export interface Course extends Omit<BaseCourse, 'id' | 'blocks'> {
   id: string; // Keep as string for mock slug-based routing
   totalBlocks: number;
   blocks: Block[];
