@@ -14,6 +14,18 @@ function GoogleIcon() {
 
 export default function AuthPage() {
   async function handleGoogleLogin() {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("demo_onboarding_status", "not_started");
+        sessionStorage.setItem("demo_onboarding_step", "1");
+        sessionStorage.removeItem("demo_step_one");
+        sessionStorage.removeItem("demo_step_two");
+        document.cookie = `demo_user_name=${encodeURIComponent("Google Student")}; path=/; max-age=86400`;
+      }
+      window.location.href = "/onboarding";
+      return;
+    }
+
     await authClient.signIn.social({
       provider: "google",
       callbackURL: "http://localhost:3000/onboarding",

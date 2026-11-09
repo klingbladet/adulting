@@ -16,9 +16,29 @@ export default function SignUpForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function startDemoOnboarding(chosenName?: string) {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("demo_onboarding_status", "not_started");
+      sessionStorage.setItem("demo_onboarding_step", "1");
+      sessionStorage.removeItem("demo_step_one");
+      sessionStorage.removeItem("demo_step_two");
+      const finalName = chosenName?.trim() || "Demo Student";
+      document.cookie = `demo_user_name=${encodeURIComponent(finalName)}; path=/; max-age=86400`;
+    }
+    router.push("/onboarding");
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg("");
+
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      setLoading(true);
+      setTimeout(() => {
+        startDemoOnboarding(name);
+      }, 300);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setErrorMsg("Lösenorden matchar inte");
@@ -58,13 +78,33 @@ export default function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid w-full gap-4">
+      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
+        <div className="p-4 rounded-2xl bg-blue-50/80 border border-blue-200/80 text-blue-950">
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-semibold text-xs tracking-wider uppercase text-blue-900">
+              Portfolio Demo
+            </span>
+          </div>
+          <p className="text-xs text-blue-800/90 leading-relaxed mb-3">
+            Skapa ett låtsaskonto (ingen data sparas) eller klicka nedan för att testa hela onboarding-flödet.
+          </p>
+          <button
+            type="button"
+            onClick={() => startDemoOnboarding(name)}
+            className="inline-flex w-full items-center justify-center h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-sm transition cursor-pointer"
+          >
+            Starta Onboarding-flödet →
+          </button>
+        </div>
+      )}
+
       <input
         className="h-14 rounded-2xl border border-transparent bg-[#EEF3FF] px-5 text-base font-medium text-gray-900 outline-none placeholder:text-gray-500 focus:border-[#2563EB]"
         type="text"
         placeholder="Namn"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        required
+        required={process.env.NEXT_PUBLIC_DEMO_MODE !== "true"}
       />
 
       <input
@@ -73,7 +113,7 @@ export default function SignUpForm() {
         placeholder="E-post"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        required
+        required={process.env.NEXT_PUBLIC_DEMO_MODE !== "true"}
       />
 
       <input
@@ -82,7 +122,7 @@ export default function SignUpForm() {
         placeholder="Lösenord"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        required
+        required={process.env.NEXT_PUBLIC_DEMO_MODE !== "true"}
       />
 
       <input
@@ -91,7 +131,7 @@ export default function SignUpForm() {
         placeholder="Bekräfta lösenord"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        required
+        required={process.env.NEXT_PUBLIC_DEMO_MODE !== "true"}
       />
 
       <button

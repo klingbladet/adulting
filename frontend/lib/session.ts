@@ -3,10 +3,21 @@ import { BACKEND_URL } from "@/lib/backend-url";
 
 export async function getServerSession() {
   if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    let displayName = "Demo Student";
+    try {
+      const cookieStore = await cookies();
+      const customName = cookieStore.get("demo_user_name")?.value;
+      if (customName) {
+        displayName = decodeURIComponent(customName);
+      }
+    } catch {
+      // Ignore cookie read error in edge cases
+    }
+
     return {
       user: {
         id: "demo-user-1",
-        name: "Demo Student",
+        name: displayName,
         email: "demo@adulting.se",
         role: "admin", // Admin role gives access to user, creator, and admin views
         image: null,

@@ -19,10 +19,32 @@ const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export async function getOnboarding(): Promise<OnboardingData> {
   if (isDemo) {
+    if (typeof window !== "undefined") {
+      const status =
+        (sessionStorage.getItem("demo_onboarding_status") as OnboardingStatus) ||
+        "not_started";
+      const step = Number(sessionStorage.getItem("demo_onboarding_step") || "1");
+      const stepOne = JSON.parse(
+        sessionStorage.getItem("demo_step_one") || "{}"
+      );
+      const stepTwo = JSON.parse(
+        sessionStorage.getItem("demo_step_two") || "{}"
+      );
+
+      return {
+        onboardingStatus: status,
+        redirectTo: "/learn",
+        currentStep: step,
+        stepOneData: stepOne,
+        stepTwoData: stepTwo,
+        stepThreeData: {},
+      };
+    }
+
     return {
-      onboardingStatus: "completed",
+      onboardingStatus: "not_started",
       redirectTo: "/learn",
-      currentStep: 3,
+      currentStep: 1,
       stepOneData: {},
       stepTwoData: {},
       stepThreeData: {},
@@ -43,9 +65,9 @@ export async function getOnboarding(): Promise<OnboardingData> {
   } catch (error) {
     console.warn("Falling back to demo onboarding:", error);
     return {
-      onboardingStatus: "completed",
+      onboardingStatus: "not_started",
       redirectTo: "/learn",
-      currentStep: 3,
+      currentStep: 1,
       stepOneData: {},
       stepTwoData: {},
       stepThreeData: {},
@@ -58,7 +80,17 @@ export async function saveOnboardingStep(
   data: Record<string, unknown>
 ) {
   if (isDemo) {
-    return { ok: true, step, data };
+    if (typeof window !== "undefined") {
+      if (step === 1) {
+        sessionStorage.setItem("demo_step_one", JSON.stringify(data));
+        sessionStorage.setItem("demo_onboarding_step", "2");
+        sessionStorage.setItem("demo_onboarding_status", "in_progress");
+      } else if (step === 2) {
+        sessionStorage.setItem("demo_step_two", JSON.stringify(data));
+        sessionStorage.setItem("demo_onboarding_status", "completed");
+      }
+    }
+    return { ok: true, step, data, redirectTo: "/learn" };
   }
 
   const response = await fetch(`${BACKEND_URL}/api/onboarding/step`, {
@@ -79,7 +111,10 @@ export async function saveOnboardingStep(
 
 export async function skipOnboarding() {
   if (isDemo) {
-    return { ok: true };
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("demo_onboarding_status", "skipped");
+    }
+    return { ok: true, redirectTo: "/learn" };
   }
 
   const response = await fetch(`${BACKEND_URL}/api/onboarding/skip`, {
@@ -96,7 +131,10 @@ export async function skipOnboarding() {
 
 export async function updateOnboardingStatus(status: OnboardingStatus) {
   if (isDemo) {
-    return { ok: true, status };
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("demo_onboarding_status", status);
+    }
+    return { ok: true, status, redirectTo: "/learn" };
   }
 
   const response = await fetch(`${BACKEND_URL}/api/onboarding/status`, {
