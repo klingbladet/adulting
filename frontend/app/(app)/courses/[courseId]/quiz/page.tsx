@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useMemo, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
@@ -34,7 +34,20 @@ export default function CourseQuizPage({
   params: Promise<{ courseId: string }>;
 }) {
   const resolvedParams = use(params);
-  const courseId = resolvedParams.courseId;
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-muted-foreground font-sans">
+          Laddar quiz...
+        </div>
+      }
+    >
+      <QuizContent courseId={resolvedParams.courseId} />
+    </Suspense>
+  );
+}
+
+function QuizContent({ courseId }: { courseId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const finalBlockId = searchParams.get("finalBlockId");
