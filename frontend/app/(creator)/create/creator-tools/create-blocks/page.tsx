@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { requireRole } from "@/lib/guards";
 import CreateBlocks from "@/components/courses/create-blocks";
 
+export const dynamic = "force-dynamic";
+
 export default async function CreatorToolsPage() {
   await requireRole(["creator", "admin"]);
 

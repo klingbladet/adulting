@@ -1,13 +1,16 @@
+import { Suspense } from "react";
 import { requireRole } from "@/lib/guards";
 import CreatorStepper from "@/components/courses/creator-stepper";
 import StepNavigation from "@/components/courses/step-navigation";
 import GenerateCourseQuizPanel from "@/components/courses/generate-course-quiz-panel";
 
+export const dynamic = "force-dynamic";
+
 type CreatorToolsPageProps = {
   searchParams: Promise<{
     courseId?: string;
   }>;
-}
+};
 
 export default async function CreatorToolsPage({
   searchParams,
@@ -21,15 +24,15 @@ export default async function CreatorToolsPage({
     <div className="w-full max-w-5xl mx-auto space-y-8 font-sans md:pr-20">
       <CreatorStepper currentStep={3} />
 
-      {/* Resten av quiz-innehållet kommer här... */}
-
-      <div className="my-6">
-        <GenerateCourseQuizPanel courseId={courseId} />
-      </div>
-      <StepNavigation
-        backPath="/create/creator-tools/create-content"
-        nextPath="/create/creator-tools/preview"
-      />
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Laddar quizverktyg...</div>}>
+        <div className="my-6">
+          <GenerateCourseQuizPanel courseId={courseId} />
+        </div>
+        <StepNavigation
+          backPath="/create/creator-tools/create-content"
+          nextPath="/create/creator-tools/preview"
+        />
+      </Suspense>
     </div>
   );
 }

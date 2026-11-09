@@ -1,6 +1,8 @@
 import { requireRole } from "@/lib/guards";
 import StaffSidebar from "@/components/staff/staff-sidebar";
 
+export const dynamic = "force-dynamic";
+
 export default async function StaffLayout({
   children,
 }: {

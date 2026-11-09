@@ -2,6 +2,8 @@ import CreatorStepper from "@/components/courses/creator-stepper"
 import { getCourseById } from "@/lib/api";
 import PublishActions from "@/components/courses/publish-actions";
 
+export const dynamic = "force-dynamic";
+
 // Skapa en typ för att inkludera databas-relationerna utan att använda "any"
 type CourseWithRelations = {
   title: string;

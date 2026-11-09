@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from "react";
 import Link from "next/link";
 import CourseButton from "@/components/courses/course-buttons";
 import { useCourseId } from "@/lib/use-course-id";
@@ -11,14 +12,14 @@ interface StepNavigationProps {
   nextLabel?: string;
 }
 
-export default function StepNavigation({
+function StepNavigationInner({
   backPath,
   nextPath,
   backLabel = "Tillbaka",
-  nextLabel = "Nästa"
+  nextLabel = "Nästa",
 }: StepNavigationProps) {
   const courseId = useCourseId();
-  const query = courseId ? `?courseId=${courseId}` : '';
+  const query = courseId ? `?courseId=${courseId}` : "";
 
   return (
     <div className="flex flex-row justify-between mt-12 pt-8 border-t border-border">
@@ -26,13 +27,25 @@ export default function StepNavigation({
         <Link href={`${backPath}${query}`}>
           <CourseButton variant="secondary">{backLabel}</CourseButton>
         </Link>
-      ) : <div />}
-      
+      ) : (
+        <div />
+      )}
+
       {nextPath ? (
         <Link href={`${nextPath}${query}`}>
           <CourseButton>{nextLabel}</CourseButton>
         </Link>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
     </div>
+  );
+}
+
+export default function StepNavigation(props: StepNavigationProps) {
+  return (
+    <Suspense fallback={<div className="flex flex-row justify-between mt-12 pt-8 border-t border-border" />}>
+      <StepNavigationInner {...props} />
+    </Suspense>
   );
 }
