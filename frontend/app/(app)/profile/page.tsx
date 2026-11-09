@@ -61,6 +61,46 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function getProfile() {
+      if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+        setProfile({
+          user: {
+            id: "demo-user-1",
+            name: "Demo Student",
+            email: "demo@adulting.se",
+            image: null,
+          },
+          stats: {
+            startedCourses: 1,
+            completedCourses: 1,
+          },
+          courses: [
+            {
+              id: "1",
+              title: "Hitta din första bostad",
+              category: "Boende",
+              totalBlocks: 6,
+              completedBlocks: 3,
+              progress: 50,
+            },
+            {
+              id: "2",
+              title: "Privatekonomi & Budget",
+              category: "Ekonomi",
+              totalBlocks: 5,
+              completedBlocks: 5,
+              progress: 100,
+            },
+          ],
+          badges: [
+            { id: "badge-1", title: "Ekonomimästare", unlocked: true },
+            { id: "badge-2", title: "Bostadsklar", unlocked: true },
+            { id: "badge-3", title: "Superadult", unlocked: false },
+          ],
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`${BACKEND_URL}/api/profile/me`, {
           credentials: "include",

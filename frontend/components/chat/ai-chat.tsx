@@ -129,6 +129,24 @@ export default function AiChat({
   }
 
   async function fetchThreads(selectNewest = false) {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      const demoList: Thread[] = [
+        {
+          id: "demo-thread-1",
+          userId: "demo-user-1",
+          title: "Vuxenliv & Boende",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ];
+      setThreads(demoList);
+      if (!activeThreadId) {
+        setActiveThreadId("demo-thread-1");
+      }
+      setLoadingThreads(false);
+      return;
+    }
+
     try {
       setLoadingThreads(true);
       setError("");
@@ -168,6 +186,23 @@ export default function AiChat({
   }
 
   async function fetchMessages(threadId: string) {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      setLoadingMessages(true);
+      setError("");
+      setMessages([
+        {
+          id: "msg-welcome",
+          threadId,
+          role: "assistant",
+          content:
+            "Hej! Jag är din personliga AI-guide i Adulting. Jag kan hjälpa dig med tips kring hyresavtal, budget och förbereda dig inför kurser och quiz. Vad funderar du på?",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setLoadingMessages(false);
+      return;
+    }
+
     try {
       setLoadingMessages(true);
       setError("");
@@ -194,6 +229,30 @@ export default function AiChat({
   }
 
   async function createThread() {
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      const newId = `demo-thread-${Date.now()}`;
+      const newThread: Thread = {
+        id: newId,
+        userId: "demo-user-1",
+        title: "Ny chatt",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setThreads((prev) => [newThread, ...prev]);
+      setActiveThreadId(newId);
+      setMessages([
+        {
+          id: `msg-${Date.now()}`,
+          threadId: newId,
+          role: "assistant",
+          content: "Hej! Vad kan jag hjälpa dig med i denna konversation?",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setSidebarOpen(false);
+      return newId;
+    }
+
     try {
       setCreatingThread(true);
       setError("");
@@ -226,6 +285,15 @@ export default function AiChat({
   async function deleteThread(threadId: string) {
     const confirmed = window.confirm("Vill du radera den här AI-chatten?");
     if (!confirmed) return;
+
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      if (activeThreadId === threadId) {
+        setActiveThreadId(null);
+        setMessages([]);
+      }
+      return;
+    }
 
     try {
       setError("");
@@ -287,6 +355,33 @@ export default function AiChat({
 
     setMessages((prev) => [...prev, optimisticUserMessage]);
     setMessageInput("");
+
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      setTimeout(() => {
+        const lower = cleanMessage.toLowerCase();
+        let reply = "Bra fråga! I den fulla arkitekturen skickas din förfrågan vidare från backend till vår interna Model Context Protocol (MCP)-server som hämtar din studieprogression och anpassar svaret med AI via OpenRouter.";
+        
+        if (lower.includes("bostad") || lower.includes("hyra") || lower.includes("lägenhet")) {
+          reply = "När du flyttar hemifrån är tre saker absolut viktigast: 1) Ställ dig i bostadskö tidigt, 2) Teckna hemförsäkring från dag ett, och 3) Fotografera lägenhetens skick vid inflyttning så du slipper betala för tidigare skador när du flyttar ut!";
+        } else if (lower.includes("budget") || lower.includes("pengar") || lower.includes("spara") || lower.includes("ekonomi")) {
+          reply = "En klassisk metod är 50/30/20-regeln: 50% av din nettolön går till fasta nödvändigheter (hyra, räkningar, mat), 30% till nöjen och personliga utgifter, och minst 20% direkt in på ett sparkonto eller buffert för oförutsedda utgifter.";
+        } else if (lower.includes("jobb") || lower.includes("lön") || lower.includes("avtal")) {
+          reply = "Skriv aldrig på ett anställningsavtal utan att kontrollera om arbetsgivaren har kollektivavtal! Det reglerar din tjänstepension, övertidsersättning och semesterdagar automatiskt.";
+        }
+
+        const mockAssistantReply: Message = {
+          id: `demo-msg-${Date.now()}`,
+          threadId: threadId!,
+          role: "assistant",
+          content: reply,
+          createdAt: new Date().toISOString(),
+        };
+
+        setMessages((prev) => [...prev, mockAssistantReply]);
+        setSending(false);
+      }, 800);
+      return;
+    }
 
     const payload = {
       message: cleanMessage,

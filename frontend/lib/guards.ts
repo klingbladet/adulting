@@ -26,6 +26,11 @@ export async function requireRole(allowedRoles: readonly string[]) {
 }
 
 export async function requireGuest() {
+  // In demo mode, allow visitors to explore the sign-in / sign-up pages too
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return;
+  }
+
   const session = await getServerSession();
 
   if (session) {

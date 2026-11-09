@@ -17,6 +17,13 @@ export default function SignInForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg("");
+
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+      router.push("/learn");
+      router.refresh();
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -50,6 +57,24 @@ export default function SignInForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid w-full gap-4">
+      {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && (
+        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-950">
+          <div className="flex items-center gap-2 font-semibold text-sm text-blue-900 mb-1">
+            <span>🚀</span>
+            <span>Portfolio Demo Mode</span>
+          </div>
+          <p className="text-xs text-blue-800 mb-3">
+            Detta är ett interaktivt demo. Klicka nedan för att gå direkt in som förinloggad användare med administratörsrättigheter.
+          </p>
+          <Link
+            href="/learn"
+            className="inline-flex w-full items-center justify-center h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-sm transition"
+          >
+            Gå direkt till kurser & dashboard →
+          </Link>
+        </div>
+      )}
+
       <input
         className="h-14 rounded-2xl border border-transparent bg-[#EEF3FF] px-5 text-base font-medium text-gray-900 outline-none placeholder:text-gray-500 focus:border-[#2563EB]"
         type="email"

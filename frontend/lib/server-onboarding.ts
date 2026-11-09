@@ -3,6 +3,17 @@ import { BACKEND_URL } from "@/lib/backend-url";
 import type { OnboardingData } from "@/lib/onboarding";
 
 export async function getServerOnboarding(): Promise<OnboardingData | null> {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return {
+      onboardingStatus: "completed",
+      redirectTo: "/learn",
+      currentStep: 3,
+      stepOneData: {},
+      stepTwoData: {},
+      stepThreeData: {},
+    };
+  }
+
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 

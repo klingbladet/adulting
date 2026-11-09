@@ -5,16 +5,18 @@ import { getServerSession } from "@/lib/session";
 import { getServerOnboarding } from "@/lib/server-onboarding";
 
 export default async function HomePage() {
-  const session = await getServerSession();
+  if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") {
+    const session = await getServerSession();
 
-  if (session) {
-    const onboarding = await getServerOnboarding();
+    if (session) {
+      const onboarding = await getServerOnboarding();
 
-    if (onboarding) {
-      redirect(onboarding.redirectTo);
+      if (onboarding) {
+        redirect(onboarding.redirectTo);
+      }
+
+      redirect("/onboarding");
     }
-
-    redirect("/onboarding");
   }
 
   return (

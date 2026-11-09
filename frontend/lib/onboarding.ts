@@ -15,23 +15,52 @@ export type OnboardingData = {
   stepThreeData: Record<string, unknown>;
 };
 
-export async function getOnboarding(): Promise<OnboardingData> {
-  const response = await fetch(`${BACKEND_URL}/api/onboarding`, {
-    method: "GET",
-    credentials: "include",
-  });
+const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
-  if (!response.ok) {
-    throw new Error("Could not fetch onboarding");
+export async function getOnboarding(): Promise<OnboardingData> {
+  if (isDemo) {
+    return {
+      onboardingStatus: "completed",
+      redirectTo: "/learn",
+      currentStep: 3,
+      stepOneData: {},
+      stepTwoData: {},
+      stepThreeData: {},
+    };
   }
 
-  return response.json();
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/onboarding`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not fetch onboarding");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn("Falling back to demo onboarding:", error);
+    return {
+      onboardingStatus: "completed",
+      redirectTo: "/learn",
+      currentStep: 3,
+      stepOneData: {},
+      stepTwoData: {},
+      stepThreeData: {},
+    };
+  }
 }
 
 export async function saveOnboardingStep(
   step: 1 | 2 | 3,
   data: Record<string, unknown>
 ) {
+  if (isDemo) {
+    return { ok: true, step, data };
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/onboarding/step`, {
     method: "PATCH",
     credentials: "include",
@@ -49,6 +78,10 @@ export async function saveOnboardingStep(
 }
 
 export async function skipOnboarding() {
+  if (isDemo) {
+    return { ok: true };
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/onboarding/skip`, {
     method: "PATCH",
     credentials: "include",
@@ -62,6 +95,10 @@ export async function skipOnboarding() {
 }
 
 export async function updateOnboardingStatus(status: OnboardingStatus) {
+  if (isDemo) {
+    return { ok: true, status };
+  }
+
   const response = await fetch(`${BACKEND_URL}/api/onboarding/status`, {
     method: "PATCH",
     credentials: "include",

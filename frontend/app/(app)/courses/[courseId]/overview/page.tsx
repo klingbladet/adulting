@@ -70,6 +70,29 @@ function extractPlainText(content: unknown): string {
 async function getCoursePersonalization(
   courseId: string,
 ): Promise<CoursePersonalization | null> {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return {
+      courseId: Number(courseId) || 1,
+      latestAttempt: {
+        id: "demo-attempt-1",
+        quizId: 1,
+        score: 3,
+        maxScore: 3,
+        completedAt: new Date().toISOString(),
+      },
+      blockPriorities: [
+        {
+          blockId: 103,
+          blockTitle: "Läs kontraktet & Besittningsskydd",
+          correctCount: 1,
+          incorrectCount: 0,
+          priority: "low",
+          label: "Hög förståelse",
+        },
+      ],
+    };
+  }
+
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
